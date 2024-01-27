@@ -1,4 +1,4 @@
 package org.violet.restaurantmanagement.product.service;
 
-public class ProductService {
+public interface ProductService {
 }
