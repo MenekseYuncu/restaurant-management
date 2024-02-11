@@ -26,6 +26,7 @@
 
         <!--   ==================  -->
         <!---  Common dependencies -->
+        <!--   ==================  -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -44,13 +45,20 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
 
         <!--   ====================  -->
-        <!---  database dependencies -->
+        <!--  database dependencies  -->
+        <!--   ====================  -->
+
 
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -63,8 +71,9 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!--    ===================  -->
-        <!---   Test dependencies    -->
+        <!--   ===================  -->
+        <!--   Test dependencies    -->
+        <!--   ==================   -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
