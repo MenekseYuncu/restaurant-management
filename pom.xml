@@ -54,6 +54,9 @@
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
+        <!--   ==================  -->
+        <!---  Common dependencies -->
+        <!--   ==================  -->
 
         <!--   ====================  -->
         <!--  database dependencies  -->
@@ -70,6 +73,9 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!--   ====================  -->
+        <!--  database dependencies  -->
+        <!--   ====================  -->
 
         <!--   ===================  -->
         <!--   Test dependencies    -->
@@ -86,6 +92,10 @@
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!--   ===================  -->
+        <!--   Test dependencies    -->
+        <!--   ==================   -->
 
     </dependencies>
 
