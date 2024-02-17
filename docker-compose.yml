@@ -10,9 +10,8 @@ services:
       POSTGRES_USER: restaurant_user
       POSTGRES_PASSWORD: restaurant_password
       POSTGRES_ROOT_PASSWORD: rootpass
-      POSTGRES_ROOT_HOST: '%'
       POSTGRES_PORT: 5432
     volumes:
-      - ./db:/var/lib/postgresql
+      - ./db:/var/lib/postgresql/data
     ports:
       - "5432:5432"
