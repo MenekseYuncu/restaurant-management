@@ -1,10 +1,10 @@
-package org.violet.restaurantmanagement.product.category.service.impl;
+package org.violet.restaurantmanagement.product.service.impl;
 
 import org.springframework.stereotype.Service;
-import org.violet.restaurantmanagement.product.category.controller.request.CategoryCreateRequest;
-import org.violet.restaurantmanagement.product.category.service.CategoryService;
-import org.violet.restaurantmanagement.product.category.service.command.CategoryCommand;
-import org.violet.restaurantmanagement.product.category.service.domain.Category;
+import org.violet.restaurantmanagement.product.controller.request.CategoryCreateRequest;
+import org.violet.restaurantmanagement.product.service.CategoryService;
+import org.violet.restaurantmanagement.product.service.command.CategoryCommand;
+import org.violet.restaurantmanagement.product.service.domain.Category;
 
 
 @Service

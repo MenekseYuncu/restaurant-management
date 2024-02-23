@@ -1,6 +1,6 @@
-package org.violet.restaurantmanagement.product.category.controller.response;
+package org.violet.restaurantmanagement.product.controller.response;
 
-import org.violet.restaurantmanagement.product.category.model.enums.CategoryStatus;
+import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 
 import java.time.LocalDateTime;
 

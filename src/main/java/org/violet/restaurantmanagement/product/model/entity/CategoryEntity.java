@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.category.model.entity;
+package org.violet.restaurantmanagement.product.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.violet.restaurantmanagement.product.category.model.enums.CategoryStatus;
+import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 
 import java.time.LocalDateTime;
 

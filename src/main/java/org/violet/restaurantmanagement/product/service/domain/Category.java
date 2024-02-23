@@ -1,10 +1,10 @@
-package org.violet.restaurantmanagement.product.category.service.domain;
+package org.violet.restaurantmanagement.product.service.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.violet.restaurantmanagement.product.category.model.enums.CategoryStatus;
+import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 
 import java.time.LocalDateTime;
 

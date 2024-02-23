@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.category.controller.response;
+package org.violet.restaurantmanagement.product.controller.response;
 
 import java.time.LocalDateTime;
 

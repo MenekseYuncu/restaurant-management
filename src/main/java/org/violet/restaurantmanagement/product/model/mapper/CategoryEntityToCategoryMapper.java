@@ -1,9 +1,9 @@
-package org.violet.restaurantmanagement.product.category.model.mapper;
+package org.violet.restaurantmanagement.product.model.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.violet.restaurantmanagement.product.category.model.entity.CategoryEntity;
-import org.violet.restaurantmanagement.product.category.service.domain.Category;
+import org.violet.restaurantmanagement.product.model.entity.CategoryEntity;
+import org.violet.restaurantmanagement.product.service.domain.Category;
 
 @Mapper(componentModel = "spring")
 public interface CategoryEntityToCategoryMapper {

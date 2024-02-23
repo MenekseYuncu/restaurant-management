@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.category.controller;
+package org.violet.restaurantmanagement.product.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.violet.restaurantmanagement.common.Responses;
-import org.violet.restaurantmanagement.product.category.controller.request.CategoryCreateRequest;
-import org.violet.restaurantmanagement.product.category.controller.response.CategoryResponse;
-import org.violet.restaurantmanagement.product.category.model.mapper.CategoryToCategoryResponseMapper;
-import org.violet.restaurantmanagement.product.category.service.CategoryService;
-import org.violet.restaurantmanagement.product.category.service.domain.Category;
+import org.violet.restaurantmanagement.product.controller.request.CategoryCreateRequest;
+import org.violet.restaurantmanagement.product.controller.response.CategoryResponse;
+import org.violet.restaurantmanagement.product.model.mapper.CategoryToCategoryResponseMapper;
+import org.violet.restaurantmanagement.product.service.CategoryService;
+import org.violet.restaurantmanagement.product.service.domain.Category;
 
 @RestController
 @RequestMapping("/api/v1/category")
