@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import org.violet.restaurantmanagement.product.category.model.enums.CategoryStatus;
 
 public record CategoryCreateRequest(
+
         @NotBlank
         @Size(min = 2, max = 300)
         String name,
@@ -17,6 +18,5 @@ public record CategoryCreateRequest(
         )
         CategoryStatus status
 ) {
-
 
 }

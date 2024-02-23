@@ -5,6 +5,8 @@ import org.violet.restaurantmanagement.product.category.controller.request.Categ
 import org.violet.restaurantmanagement.product.category.controller.response.GeneralResponse;
 import org.violet.restaurantmanagement.product.category.service.CategoryService;
 import org.violet.restaurantmanagement.product.category.service.command.CategoryCommand;
+import org.violet.restaurantmanagement.product.category.service.domain.Category;
+
 
 @Service
 class CategoryServiceImpl implements CategoryService {
@@ -13,6 +15,11 @@ class CategoryServiceImpl implements CategoryService {
 
     CategoryServiceImpl(CategoryCommand command) {
         this.command = command;
+    }
+
+    @Override
+    public Category getCategoryById(Long id) {
+        return command.getCategoryById(id);
     }
 
     @Override

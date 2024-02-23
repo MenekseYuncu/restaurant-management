@@ -7,9 +7,9 @@ import org.violet.restaurantmanagement.product.category.model.entity.CategoryEnt
 import org.violet.restaurantmanagement.product.category.service.domain.Category;
 
 @Mapper(componentModel = "spring")
-public interface CategoryMapper {
+public interface CategoryEntityToCategoryMapper {
 
-    CategoryMapper INSTANCE = Mappers.getMapper(CategoryMapper.class);
+    CategoryEntityToCategoryMapper INSTANCE = Mappers.getMapper(CategoryEntityToCategoryMapper.class);
 
     @Mapping(target = "updatedAt", ignore = true)
     Category mapToDto(CategoryEntity categoryEntity);
