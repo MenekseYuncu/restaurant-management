@@ -3,8 +3,7 @@ create table if not exists rm_category
     id         bigserial
         constraint pk__rm_category__id primary key,
     name       varchar(300) not null,
-    status     varchar(20)  not null
-        constraint c__rm_category__status check (status in ('ACTIVE', 'INACTIVE')),
+    category_status pg_enum not null,
     created_at timestamp(0)    not null,
     updated_at timestamp(0)
 );
@@ -18,11 +17,9 @@ create table if not exists rm_product
     name        varchar(300)   not null,
     ingredient  varchar(2048)  not null,
     price       numeric(50, 8) not null,
-    status      varchar(20)    not null
-        constraint c__rm_product__status check (status in ('ACTIVE', 'INACTIVE')),
+    product_status pg_enum not null,
     extent      integer        not null,
-    extent_type varchar(5)     not null
-        constraint c__rm_product__extent_type check (extent_type IN ('ML', 'GR')),
+    extent_type    pg_enum not null,
     created_at  timestamp(0)      not null,
     updated_at  timestamp(0)
 );
@@ -74,16 +71,19 @@ create table if not exists rm_parameter
     updated_at timestamp(0)
 );
 
+create type category_status as enum ('ACTIVE', 'INACTIVE', 'DELETED');
+create type product_status as enum ('ACTIVE', 'INACTIVE', 'DELETED');
+create type extent_type as enum ('ML', 'GR');
 create type dining_table_status as enum ('VACANT', 'OCCUPIED', 'TAKING_ORDERS', 'RESERVED');
 create type order_status as enum ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELED');
 create type order_item_status as enum ('PREPARING', 'READY', 'DELIVERED', 'CANCELED');
 
 
-insert into rm_category(name, status, created_at)
+insert into rm_category(name, category_status, created_at)
 values ('category 1', 'ACTIVE', current_timestamp),
        ('category 2', 'ACTIVE', current_timestamp);
 
-insert into rm_product (id, category_id, name, ingredient, price, status, extent, extent_type, created_at)
+insert into rm_product (id, category_id, name, ingredient, price, product_status, extent, extent_type, created_at)
 values ('0fe5d76a-99b6-11ea-bb37-0242ac130002', 1, 'product 1', 'ingredient', 20.3, 'ACTIVE', 200, 'ML',
         current_timestamp),
        ('e94186d1-8c52-4c57-b7c4-a5d5cfe2977c', 2, 'product 2', 'ingredient', 20.3, 'ACTIVE', 200, 'GR',
