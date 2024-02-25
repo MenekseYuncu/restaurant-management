@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.common;
+package org.violet.restaurantmanagement.common.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-public class Responses<T> {
+public class BaseResponse<T> {
 
     @Builder.Default
     private LocalDateTime time = LocalDateTime.now();
@@ -20,13 +20,13 @@ public class Responses<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T response;
 
-    public static final Responses<Void> SUCCESS = Responses.<Void>builder()
+    public static final BaseResponse<Void> SUCCESS = BaseResponse.<Void>builder()
             .httpStatus(HttpStatus.OK)
             .isSuccess(true).build();
 
 
-    public static <T> Responses<T> successOf(final T response) {
-        return Responses.<T>builder()
+    public static <T> BaseResponse<T> successOf(final T response) {
+        return BaseResponse.<T>builder()
                 .httpStatus(HttpStatus.OK)
                 .isSuccess(true)
                 .response(response).build();
