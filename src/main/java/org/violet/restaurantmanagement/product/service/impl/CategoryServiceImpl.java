@@ -10,6 +10,8 @@ import org.violet.restaurantmanagement.product.service.CategoryService;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
+import java.time.LocalDateTime;
+
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ class CategoryServiceImpl implements CategoryService {
     @Override
     public void createCategory(CategoryCreateCommand createCommand) {
         CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
+        categoryEntity.setCreatedAt(LocalDateTime.now());
         categoryRepository.save(categoryEntity);
     }
 }
