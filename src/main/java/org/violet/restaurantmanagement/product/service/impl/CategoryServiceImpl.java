@@ -2,15 +2,13 @@ package org.violet.restaurantmanagement.product.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.violet.restaurantmanagement.product.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryCreateCommandToEntityMapper;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.CategoryRepository;
+import org.violet.restaurantmanagement.product.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.product.service.CategoryService;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
-
-import java.time.LocalDateTime;
 
 
 @Service
@@ -33,7 +31,6 @@ class CategoryServiceImpl implements CategoryService {
     @Override
     public void createCategory(CategoryCreateCommand createCommand) {
         CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
-        categoryEntity.setCreatedAt(LocalDateTime.now());
         categoryRepository.save(categoryEntity);
     }
 }
