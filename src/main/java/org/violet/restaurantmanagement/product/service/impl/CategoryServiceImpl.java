@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.product.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryCreateCommandToEntityMapper;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.CategoryRepository;
@@ -13,7 +14,7 @@ import org.violet.restaurantmanagement.product.service.domain.Category;
 
 @Service
 @RequiredArgsConstructor
-class CategoryServiceImpl implements CategoryService {
+public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
@@ -24,7 +25,7 @@ class CategoryServiceImpl implements CategoryService {
     public Category getCategoryById(Long id) {
         CategoryEntity entity = categoryRepository
                 .findById(id)
-                .orElseThrow(() -> new RuntimeException("Category does not exists"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category does not exists"));
         return categoryEntityToDomainMapper.map(entity);
     }
 
