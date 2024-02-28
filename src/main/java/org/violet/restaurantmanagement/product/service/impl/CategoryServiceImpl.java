@@ -23,6 +23,7 @@ public class CategoryServiceImpl implements CategoryService {
     private static final CategoryCreateCommandToEntityMapper categoryCreateCommandToEntityMapper = CategoryCreateCommandToEntityMapper.INSTANCE;
     private static final CategoryUpdateCommandToEntityMapper categoryUpdateCommandToEntityMapper = CategoryUpdateCommandToEntityMapper.INSTANCE;
 
+
     @Override
     public Category getCategoryById(Long id) {
         CategoryEntity entity = categoryRepository
@@ -40,9 +41,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void updateCategory(Long id, CategoryUpdateCommand updateCommand) {
         CategoryEntity entity = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category does not exists"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category does not exist"));
 
-        categoryUpdateCommandToEntityMapper.map(updateCommand);
+        CategoryEntity updatedEntity = categoryUpdateCommandToEntityMapper.map(updateCommand);
+
+        entity.setName(updatedEntity.getName());
+        entity.setStatus(updatedEntity.getStatus());
+
         categoryRepository.save(entity);
     }
 }
