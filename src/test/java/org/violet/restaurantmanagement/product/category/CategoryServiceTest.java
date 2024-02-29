@@ -5,9 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.violet.restaurantmanagement.exception.CustomSaveException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryCreateCommandToEntityMapper;
+import org.violet.restaurantmanagement.product.model.mapper.CategoryUpdateCommandToEntityMapper;
 import org.violet.restaurantmanagement.product.repository.CategoryRepository;
 import org.violet.restaurantmanagement.product.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
@@ -35,19 +37,22 @@ class CategoryServiceTest {
 
     private static final CategoryCreateCommandToEntityMapper categoryCreateCommandToEntityMapper = CategoryCreateCommandToEntityMapper.INSTANCE;
 
+    private static final CategoryUpdateCommandToEntityMapper categoryUpdateCommandToEntityMapper = CategoryUpdateCommandToEntityMapper.INSTANCE;
+
+
     @Test
     void testGetCategoryById_WhenCategoryExists_ShouldReturnCategory() {
-
+        //Given
         Long categoryId = 1L;
         CategoryEntity categoryEntity = new CategoryEntity();
         categoryEntity.setId(categoryId);
         categoryEntity.setName("TestCategory");
         categoryEntity.setStatus(CategoryStatus.ACTIVE);
-
+        //When
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(categoryEntity));
 
         Category resultCategory = categoryService.getCategoryById(categoryId);
-
+        //Then
         assertNotNull(resultCategory);
         assertEquals(categoryId, resultCategory.getId());
         assertEquals("TestCategory", resultCategory.getName());
@@ -63,6 +68,25 @@ class CategoryServiceTest {
 
         assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.getCategoryById(categoryId));
+    }
+
+    @Test
+    void testCreateCategory_whenSaveFails_shouldThrowCustomSaveException() {
+        // Given
+        CategoryCreateCommand createCommand = new CategoryCreateCommand(
+                null,
+                CategoryStatus.ACTIVE
+        );
+
+        when(categoryRepository.save(any(CategoryEntity.class)))
+                .thenThrow(CustomSaveException.class);
+
+        // When, Then
+        assertThrows(CustomSaveException.class, () -> {
+            categoryService.createCategory(createCommand);
+        });
+
+        verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
     }
 
     @Test
