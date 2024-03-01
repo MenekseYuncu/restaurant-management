@@ -133,4 +133,28 @@ class CategoryServiceTest {
         assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.updateCategory(categoryId, updateCommand));
     }
+
+    @Test
+    void testSoftDeleteCategory_WhenCategoryExists_ShouldUpdatedCategoryEntity(){
+
+        Long categoryId = 1L;
+        CategoryEntity categoryEntity = new CategoryEntity();
+
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(categoryEntity));
+
+        categoryService.deleteCategory(categoryId);
+
+        verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
+    }
+
+    @Test
+    void testSoftDeleteCategory_WhenCategoryIdDoesNotExists_ShouldThrowCategoryNotFoundException(){
+
+        Long categoryId = 1L;
+
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+
+        assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.deleteCategory(categoryId));
+    }
 }
