@@ -1,12 +1,12 @@
-
 create table if not exists rm_category
 (
     id         bigserial
         constraint pk__rm_category__id primary key,
     name       varchar(300) not null,
-    status varchar(20) not null
+    status     varchar(20)  not null
         constraint c__rm_category__status check (status in ('ACTIVE', 'INACTIVE', 'DELETED')),
-    created_at timestamp(0)    not null,
+    deleted_at timestamp(0),
+    created_at timestamp(0) not null,
     updated_at timestamp(0)
 );
 
@@ -19,12 +19,13 @@ create table if not exists rm_product
     name        varchar(300)   not null,
     ingredient  varchar(2048)  not null,
     price       numeric(50, 8) not null,
-    status      varchar(20) not null
+    status      varchar(20)    not null
         constraint c__rm_product__status check (status in ('ACTIVE', 'INACTIVE', 'DELETED')),
     extent      integer        not null,
-    extent_type varchar(5)  not null
+    extent_type varchar(5)     not null
         constraint c__rm_product__extent_type check (extent_type IN ('ML', 'GR')),
-    created_at  timestamp(0)      not null,
+    deleted_at timestamp(0),
+    created_at  timestamp(0)   not null,
     updated_at  timestamp(0)
 );
 
@@ -32,12 +33,13 @@ create table if not exists rm_dining_table
 (
     id                  bigserial
         constraint pk__rm_dining_table__id primary key,
-    merge_id            varchar(36) not null,
-    dining_table_status varchar(20) not null
+    merge_id            varchar(36)  not null,
+    dining_table_status varchar(20)  not null
         constraint c__rm_dining_table_status check (dining_table_status in
                                                     ('VACANT', 'OCCUPIED', 'TAKING_ORDERS', 'RESERVED')),
-    size                int         not null,
-    created_at          timestamp(0)   not null,
+    size                int          not null,
+    deleted_at timestamp(0),
+    created_at          timestamp(0) not null,
     updated_at          timestamp(0)
 );
 
@@ -46,7 +48,7 @@ create table if not exists rm_order
     id                    varchar(36)
         constraint pk__rm_order__id primary key,
     dining_table_merge_id varchar(36)    not null,
-    order_status varchar(5) not null
+    order_status          varchar(5)     not null
         constraint c__rm_order__order_status check (order_status in ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELED')),
     price                 numeric(50, 8) not null,
     created_at            timestamp(3)   not null,
@@ -62,7 +64,7 @@ create table if not exists rm_order_item
     product_id        varchar(36)
         constraint fk__rm_order_item__product_id references rm_product (id),
     price             numeric(50, 8) not null,
-    order_item_status varchar(5) not null
+    order_item_status varchar(5)     not null
         constraint c__rm_order_item__order_item_status check (order_item_status in ('PREPARING', 'READY', 'DELIVERED', 'CANCELED')),
     created_at        timestamp(3)   not null,
     updated_at        timestamp(3)
@@ -73,9 +75,9 @@ create table if not exists rm_parameter
     id         bigserial
         constraint pk__rm_parameter__id primary key,
     name       varchar(200) not null
- constraint u__rm_parameter_name unique,
-    definition   char(3),
-    created_at timestamp(0)   not null,
+        constraint u__rm_parameter_name unique,
+    definition char(3),
+    created_at timestamp(0) not null,
     updated_at timestamp(0)
 );
 
