@@ -29,8 +29,7 @@ public record CategoryCreateRequest(
 
                 EnumSet<CategoryStatus> acceptableStatus = EnumSet.of(
                         CategoryStatus.ACTIVE,
-                        CategoryStatus.INACTIVE,
-                        CategoryStatus.DELETED
+                        CategoryStatus.INACTIVE
                 );
                 return acceptableStatus.contains(this.status);
         }
