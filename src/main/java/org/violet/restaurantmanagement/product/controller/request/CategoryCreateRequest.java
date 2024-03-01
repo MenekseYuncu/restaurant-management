@@ -31,7 +31,6 @@ public record CategoryCreateRequest(
                         CategoryStatus.ACTIVE,
                         CategoryStatus.INACTIVE,
                         CategoryStatus.DELETED
-
                 );
                 return acceptableStatus.contains(this.status);
         }

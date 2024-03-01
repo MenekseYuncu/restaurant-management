@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.violet.restaurantmanagement.exception.CustomSaveException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryCreateCommandToEntityMapper;
@@ -13,6 +12,7 @@ import org.violet.restaurantmanagement.product.model.mapper.CategoryUpdateComman
 import org.violet.restaurantmanagement.product.repository.CategoryRepository;
 import org.violet.restaurantmanagement.product.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
+import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 import org.violet.restaurantmanagement.product.service.impl.CategoryServiceImpl;
 
@@ -42,17 +42,17 @@ class CategoryServiceTest {
 
     @Test
     void testGetCategoryById_WhenCategoryExists_ShouldReturnCategory() {
-        //Given
+
         Long categoryId = 1L;
         CategoryEntity categoryEntity = new CategoryEntity();
         categoryEntity.setId(categoryId);
         categoryEntity.setName("TestCategory");
         categoryEntity.setStatus(CategoryStatus.ACTIVE);
-        //When
+
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(categoryEntity));
 
         Category resultCategory = categoryService.getCategoryById(categoryId);
-        //Then
+
         assertNotNull(resultCategory);
         assertEquals(categoryId, resultCategory.getId());
         assertEquals("TestCategory", resultCategory.getName());
@@ -71,20 +71,18 @@ class CategoryServiceTest {
     }
 
     @Test
-    void testCreateCategory_whenSaveFails_shouldThrowCustomSaveException() {
-        // Given
+    void testCreateCategory_whenSaveFails_shouldThrowException() {
+
         CategoryCreateCommand createCommand = new CategoryCreateCommand(
                 null,
                 CategoryStatus.ACTIVE
         );
 
         when(categoryRepository.save(any(CategoryEntity.class)))
-                .thenThrow(CustomSaveException.class);
+                .thenThrow(RuntimeException.class);
 
-        // When, Then
-        assertThrows(CustomSaveException.class, () -> {
-            categoryService.createCategory(createCommand);
-        });
+        assertThrows(RuntimeException.class,
+                () -> categoryService.createCategory(createCommand));
 
         verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
     }
@@ -103,5 +101,36 @@ class CategoryServiceTest {
         categoryService.createCategory(createCommand);
 
         verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
+    }
+
+    @Test
+    void testUpdateCategory_WhenCategoryExists_shouldUpdateCategoryEntity() {
+
+        Long categoryId = 1L;
+        CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
+                "UpdateTest",
+                CategoryStatus.INACTIVE
+        );
+        CategoryEntity categoryEntity = categoryUpdateCommandToEntityMapper.map(updateCommand);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(categoryEntity));
+
+        categoryService.updateCategory(categoryId, updateCommand);
+
+        verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
+    }
+
+    @Test
+    void testUpdateCategory_WhenCategoryIdDoesNotExists_ShouldThrowCategoryNotFoundException() {
+
+        Long categoryId = 1L;
+        CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
+                "UpdateTest",
+                CategoryStatus.INACTIVE
+        );
+
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+
+        assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.updateCategory(categoryId, updateCommand));
     }
 }

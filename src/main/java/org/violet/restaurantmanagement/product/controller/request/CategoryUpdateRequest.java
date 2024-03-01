@@ -30,7 +30,6 @@ public record CategoryUpdateRequest(
                 CategoryStatus.ACTIVE,
                 CategoryStatus.INACTIVE,
                 CategoryStatus.DELETED
-
         );
         return acceptableStatus.contains(this.status);
     }
