@@ -4,7 +4,7 @@ create table if not exists rm_category
         constraint pk__rm_category__id primary key,
     name       varchar(300) not null,
     status     varchar(20)  not null
-        constraint c__rm_category__status check (status in ('ACTIVE', 'INACTIVE', 'DELETED')),
+        constraint c__rm_category__status check (status in ('ACTIVE', 'INACTIVE')),
     deleted_at timestamp(0),
     created_at timestamp(0) not null,
     updated_at timestamp(0)
@@ -20,7 +20,7 @@ create table if not exists rm_product
     ingredient  varchar(2048)  not null,
     price       numeric(50, 8) not null,
     status      varchar(20)    not null
-        constraint c__rm_product__status check (status in ('ACTIVE', 'INACTIVE', 'DELETED')),
+        constraint c__rm_product__status check (status in ('ACTIVE', 'INACTIVE')),
     extent      integer        not null,
     extent_type varchar(5)     not null
         constraint c__rm_product__extent_type check (extent_type IN ('ML', 'GR')),

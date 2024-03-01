@@ -13,6 +13,8 @@ import org.violet.restaurantmanagement.product.service.command.CategoryCreateCom
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
+import java.time.LocalDateTime;
+
 
 @Service
 @RequiredArgsConstructor
@@ -49,5 +51,14 @@ public class CategoryServiceImpl implements CategoryService {
         entity.setStatus(updatedEntity.getStatus());
 
         categoryRepository.save(entity);
+    }
+
+    @Override
+    public void deleteCategory(Long id) {
+        CategoryEntity categoryEntity = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException("Category does not exist"));
+
+        categoryEntity.setDeletedAt(LocalDateTime.now());
+        categoryRepository.save(categoryEntity);
     }
 }

@@ -11,4 +11,6 @@ public interface CategoryService {
     void createCategory(CategoryCreateCommand command);
 
     void updateCategory(Long id, CategoryUpdateCommand updateCommand);
+
+    void deleteCategory(Long id);
 }

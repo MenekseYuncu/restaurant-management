@@ -38,11 +38,14 @@ public class CategoryEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CategoryStatus status;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public LocalDateTime getCreatedAt() {
         return super.createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
-        return super.createdAt;
+        return super.updatedAt;
     }
 }

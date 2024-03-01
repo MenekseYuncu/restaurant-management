@@ -50,12 +50,20 @@ class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public BaseResponse<Void>updateCategory(
+    public BaseResponse<Void> updateCategory(
             @PathVariable Long id,
             @RequestBody @Valid CategoryUpdateRequest request
     ) {
         CategoryUpdateCommand command = toUpdateCommandMapper.map(request);
         categoryService.updateCategory(id, command);
+        return BaseResponse.SUCCESS;
+    }
+
+    @PutMapping("deleted/{id}")
+    public BaseResponse<Void> deletedCategory(
+            @PathVariable Long id
+    ){
+        categoryService.deleteCategory(id);
         return BaseResponse.SUCCESS;
     }
 }
