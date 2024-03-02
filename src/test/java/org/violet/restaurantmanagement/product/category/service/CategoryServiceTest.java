@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.category;
+package org.violet.restaurantmanagement.product.category.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

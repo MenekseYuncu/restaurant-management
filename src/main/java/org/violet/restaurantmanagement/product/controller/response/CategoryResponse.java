@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 
 public record CategoryResponse(
-
         Long id,
         String name,
         CategoryStatus status,
