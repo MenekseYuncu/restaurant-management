@@ -24,7 +24,7 @@ import org.violet.restaurantmanagement.product.service.domain.Category;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/category")
-class CategoryController {
+public class CategoryController {
 
     private final CategoryService categoryService;
     private static final CategoryToCategoryResponseMapper toCategoryResponseMapper = CategoryToCategoryResponseMapper.INSTANCE;
