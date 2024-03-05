@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.product.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import org.violet.restaurantmanagement.product.service.command.CategoryCreateCom
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/category")
