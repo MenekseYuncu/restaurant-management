@@ -2,10 +2,10 @@ create table if not exists rm_category
 (
     id         bigserial
         constraint pk__rm_category__id primary key,
-    name       varchar(300) not null,
+    name       varchar(200) not null
+        constraint u__rm_category__name unique,
     status     varchar(20)  not null
-        constraint c__rm_category__status check (status in ('ACTIVE', 'INACTIVE')),
-    deleted_at timestamp(0),
+        constraint c__rm_category__status check (status in ('ACTIVE', 'INACTIVE', 'DELETED')),
     created_at timestamp(0) not null,
     updated_at timestamp(0)
 );
@@ -24,7 +24,6 @@ create table if not exists rm_product
     extent      integer        not null,
     extent_type varchar(5)     not null
         constraint c__rm_product__extent_type check (extent_type IN ('ML', 'GR')),
-    deleted_at timestamp(0),
     created_at  timestamp(0)   not null,
     updated_at  timestamp(0)
 );
@@ -38,7 +37,6 @@ create table if not exists rm_dining_table
         constraint c__rm_dining_table_status check (dining_table_status in
                                                     ('VACANT', 'OCCUPIED', 'TAKING_ORDERS', 'RESERVED')),
     size                int          not null,
-    deleted_at timestamp(0),
     created_at          timestamp(0) not null,
     updated_at          timestamp(0)
 );
@@ -75,7 +73,7 @@ create table if not exists rm_parameter
     id         bigserial
         constraint pk__rm_parameter__id primary key,
     name       varchar(200) not null
-        constraint u__rm_parameter_name unique,
+        constraint u__rm_parameter__name unique,
     definition char(3),
     created_at timestamp(0) not null,
     updated_at timestamp(0)
