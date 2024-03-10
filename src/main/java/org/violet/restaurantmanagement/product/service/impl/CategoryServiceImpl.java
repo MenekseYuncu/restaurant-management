@@ -3,6 +3,7 @@ package org.violet.restaurantmanagement.product.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
+import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryCreateCommandToEntityMapper;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryUpdateCommandToEntityMapper;
@@ -12,8 +13,6 @@ import org.violet.restaurantmanagement.product.service.CategoryService;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
-
-import java.time.LocalDateTime;
 
 
 @Service
@@ -57,8 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long id) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category does not exist"));
-
-        categoryEntity.setDeletedAt(LocalDateTime.now());
+        categoryEntity.setStatus(CategoryStatus.DELETED);
         categoryRepository.save(categoryEntity);
     }
 }
