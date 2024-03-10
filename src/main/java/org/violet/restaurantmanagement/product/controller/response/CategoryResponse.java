@@ -9,6 +9,7 @@ public record CategoryResponse(
         Long id,
         String name,
         CategoryStatus status,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }

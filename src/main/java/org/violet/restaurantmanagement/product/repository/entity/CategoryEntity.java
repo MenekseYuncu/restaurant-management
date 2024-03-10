@@ -12,10 +12,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
-
-import java.time.LocalDateTime;
 
 
 @Getter
@@ -23,6 +22,7 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @Table(name = "rm_category")
 public class CategoryEntity extends BaseEntity {
 
@@ -37,15 +37,4 @@ public class CategoryEntity extends BaseEntity {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private CategoryStatus status;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    public LocalDateTime getCreatedAt() {
-        return super.createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return super.updatedAt;
-    }
 }

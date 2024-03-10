@@ -44,7 +44,7 @@ public class CategoryController {
 
     @PostMapping
     public BaseResponse<Void> createCategory(
-            @RequestBody @Valid CategoryCreateRequest request
+            @Valid @RequestBody CategoryCreateRequest request
     ) {
         CategoryCreateCommand command = toCreateCommandMapper.map(request);
         categoryService.createCategory(command);
@@ -54,7 +54,7 @@ public class CategoryController {
     @PutMapping("/{id}")
     public BaseResponse<Void> updateCategory(
             @PathVariable Long id,
-            @RequestBody @Valid CategoryUpdateRequest request
+            @Valid @RequestBody CategoryUpdateRequest request
     ) {
         CategoryUpdateCommand command = toUpdateCommandMapper.map(request);
         categoryService.updateCategory(id, command);
