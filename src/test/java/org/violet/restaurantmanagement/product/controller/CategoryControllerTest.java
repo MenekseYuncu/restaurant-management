@@ -21,6 +21,8 @@ import org.violet.restaurantmanagement.product.service.domain.Category;
 
 import java.time.LocalDateTime;
 
+import static org.mockito.Mockito.doNothing;
+
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = CategoryController.class)
@@ -75,7 +77,6 @@ class CategoryControllerTest {
 
     @Test
     void givenUpdateCategory_whenValidInput_thenReturnSuccess() throws Exception {
-
         //Given
         Long categoryId = 1L;
         CategoryUpdateRequest request = new CategoryUpdateRequest(
@@ -96,5 +97,19 @@ class CategoryControllerTest {
                 CategoryStatus.ACTIVE
         );
         Mockito.verify(categoryService).updateCategory(categoryId, expectedCommand);
+    }
+
+    @Test
+    void givenDeleteCategory_thenReturnSuccess() throws Exception {
+        // Given
+        Long categoryId = 1L;
+
+        // When
+        doNothing().when(categoryService).deleteCategory(categoryId);
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/deleted/{id}", categoryId))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
     }
 }
