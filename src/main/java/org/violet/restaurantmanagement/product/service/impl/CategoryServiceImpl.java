@@ -29,7 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category getCategoryById(Long id) {
         CategoryEntity entity = categoryRepository
                 .findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category does not exists"));
+                .orElseThrow(CategoryNotFoundException::new);
         return categoryEntityToDomainMapper.map(entity);
     }
 
@@ -42,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void updateCategory(Long id, CategoryUpdateCommand updateCommand) {
         CategoryEntity entity = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category does not exist"));
+                .orElseThrow(CategoryNotFoundException::new);
 
         CategoryEntity updatedEntity = categoryUpdateCommandToEntityMapper.map(updateCommand);
 
@@ -55,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategory(Long id) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category does not exist"));
+                .orElseThrow(CategoryNotFoundException::new);
         categoryEntity.setStatus(CategoryStatus.DELETED);
         categoryRepository.save(categoryEntity);
     }
