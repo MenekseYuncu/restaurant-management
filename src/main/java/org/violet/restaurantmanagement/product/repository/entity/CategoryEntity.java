@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
 import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 
@@ -22,7 +21,6 @@ import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @Table(name = "rm_category")
 public class CategoryEntity extends BaseEntity {
 
