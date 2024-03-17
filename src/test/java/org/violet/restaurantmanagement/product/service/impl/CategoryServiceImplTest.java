@@ -1,7 +1,9 @@
 package org.violet.restaurantmanagement.product.service.impl;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -19,10 +21,6 @@ import org.violet.restaurantmanagement.product.service.domain.Category;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceImplTest {
@@ -58,11 +56,11 @@ class CategoryServiceImplTest {
         //Then
         Category resultCategory = categoryService.getCategoryById(categoryId);
 
-        assertNotNull(resultCategory);
-        assertEquals(mockCategory.getId(), resultCategory.getId());
-        assertEquals(mockCategory.getName(), resultCategory.getName());
-        assertEquals(mockCategory.getStatus(), resultCategory.getStatus());
-        assertEquals(mockCategory.getCreatedAt(), resultCategory.getCreatedAt());
+        Assertions.assertNotNull(resultCategory);
+        Assertions.assertEquals(mockCategory.getId(), resultCategory.getId());
+        Assertions.assertEquals(mockCategory.getName(), resultCategory.getName());
+        Assertions.assertEquals(mockCategory.getStatus(), resultCategory.getStatus());
+        Assertions.assertEquals(mockCategory.getCreatedAt(), resultCategory.getCreatedAt());
     }
 
     @Test
@@ -75,7 +73,7 @@ class CategoryServiceImplTest {
         Mockito.when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
         //Then
-        assertThrows(CategoryNotFoundException.class,
+        Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.getCategoryById(categoryId));
     }
 
@@ -89,14 +87,14 @@ class CategoryServiceImplTest {
         );
 
         // When
-        Mockito.when(categoryRepository.save(any(CategoryEntity.class)))
+        Mockito.when(categoryRepository.save(ArgumentMatchers.any(CategoryEntity.class)))
                 .thenThrow(RuntimeException.class);
 
         // Then
-        assertThrows(RuntimeException.class,
+        Assertions.assertThrows(RuntimeException.class,
                 () -> categoryService.createCategory(createCommand));
 
-        Mockito.verify(categoryRepository, Mockito.times(1)).save(any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, Mockito.times(1)).save(ArgumentMatchers.any(CategoryEntity.class));
     }
 
     @Test
@@ -110,12 +108,12 @@ class CategoryServiceImplTest {
         CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
 
         // When
-        Mockito.when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(categoryEntity);
+        Mockito.when(categoryRepository.save(ArgumentMatchers.any(CategoryEntity.class))).thenReturn(categoryEntity);
 
         categoryService.createCategory(createCommand);
 
         // Then
-        Mockito.verify(categoryRepository, Mockito.times(1)).save(any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, Mockito.times(1)).save(ArgumentMatchers.any(CategoryEntity.class));
     }
 
     @Test
@@ -134,7 +132,7 @@ class CategoryServiceImplTest {
         categoryService.updateCategory(categoryId, updateCommand);
 
         // Then
-        Mockito.verify(categoryRepository, Mockito.times(1)).save(any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, Mockito.times(1)).save(ArgumentMatchers.any(CategoryEntity.class));
     }
 
     @Test
@@ -150,7 +148,7 @@ class CategoryServiceImplTest {
         Mockito.when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
         //Then
-        assertThrows(CategoryNotFoundException.class,
+        Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.updateCategory(categoryId, updateCommand));
     }
 
@@ -167,7 +165,7 @@ class CategoryServiceImplTest {
         categoryService.deleteCategory(categoryId);
 
         // Then
-        Mockito.verify(categoryRepository, Mockito.times(1)).save(any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, Mockito.times(1)).save(ArgumentMatchers.any(CategoryEntity.class));
     }
 
     @Test
@@ -179,7 +177,7 @@ class CategoryServiceImplTest {
         Mockito.when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
         //Then
-        assertThrows(CategoryNotFoundException.class,
+        Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.deleteCategory(categoryId));
     }
 }
