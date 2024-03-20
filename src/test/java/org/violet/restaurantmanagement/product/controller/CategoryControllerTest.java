@@ -12,7 +12,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.violet.restaurantmanagement.product.controller.request.CategoryUpdateRequest;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.product.service.CategoryService;
@@ -79,13 +78,15 @@ class CategoryControllerTest {
         Mockito.verify(categoryService, Mockito.times(1)).getCategoryById(categoryId);
     }
 
-
     @Test
     void givenCreateCategory_whenValidInput_thenReturnsSuccess() throws Exception {
         // Given
         CategoryCreateCommand command = new CategoryCreateCommand("Test", CategoryStatus.ACTIVE);
 
         // When
+        Mockito.doNothing().when(categoryService).createCategory(Mockito.any(CategoryCreateCommand.class));
+
+        // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(command)))
@@ -99,6 +100,9 @@ class CategoryControllerTest {
     void givenCreateCategory_whenInvalidInput_thenReturnBadRequest() throws Exception {
         // Given
         CategoryCreateCommand command = new CategoryCreateCommand(null, null);
+
+        // When
+        Mockito.doThrow(new CategoryNotFoundException()).when(categoryService).createCategory(command);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
@@ -114,26 +118,24 @@ class CategoryControllerTest {
     void givenUpdateCategory_whenValidInput_thenReturnSuccess() throws Exception {
         //Given
         Long categoryId = 1L;
-        CategoryUpdateRequest request = new CategoryUpdateRequest(
+
+        // When
+        CategoryUpdateCommand command = new CategoryUpdateCommand(
                 "UpdateTest",
                 CategoryStatus.ACTIVE
         );
 
-        // When
+        Mockito.doNothing().when(categoryService).updateCategory(categoryId, command);
+
+        // Then
         mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(request)))
+                        .content(new ObjectMapper().writeValueAsString(command)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
 
-        // Then
-        CategoryUpdateCommand expectedCommand = new CategoryUpdateCommand(
-                "UpdateTest",
-                CategoryStatus.ACTIVE
-        );
-
         // Verify
-        Mockito.verify(categoryService).updateCategory(categoryId, expectedCommand);
+        Mockito.verify(categoryService).updateCategory(categoryId, command);
     }
 
     @Test
@@ -142,7 +144,10 @@ class CategoryControllerTest {
         Long categoryId = 1L;
         CategoryUpdateCommand command = new CategoryUpdateCommand(null, null);
 
-        // When/Then
+        //When
+        Mockito.doThrow(new NullPointerException()).when(categoryService).updateCategory(categoryId, command);
+
+        //Then
         mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(command)))
