@@ -1,6 +1,7 @@
 package org.violet.restaurantmanagement.product.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,7 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     public BaseResponse<CategoryResponse> getCategoryById(
-            @PathVariable Long id) {
+            @PathVariable @Positive Long id) {
         Category category = categoryService.getCategoryById(id);
         CategoryResponse categoryResponse = toCategoryResponseMapper.map(category);
         return BaseResponse.successOf(categoryResponse);
@@ -53,7 +54,7 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public BaseResponse<Void> updateCategory(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @Valid @RequestBody CategoryUpdateRequest request
     ) {
         CategoryUpdateCommand command = toUpdateCommandMapper.map(request);
@@ -63,7 +64,7 @@ public class CategoryController {
 
     @PutMapping("deleted/{id}")
     public BaseResponse<Void> deletedCategory(
-            @PathVariable Long id
+            @PathVariable @Positive Long id
     ){
         categoryService.deleteCategory(id);
         return BaseResponse.SUCCESS;
