@@ -7,4 +7,5 @@ import org.violet.restaurantmanagement.product.repository.entity.CategoryEntity;
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
 
+    boolean existsByName(String name);
 }
