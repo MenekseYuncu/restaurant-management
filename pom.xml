@@ -20,7 +20,6 @@
         <java.version>21</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <json-path.version>2.9.0</json-path.version>
-        <spring-boot-starter-web.version>3.2.3</spring-boot-starter-web.version>
         <lombok.version>1.18.30</lombok.version>
         <postgresql.version>42.7.2</postgresql.version>
     </properties>
@@ -47,14 +46,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -62,14 +61,15 @@
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
+
         <!--   ==================  -->
         <!---  Common dependencies -->
         <!--   ==================  -->
 
+
         <!--   ====================  -->
         <!--  database dependencies  -->
         <!--   ====================  -->
-
 
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -85,6 +85,7 @@
         <!--   ====================  -->
         <!--  database dependencies  -->
         <!--   ====================  -->
+
 
         <!--   ===================  -->
         <!--   Test dependencies    -->
