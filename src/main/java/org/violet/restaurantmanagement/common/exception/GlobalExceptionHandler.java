@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.violet.restaurantmanagement.common.controller.response.ErrorResponse;
+import org.violet.restaurantmanagement.product.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 
 import java.util.HashMap;
@@ -33,7 +35,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(CategoryNotFoundException.class)
-    public ResponseEntity<Object> categoryNotFoundExceptionHandler(CategoryNotFoundException exception){
-        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    public ErrorResponse handleCategoryNotFoundException(CategoryNotFoundException exception) {
+        return ErrorResponse.failureOf(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(CategoryAlreadyExistsException.class)
+    public ErrorResponse handleCategoryAlreadyExistsException(CategoryAlreadyExistsException exception) {
+        return ErrorResponse.failureOf(HttpStatus.CONFLICT, exception.getMessage());
     }
 }
