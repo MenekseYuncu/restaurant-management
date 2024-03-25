@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @Builder
 public class BaseResponse<T> {
 
