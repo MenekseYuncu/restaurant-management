@@ -87,10 +87,10 @@ class CategoryServiceImplTest {
 
         // When
         Mockito.when(categoryRepository.save(ArgumentMatchers.any(CategoryEntity.class)))
-                .thenThrow(RuntimeException.class);
+                .thenThrow(CategoryNotFoundException.class);
 
         // Then
-        Assertions.assertThrows(RuntimeException.class,
+        Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.createCategory(createCommand));
 
         Mockito.verify(categoryRepository, Mockito.times(1))

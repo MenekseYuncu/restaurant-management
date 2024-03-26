@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public class ErrorResponse extends BaseResponse<String> {
 
-    private ErrorResponse(HttpStatus httpStatus, String message) {
+    public ErrorResponse(HttpStatus httpStatus, String message) {
         super(LocalDateTime.now(), httpStatus, false, message);
     }
 

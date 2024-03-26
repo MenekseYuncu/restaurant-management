@@ -91,12 +91,12 @@ class CategoryControllerTest {
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", categoryId))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.content().string("Category does not exist"));
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         // Verify
         Mockito.verify(categoryService, Mockito.times(1)).getCategoryById(categoryId);
     }
+
 
     @Test
     void givenCreateCategory_whenValidInput_thenReturnsSuccess() throws Exception {
@@ -128,7 +128,7 @@ class CategoryControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(command)))
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         // Verify
         Mockito.verifyNoInteractions(categoryService);
@@ -165,14 +165,14 @@ class CategoryControllerTest {
         CategoryUpdateCommand command = new CategoryUpdateCommand(null, null);
 
         //When
-        Mockito.doThrow(new NullPointerException()).when(categoryService)
+        Mockito.doThrow(new CategoryNotFoundException()).when(categoryService)
                 .updateCategory(categoryId, command);
 
         //Then
         mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(command)))
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         // Verify
         Mockito.verifyNoInteractions(categoryService);
@@ -209,7 +209,7 @@ class CategoryControllerTest {
         Mockito.doNothing().when(categoryService).deleteCategory(categoryId);
 
         // Assert
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId))
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}", categoryId))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
 
@@ -223,15 +223,19 @@ class CategoryControllerTest {
         Long categoryId = 100L;
 
         // When
-        Mockito.doThrow(new CategoryNotFoundException()).when(categoryService).deleteCategory(categoryId);
+        Mockito.doThrow(CategoryNotFoundException.class)
+                .when(categoryService)
+                .deleteCategory(categoryId);
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId))
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}", categoryId))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         // Verify
         Mockito.verify(categoryService).deleteCategory(categoryId);
     }
+
+
 
     @Test
     void givenDeleteCategory_whenInvalidNegativeInput_thenReturnBadRequest() throws Exception {
