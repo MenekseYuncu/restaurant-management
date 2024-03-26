@@ -1,9 +1,11 @@
 package org.violet.restaurantmanagement.product.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,9 +64,9 @@ public class CategoryController {
         return BaseResponse.SUCCESS;
     }
 
-    @PutMapping("deleted/{id}")
+    @DeleteMapping("/{id}")
     public BaseResponse<Void> deletedCategory(
-            @PathVariable @Positive Long id
+            @PathVariable @Positive @Min(0) Long id
     ){
         categoryService.deleteCategory(id);
         return BaseResponse.SUCCESS;

@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.product.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.violet.restaurantmanagement.product.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryCreateCommandToEntityMapper;
@@ -36,6 +37,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void createCategory(CategoryCreateCommand createCommand) {
         CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
+
+        if (categoryRepository.existsByName(categoryEntity.getName())) {
+            throw new CategoryAlreadyExistsException();
+        }
+
         categoryRepository.save(categoryEntity);
     }
 
