@@ -1,6 +1,7 @@
 package org.violet.restaurantmanagement.product.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -20,7 +21,6 @@ import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCom
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
 import java.time.LocalDateTime;
-
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = CategoryController.class)
@@ -54,11 +54,30 @@ class CategoryControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.response.name").value(category.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.name")
+                        .value(category.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
 
         // Verify
         Mockito.verify(categoryService, Mockito.times(1)).getCategoryById(categoryId);
+    }
+
+    @Test
+    void givenGetCategoryById_whenInvalidNegativeInput_thenReturnBadRequest() throws Exception {
+        //Given
+        Long categoryId = -1L;
+
+        // When
+        Mockito.doThrow(ConstraintViolationException.class)
+                .when(categoryService)
+                .getCategoryById(categoryId);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", categoryId))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(categoryService);
     }
 
     @Test
@@ -67,7 +86,8 @@ class CategoryControllerTest {
         Long categoryId = 999L;
 
         // When
-        Mockito.when(categoryService.getCategoryById(categoryId)).thenThrow(new CategoryNotFoundException());
+        Mockito.when(categoryService.getCategoryById(categoryId))
+                .thenThrow(new CategoryNotFoundException());
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", categoryId))
@@ -145,13 +165,36 @@ class CategoryControllerTest {
         CategoryUpdateCommand command = new CategoryUpdateCommand(null, null);
 
         //When
-        Mockito.doThrow(new NullPointerException()).when(categoryService).updateCategory(categoryId, command);
+        Mockito.doThrow(new NullPointerException()).when(categoryService)
+                .updateCategory(categoryId, command);
 
         //Then
         mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(command)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verifyNoInteractions(categoryService);
+    }
+
+    @Test
+    void givenUpdateCategory_whenInvalidNegativeInput_thenReturnBadRequest() throws Exception {
+        //Given
+        Long categoryId = -1L;
+
+        // When
+        CategoryUpdateCommand command = new CategoryUpdateCommand(
+                "UpdateTest",
+                CategoryStatus.ACTIVE
+        );
+        Mockito.doThrow(ConstraintViolationException.class)
+                .when(categoryService)
+                .updateCategory(categoryId, command);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", categoryId))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         // Verify
         Mockito.verifyNoInteractions(categoryService);
@@ -166,7 +209,7 @@ class CategoryControllerTest {
         Mockito.doNothing().when(categoryService).deleteCategory(categoryId);
 
         // Assert
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/deleted/{id}", categoryId))
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
 
@@ -183,10 +226,28 @@ class CategoryControllerTest {
         Mockito.doThrow(new CategoryNotFoundException()).when(categoryService).deleteCategory(categoryId);
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/deleted/{id}", categoryId))
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
         // Verify
         Mockito.verify(categoryService).deleteCategory(categoryId);
+    }
+
+    @Test
+    void givenDeleteCategory_whenInvalidNegativeInput_thenReturnBadRequest() throws Exception {
+        // Given
+        Long categoryId = -1L;
+
+        // When
+        Mockito.doThrow(ConstraintViolationException.class)
+                .when(categoryService)
+                .deleteCategory(categoryId);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}", categoryId))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(categoryService);
     }
 }
