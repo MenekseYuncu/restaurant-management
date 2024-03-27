@@ -1,7 +1,6 @@
 package org.violet.restaurantmanagement.product.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -66,7 +65,7 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     public BaseResponse<Void> deletedCategory(
-            @PathVariable @Positive @Min(0) Long id
+            @PathVariable @Positive Long id
     ){
         categoryService.deleteCategory(id);
         return BaseResponse.SUCCESS;
