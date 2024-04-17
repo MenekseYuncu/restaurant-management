@@ -3,6 +3,7 @@ package org.violet.restaurantmanagement.product.service.domain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class Category {
 
     private Long id;
@@ -18,4 +20,6 @@ public class Category {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public Category(long l, String drinks, CategoryStatus categoryStatus) {
+    }
 }
