@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
+import org.violet.restaurantmanagement.common.pegable.PageContent;
 import org.violet.restaurantmanagement.product.controller.request.CategoryCreateRequest;
 import org.violet.restaurantmanagement.product.controller.request.CategoryUpdateRequest;
 import org.violet.restaurantmanagement.product.controller.response.CategoryResponse;
@@ -21,6 +22,7 @@ import org.violet.restaurantmanagement.product.model.mapper.CategoryToCategoryRe
 import org.violet.restaurantmanagement.product.model.mapper.CategoryUpdateRequestToUpdateCommandMapper;
 import org.violet.restaurantmanagement.product.service.CategoryService;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
+import org.violet.restaurantmanagement.product.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
@@ -35,6 +37,12 @@ public class CategoryController {
     private static final CategoryCreateRequestToCreateCommandMapper toCreateCommandMapper = CategoryCreateRequestToCreateCommandMapper.INSTANCE;
     private static final CategoryUpdateRequestToUpdateCommandMapper toUpdateCommandMapper = CategoryUpdateRequestToUpdateCommandMapper.INSTANCE;
 
+    @PostMapping("/categories")
+    public BaseResponse<PageContent<Category>> getAllCategories(
+            @Valid @RequestBody CategoryListCommand categoryListCommand) {
+        PageContent<Category> pageContent = categoryService.getAllCategories(categoryListCommand);
+        return BaseResponse.successOf(pageContent);
+    }
 
     @GetMapping("/{id}")
     public BaseResponse<CategoryResponse> getCategoryById(
