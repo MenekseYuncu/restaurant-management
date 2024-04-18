@@ -16,4 +16,12 @@ public class Sorting {
 
     @NotNull
     public Sort.Direction order;
+
+    public Sort toSort() {
+        if (orderBy != null && order != null) {
+            return Sort.by(order, orderBy);
+        } else {
+            return Sort.unsorted();
+        }
+    }
 }

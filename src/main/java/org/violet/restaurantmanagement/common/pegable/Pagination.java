@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.data.domain.PageRequest;
 
 @Getter
 @Setter
@@ -24,5 +25,13 @@ public class Pagination {
 
     public int getPageNumber(){
         return pageNumber -1;
+    }
+
+    public PageRequest toPageRequest(Sorting sorting) {
+        if (sorting != null) {
+            return PageRequest.of(getPageNumber(), pageSize, sorting.toSort());
+        } else {
+            return PageRequest.of(getPageNumber(), pageSize);
+        }
     }
 }
