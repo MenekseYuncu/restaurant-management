@@ -15,10 +15,14 @@ public class Pagination {
     @Positive
     @NotNull
     @Range(min = 1, max = Integer.MAX_VALUE)
-    public int pageNumber;
+    private int pageNumber;
 
     @Positive
     @NotNull
     @Range(min = 1, max = Integer.MAX_VALUE)
-    public int pageSize;
+    private int pageSize;
+
+    public int getPageNumber(){
+        return pageNumber -1;
+    }
 }
