@@ -17,13 +17,13 @@ public class PageContent<T> {
 
     private List<T> content;
 
-    private Integer pageNumber;
+    private int pageNumber;
 
-    private Integer pageSize;
+    private int pageSize;
 
-    private Integer totalPageCount;
+    private int totalPageCount;
 
-    private Long totalElementCount;
+    private long totalElementCount;
 
     private List<Sorting> sortedBy;
 
