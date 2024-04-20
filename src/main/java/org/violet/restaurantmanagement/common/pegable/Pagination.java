@@ -3,6 +3,7 @@ package org.violet.restaurantmanagement.common.pegable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 @Getter
 @Setter
 @AllArgsConstructor
+@Builder
 public class Pagination {
 
     @Positive

@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.product.controller.util;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CategoryFilter implements Filtering {
 
     private String name;
