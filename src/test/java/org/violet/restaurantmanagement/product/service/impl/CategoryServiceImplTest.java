@@ -273,27 +273,26 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void givenUpdateCategory_whenCategoryAlreadyExists_thenThrowException() {
+    void givenUpdateCategory_whenWithExistingName_thenThrowCategoryAlreadyExistsException() {
         // Given
         Long categoryId = 1L;
-        CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
-                "Category",
-                CategoryStatus.ACTIVE
-        );
+        String existingName = "Category";
+        CategoryUpdateCommand command = new CategoryUpdateCommand(existingName, CategoryStatus.ACTIVE);
 
         // When
-        Mockito.when(categoryRepository.findByName(updateCommand.name())).thenReturn(true);
+        Mockito.when(categoryRepository.findByName(existingName)).thenReturn(true);
+
+        CategoryEntity categoryEntity = new CategoryEntity();
+        Mockito.when(categoryRepository.findById(categoryId))
+                .thenReturn(Optional.of(categoryEntity));
 
         // Then
         Assertions.assertThrows(CategoryAlreadyExistsException.class,
-                () -> categoryService.updateCategory(categoryId, updateCommand));
+                () -> categoryService.updateCategory(categoryId, command));
 
         // Verify
-        Mockito.verify(categoryRepository, Mockito.times(1))
-                .findByName(updateCommand.name());
-
-        Mockito.verify(categoryRepository, Mockito.never())
-                .save(ArgumentMatchers.any(CategoryEntity.class));
+        Mockito.verify(categoryRepository).findByName(existingName);
+        Mockito.verify(categoryRepository, Mockito.never()).save(Mockito.any());
     }
 
     @Test
