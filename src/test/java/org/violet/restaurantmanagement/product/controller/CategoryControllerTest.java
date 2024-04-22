@@ -4,23 +4,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.violet.restaurantmanagement.common.pegable.PageContent;
+import org.violet.restaurantmanagement.common.pegable.Pagination;
+import org.violet.restaurantmanagement.common.pegable.Sorting;
+import org.violet.restaurantmanagement.product.controller.util.CategoryFilter;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.product.service.CategoryService;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
+import org.violet.restaurantmanagement.product.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = CategoryController.class)
@@ -34,6 +42,72 @@ class CategoryControllerTest {
 
     private final static String BASE_URL = "/api/v1/category";
 
+    @Test
+    void givenGetAllCategories_whenValidInput_thenReturnSuccess() throws Exception {
+        // Given
+        Pagination pagination = Pagination.builder()
+                .pageNumber(1).pageSize(5).build();
+
+        CategoryFilter filter = CategoryFilter.builder()
+                .name("Test").statuses(Collections.singleton(CategoryStatus.ACTIVE)).build();
+
+        Sorting sorting = Sorting.builder()
+                .orderBy("name").order(Sort.Direction.DESC).build();
+
+        CategoryListCommand command = CategoryListCommand.builder()
+                .pagination(pagination).filter(filter).sorting(sorting).build();
+
+        PageContent<Category> pageContent = new PageContent<>();
+
+        // When
+        Mockito.when(categoryService.getAllCategories(ArgumentMatchers.any()))
+                .thenReturn(pageContent);
+
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(command)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        // Then
+        Mockito.verify(categoryService, Mockito.times(1))
+                .getAllCategories(ArgumentMatchers.any());
+    }
+
+    @Test
+    void testGetAllCategoriesWithEmptyRequest() throws Exception {
+        // Given
+        CategoryListCommand command = CategoryListCommand.builder().build();
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(command)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(categoryService);
+    }
+
+    @Test
+    void testGetAllCategoriesWithoutPaginationInfo() throws Exception {
+        // Given
+        CategoryFilter filter = CategoryFilter.builder()
+                .name("Test").statuses(Collections.singleton(CategoryStatus.ACTIVE)).build();
+
+        Sorting sorting = Sorting.builder()
+                .orderBy("name").order(Sort.Direction.ASC).build();
+
+        CategoryListCommand command = CategoryListCommand.builder().filter(filter).sorting(sorting).build();
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(command)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(categoryService);
+    }
 
     @Test
     void givenGetCategoryById_whenValidInput_thenReturnSuccess() throws Exception {
