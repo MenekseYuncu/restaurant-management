@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.model.mapper;
+package org.violet.restaurantmanagement.product.controller.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
