@@ -2,12 +2,8 @@ package org.violet.restaurantmanagement.product.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.violet.restaurantmanagement.common.pegable.Filtering;
-import org.violet.restaurantmanagement.common.pegable.PageContent;
-import org.violet.restaurantmanagement.common.pegable.Sorting;
+import org.violet.restaurantmanagement.common.pegable.RmaPage;
 import org.violet.restaurantmanagement.product.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
@@ -22,8 +18,6 @@ import org.violet.restaurantmanagement.product.service.command.CategoryListComma
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
@@ -35,36 +29,21 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
-    public PageContent<Category> getAllCategories(CategoryListCommand categoryListCommand) {
+    public RmaPage<Category> getAllCategories(CategoryListCommand categoryListCommand) {
 
-        PageRequest pageable = categoryListCommand.getPagination()
-                .toPageRequest(categoryListCommand.getSorting());
+        Page<CategoryEntity> categoryEntityPage = categoryRepository.findAll(
+                categoryListCommand.toSpecification(CategoryEntity.class),
+                categoryListCommand.toPageable()
+        );
 
-        Specification<CategoryEntity> specification = categoryListCommand.getFilter().toSpecification();
-
-        Page<CategoryEntity> categoryPage = categoryRepository.findAll(specification, pageable);
-
-        List<Category> content = categoryPage.getContent().stream()
-                .map(categoryEntityToDomainMapper::map)
-                .toList();
-
-        return buildPageContent(categoryPage, content, categoryListCommand.getFilter(), categoryListCommand.getSorting());
-    }
-
-    private PageContent<Category> buildPageContent(Page<CategoryEntity> categoryPage,
-                                                   List<Category> content,
-                                                   Filtering filter,
-                                                   Sorting sorting) {
-        return PageContent.<Category>builder()
-                .content(content)
-                .pageNumber(categoryPage.getNumber() + 1)
-                .pageSize(categoryPage.getSize())
-                .totalPageCount(categoryPage.getTotalPages())
-                .totalElementCount(categoryPage.getTotalElements())
-                .sortedBy(sorting != null ? List.of(sorting) : null)
-                .filteredBy(filter)
+        return RmaPage.<Category>builder()
+                .content(categoryEntityToDomainMapper.map(categoryEntityPage.getContent()))
+                .page(categoryEntityPage)
+                .sortedBy(categoryListCommand.getSorting())
+                .filteredBy(categoryListCommand.getFilter())
                 .build();
     }
+
 
     @Override
     public Category getCategoryById(Long id) {
