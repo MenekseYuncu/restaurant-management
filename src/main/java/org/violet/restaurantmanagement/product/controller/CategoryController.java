@@ -13,16 +13,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
-import org.violet.restaurantmanagement.common.pegable.PageContent;
+import org.violet.restaurantmanagement.common.pegable.RmaPage;
+import org.violet.restaurantmanagement.common.pegable.RmaPageResponse;
 import org.violet.restaurantmanagement.product.controller.mapper.CategoryCreateRequestToCreateCommandMapper;
+import org.violet.restaurantmanagement.product.controller.mapper.CategoryListRequestToListCommandMapper;
 import org.violet.restaurantmanagement.product.controller.mapper.CategoryUpdateRequestToUpdateCommandMapper;
 import org.violet.restaurantmanagement.product.controller.request.CategoryCreateRequest;
+import org.violet.restaurantmanagement.product.controller.request.CategoryListRequest;
 import org.violet.restaurantmanagement.product.controller.request.CategoryUpdateRequest;
 import org.violet.restaurantmanagement.product.controller.response.CategoryResponse;
 import org.violet.restaurantmanagement.product.model.mapper.CategoryToCategoryResponseMapper;
 import org.violet.restaurantmanagement.product.service.CategoryService;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
-import org.violet.restaurantmanagement.product.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
@@ -33,15 +35,25 @@ import org.violet.restaurantmanagement.product.service.domain.Category;
 public class CategoryController {
 
     private final CategoryService categoryService;
+
+    private static final CategoryListRequestToListCommandMapper toCategoryListCommandMapper = CategoryListRequestToListCommandMapper.INSTANCE;
     private static final CategoryToCategoryResponseMapper toCategoryResponseMapper = CategoryToCategoryResponseMapper.INSTANCE;
     private static final CategoryCreateRequestToCreateCommandMapper toCreateCommandMapper = CategoryCreateRequestToCreateCommandMapper.INSTANCE;
     private static final CategoryUpdateRequestToUpdateCommandMapper toUpdateCommandMapper = CategoryUpdateRequestToUpdateCommandMapper.INSTANCE;
 
     @PostMapping("/categories")
-    public BaseResponse<PageContent<Category>> getAllCategories(
-            @Valid @RequestBody CategoryListCommand categoryListCommand) {
-        PageContent<Category> pageContent = categoryService.getAllCategories(categoryListCommand);
-        return BaseResponse.successOf(pageContent);
+    public BaseResponse<RmaPageResponse<CategoryResponse>> getAllCategories(
+            @Valid @RequestBody CategoryListRequest categoryListRequest) {
+
+        RmaPage<Category> categoryPage = categoryService.getAllCategories(
+                toCategoryListCommandMapper.map(categoryListRequest)
+        );
+
+        RmaPageResponse<CategoryResponse> categoryResponsePage = RmaPageResponse.<CategoryResponse>builder()
+                .content(toCategoryResponseMapper.map(categoryPage.getContent()))
+                .page(categoryPage)
+                .build();
+        return BaseResponse.successOf(categoryResponsePage);
     }
 
     @GetMapping("/{id}")
