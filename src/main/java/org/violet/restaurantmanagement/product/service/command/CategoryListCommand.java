@@ -2,25 +2,21 @@ package org.violet.restaurantmanagement.product.service.command;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.Specification;
 import org.violet.restaurantmanagement.common.model.mapper.RmaSpecification;
 import org.violet.restaurantmanagement.common.pegable.Filtering;
-import org.violet.restaurantmanagement.common.pegable.Pagination;
 import org.violet.restaurantmanagement.common.pegable.RmaPaginationCommand;
-import org.violet.restaurantmanagement.common.pegable.Sorting;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 
 import java.util.Set;
 
 @Getter
 @Setter
+@SuperBuilder
 public class CategoryListCommand extends RmaPaginationCommand implements RmaSpecification {
 
     private Filter filter;
-
-    public CategoryListCommand(Pagination pagination, Sorting sorting) {
-        super(pagination, sorting);
-    }
 
     @Getter
     @Setter
