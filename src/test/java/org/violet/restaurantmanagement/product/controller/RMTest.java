@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product;
+package org.violet.restaurantmanagement.product.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
-public abstract class BaseTest {
+public abstract class RMTest {
 
     @Autowired
     protected MockMvc mockMvc;
