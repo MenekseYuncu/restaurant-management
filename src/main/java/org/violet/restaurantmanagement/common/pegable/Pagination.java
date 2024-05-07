@@ -3,10 +3,12 @@ package org.violet.restaurantmanagement.common.pegable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Range;
 
 @Getter
+@Builder
 @AllArgsConstructor
 public class Pagination {
 
