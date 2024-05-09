@@ -1,5 +1,6 @@
 package org.violet.restaurantmanagement.product.service.command;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -20,6 +21,7 @@ public class CategoryListCommand extends RmaPaginationCommand implements RmaSpec
 
     @Getter
     @Setter
+    @Builder
     public static class Filter implements Filtering {
 
         private String name;
