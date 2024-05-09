@@ -44,7 +44,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .build();
     }
 
-
     @Override
     public Category getCategoryById(Long id) {
         CategoryEntity entity = categoryRepository
