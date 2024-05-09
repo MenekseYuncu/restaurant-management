@@ -3,20 +3,18 @@ package org.violet.restaurantmanagement.product.service.impl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.violet.restaurantmanagement.common.pegable.PageContent;
 import org.violet.restaurantmanagement.common.pegable.Pagination;
+import org.violet.restaurantmanagement.common.pegable.RmaPage;
 import org.violet.restaurantmanagement.common.pegable.Sorting;
-import org.violet.restaurantmanagement.product.controller.util.CategoryFilter;
 import org.violet.restaurantmanagement.product.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
@@ -30,10 +28,13 @@ import org.violet.restaurantmanagement.product.service.command.CategoryListComma
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceImplTest {
@@ -50,105 +51,81 @@ class CategoryServiceImplTest {
 
     private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
 
-
     @Test
-    void givenGetAllCategories_whenSingleCategorySuccessfully_thenReturnCategory() {
-        // Given
-        Pagination pagination = Pagination.builder()
-                .pageNumber(1).pageSize(10).build();
+    void givenGetAllCategories_whenCategoryListWithoutFilterAndSorting_thenReturnCategories() {
+        // Mock data
+        List<CategoryEntity> categoryEntities = new ArrayList<>();
+        categoryEntities.add(new CategoryEntity(1L, "Category 1", CategoryStatus.ACTIVE));
+        categoryEntities.add(new CategoryEntity(2L, "Category 2", CategoryStatus.DELETED));
 
-        CategoryFilter filter = CategoryFilter.builder()
-                .name("Test").statuses(Collections.singleton(CategoryStatus.ACTIVE)).build();
+        Page<CategoryEntity> categoryEntityPage = new PageImpl<>(categoryEntities);
 
-        Sorting sorting = Sorting.builder()
-                .orderBy("name").order(Sort.Direction.ASC).build();
+        CategoryListCommand givenCategoryListCommand = CategoryListCommand.builder()
+                .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
+                .build();
 
-        CategoryListCommand command = CategoryListCommand.builder()
-                .pagination(pagination).filter(filter).sorting(sorting).build();
+        // Mock repository method
+        Mockito.when(categoryRepository.findAll(
+                Mockito.<Specification<CategoryEntity>>any(),
+                Mockito.any(Pageable.class))
+        ).thenReturn(categoryEntityPage);
 
-        // When
-        CategoryEntity categoryEntity = CategoryEntity.builder()
-                .id(1L).name("Food").status(CategoryStatus.ACTIVE).build();
 
-        List<CategoryEntity> categoryEntities = List.of(categoryEntity);
+        // Call the service method
+        RmaPage<Category> result = categoryService.getAllCategories(givenCategoryListCommand);
 
-        Page<CategoryEntity> page = new PageImpl<>(categoryEntities,
-                PageRequest.of(0, 5), 1);
-
-        Mockito.when(categoryRepository.findAll(ArgumentMatchers.<Specification<CategoryEntity>>any(),
-                ArgumentMatchers.any(PageRequest.class))).thenReturn(page);
-
-        // Then
-        PageContent<Category> result = categoryService.getAllCategories(command);
-
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(1, result.getContent().size());
-        Assertions.assertEquals("Food", result.getContent().getFirst().getName());
-        Assertions.assertEquals(1, result.getTotalPageCount());
-
+        // Assertions
+        Assertions.assertEquals(categoryEntities.size(), result.getContent().size());
     }
 
     @Test
-    void givenGetAllCategories_whenMultipleCategoriesSuccessfully_thenReturnCategories() {
+    void givenGetAllCategories_whenCategoryListExist_thenReturnCategories() {
         // Given
-        Pagination pagination = Pagination.builder()
-                .pageNumber(1).pageSize(2).build();
+        List<CategoryEntity> categoryEntities = new ArrayList<>();
+        categoryEntities.add(new CategoryEntity(1L, "Category 1", CategoryStatus.ACTIVE));
+        categoryEntities.add(new CategoryEntity(2L, "Category 2", CategoryStatus.DELETED));
+        categoryEntities.add(new CategoryEntity(2L, "Category 3", CategoryStatus.DELETED));
 
-        CategoryFilter filter = CategoryFilter.builder()
-                .name("Food").statuses(Collections.singleton(CategoryStatus.ACTIVE)).build();
+        Page<CategoryEntity> categoryEntityPage = new PageImpl<>(categoryEntities);
 
-        Sorting sorting = Sorting.builder()
-                .orderBy("name").order(Sort.Direction.ASC).build();
+        CategoryListCommand givenCategoryListCommand = CategoryListCommand.builder()
+                .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
+                .sorting(Sorting.builder().direction(Sort.Direction.ASC).property("name").build())
+                .filter(CategoryListCommand.Filter.builder()
+                        .name("Category")
+                        .statuses(Collections.singleton(CategoryStatus.ACTIVE)).build())
+                .build();
 
-        CategoryListCommand command = CategoryListCommand.builder()
-                .pagination(pagination).filter(filter).sorting(sorting).build();
+        Mockito.when(categoryRepository.findAll(
+                Mockito.<Specification<CategoryEntity>>any(),
+                Mockito.any(Pageable.class))
+        ).thenReturn(categoryEntityPage);
 
-        // When
-        List<CategoryEntity> categoryEntities = Arrays.asList(
-                new CategoryEntity(1L, "Test Category 1", CategoryStatus.ACTIVE),
-                new CategoryEntity(2L, "Test Category 2", CategoryStatus.ACTIVE)
-        );
-        Page<CategoryEntity> page = new PageImpl<>(categoryEntities,
-                PageRequest.of(1, 5), 3);
+        RmaPage<Category> result = categoryService.getAllCategories(givenCategoryListCommand);
 
-        Mockito.when(categoryRepository.findAll(ArgumentMatchers.<Specification<CategoryEntity>>any(),
-                ArgumentMatchers.any(PageRequest.class))).thenReturn(page);
+        // Assertions
+        Mockito.verify(categoryRepository, Mockito.never()).findAll();
 
-        // Then
-        PageContent<Category> result = categoryService.getAllCategories(command);
+        Assertions.assertEquals(result.getContent().get(0).getName(), categoryEntities.get(0).getName());
+        Assertions.assertEquals(result.getContent().get(1).getName(), categoryEntities.get(1).getName());
+        Assertions.assertEquals(result.getContent().get(2).getName(), categoryEntities.get(2).getName());
 
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(2, result.getContent().size());
-        Assertions.assertEquals("Test Category 1", result.getContent().get(0).getName());
-        Assertions.assertEquals("Test Category 2", result.getContent().get(1).getName());
-        Assertions.assertEquals(2, result.getTotalPageCount());
+
+        Assertions.assertEquals(3, result.getPageSize());
+        Assertions.assertEquals(result.getTotalElementCount(), categoryEntities.size());
+        Assertions.assertEquals(categoryEntities.size(), result.getContent().size());
     }
 
     @Test
-    void givenGetAllCategories_whenPaginationInfoNotProvided_thenReturnsException() {
-        // Given
-        CategoryListCommand command = CategoryListCommand.builder().build();
+    void givenGetAllCategories_whenResultIsNull_thenThrowNullPointerException() {
+        // When
+
+        CategoryListCommand categoryListCommand = CategoryListCommand.builder().build();
 
         // Then
         Assertions.assertThrows(NullPointerException.class,
-                () -> categoryService.getAllCategories(command));
-    }
-
-    @Test
-    void givenGetAllCategories_whenSortingInfoNotProvided_thenReturnException() {
-        // Given
-        Pagination pagination = Pagination.builder()
-                .pageNumber(0).pageSize(10).build();
-
-        CategoryFilter filter = CategoryFilter.builder()
-                .name("Food").statuses(Collections.singleton(CategoryStatus.ACTIVE)).build();
-
-        CategoryListCommand command = CategoryListCommand.builder()
-                .pagination(pagination).filter(filter).build();
-
-        // Then
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> categoryService.getAllCategories(command));
+                () -> categoryService.getAllCategories(categoryListCommand)
+        );
     }
 
     @Test
@@ -198,15 +175,15 @@ class CategoryServiceImplTest {
         );
 
         // When
-        Mockito.when(categoryRepository.save(ArgumentMatchers.any(CategoryEntity.class)))
+        Mockito.when(categoryRepository.save(any(CategoryEntity.class)))
                 .thenThrow(CategoryNotFoundException.class);
 
         // Then
         Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.createCategory(createCommand));
 
-        Mockito.verify(categoryRepository, Mockito.times(1))
-                .save(ArgumentMatchers.any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, times(1))
+                .save(any(CategoryEntity.class));
     }
 
     @Test
@@ -225,11 +202,11 @@ class CategoryServiceImplTest {
                 () -> categoryService.createCategory(createCommand));
 
         // Verify
-        Mockito.verify(categoryRepository, Mockito.times(1))
+        Mockito.verify(categoryRepository, times(1))
                 .findByName(createCommand.name());
 
         Mockito.verify(categoryRepository, Mockito.never())
-                .save(ArgumentMatchers.any(CategoryEntity.class));
+                .save(any(CategoryEntity.class));
     }
 
     @Test
@@ -242,14 +219,14 @@ class CategoryServiceImplTest {
         CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
 
         // When
-        Mockito.when(categoryRepository.save(ArgumentMatchers.any(CategoryEntity.class)))
+        Mockito.when(categoryRepository.save(any(CategoryEntity.class)))
                 .thenReturn(categoryEntity);
 
         categoryService.createCategory(createCommand);
 
         // Then
-        Mockito.verify(categoryRepository, Mockito.times(1))
-                .save(ArgumentMatchers.any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, times(1))
+                .save(any(CategoryEntity.class));
     }
 
     @Test
@@ -268,8 +245,8 @@ class CategoryServiceImplTest {
         categoryService.updateCategory(categoryId, updateCommand);
 
         // Then
-        Mockito.verify(categoryRepository, Mockito.times(1))
-                .save(ArgumentMatchers.any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, times(1))
+                .save(any(CategoryEntity.class));
     }
 
     @Test
@@ -292,7 +269,7 @@ class CategoryServiceImplTest {
 
         // Verify
         Mockito.verify(categoryRepository).findByName(existingName);
-        Mockito.verify(categoryRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(categoryRepository, Mockito.never()).save(any());
     }
 
     @Test
@@ -324,8 +301,8 @@ class CategoryServiceImplTest {
         categoryService.deleteCategory(categoryId);
 
         // Then
-        Mockito.verify(categoryRepository, Mockito.times(1))
-                .save(ArgumentMatchers.any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, times(1))
+                .save(any(CategoryEntity.class));
     }
 
     @Test
