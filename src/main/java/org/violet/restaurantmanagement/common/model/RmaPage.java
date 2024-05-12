@@ -3,17 +3,13 @@ package org.violet.restaurantmanagement.common.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class RmaPage<T> {
 
     private List<T> content;
@@ -38,7 +34,7 @@ public class RmaPage<T> {
 
         public <Z> RmaPageBuilder<T> page(Page<Z> page) {
             this
-                    .pageNumber(page.getNumber())
+                    .pageNumber(page.getNumber() + 1)
                     .pageSize(page.getSize())
                     .totalPageCount(page.getTotalPages())
                     .totalElementCount(page.getTotalElements())

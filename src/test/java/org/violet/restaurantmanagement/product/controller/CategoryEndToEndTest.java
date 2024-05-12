@@ -1,14 +1,9 @@
 package org.violet.restaurantmanagement.product.controller;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
@@ -16,28 +11,17 @@ import org.violet.restaurantmanagement.product.service.CategoryService;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
+import org.violet.restaurantmanagement.product.util.RmaEndToEndTest;
+import org.violet.restaurantmanagement.product.util.RmaTestContainer;
 
 import java.time.LocalDateTime;
 
-
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class CategoryTest extends RMTest implements RestaurantManagementTestContainer {
-
-    @LocalServerPort
-    private int port;
-
-    private String BASE_URL = "http://localhost";
+class CategoryEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
 
     @MockBean
     private CategoryService categoryService;
 
-    @BeforeEach
-    public void setUp() {
-        BASE_URL = BASE_URL.concat(":").concat(port + "").concat("/api/v1/category");
-    }
-
+    private final static String BASE_URL = "/api/v1/category";
 
     @Test
     void testGetCategoryById() throws Exception {

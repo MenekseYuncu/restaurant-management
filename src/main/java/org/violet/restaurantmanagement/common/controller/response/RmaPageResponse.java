@@ -3,8 +3,6 @@ package org.violet.restaurantmanagement.common.controller.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.violet.restaurantmanagement.common.model.Filtering;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.Sorting;
@@ -12,9 +10,7 @@ import org.violet.restaurantmanagement.common.model.Sorting;
 import java.util.List;
 
 @Getter
-@Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class RmaPageResponse<T> {
 

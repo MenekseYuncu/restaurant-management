@@ -1,8 +1,6 @@
 package org.violet.restaurantmanagement.common.service.command;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +9,6 @@ import org.violet.restaurantmanagement.common.model.Pagination;
 import org.violet.restaurantmanagement.common.model.Sorting;
 
 @Getter
-@Setter
-@AllArgsConstructor
 @SuperBuilder
 public abstract class RmaPaginationCommand {
 
