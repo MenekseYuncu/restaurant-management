@@ -3,7 +3,7 @@ package org.violet.restaurantmanagement.product.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import org.violet.restaurantmanagement.common.pegable.RmaPage;
+import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;

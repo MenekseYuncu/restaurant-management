@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.common.pegable;
+package org.violet.restaurantmanagement.common.model;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;

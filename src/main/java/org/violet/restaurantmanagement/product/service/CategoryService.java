@@ -1,6 +1,6 @@
 package org.violet.restaurantmanagement.product.service;
 
-import org.violet.restaurantmanagement.common.pegable.RmaPage;
+import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.service.command.CategoryCreateCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
