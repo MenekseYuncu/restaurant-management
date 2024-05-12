@@ -18,6 +18,7 @@ import org.violet.restaurantmanagement.product.service.command.CategoryListComma
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 
+
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
@@ -26,7 +27,6 @@ public class CategoryServiceImpl implements CategoryService {
     private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
     private static final CategoryCreateCommandToEntityMapper categoryCreateCommandToEntityMapper = CategoryCreateCommandToEntityMapper.INSTANCE;
     private static final CategoryUpdateCommandToEntityMapper categoryUpdateCommandToEntityMapper = CategoryUpdateCommandToEntityMapper.INSTANCE;
-
 
     @Override
     public RmaPage<Category> getAllCategories(CategoryListCommand categoryListCommand) {
@@ -56,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void createCategory(CategoryCreateCommand createCommand) {
         CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
 
-        if (categoryRepository.findByName(categoryEntity.getName())) {
+        if (categoryRepository.existsByName(categoryEntity.getName())) {
             throw new CategoryAlreadyExistsException();
         }
 
@@ -72,7 +72,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         entity.setName(updatedEntity.getName());
 
-        if (categoryRepository.findByName(updatedEntity.getName())){
+        if (categoryRepository.existsByName(updatedEntity.getName())) {
             throw new CategoryAlreadyExistsException();
         }
 

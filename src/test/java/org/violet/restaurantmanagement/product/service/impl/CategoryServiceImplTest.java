@@ -26,6 +26,7 @@ import org.violet.restaurantmanagement.product.service.command.CategoryListComma
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
 import org.violet.restaurantmanagement.product.util.RmaServiceTest;
+import org.violet.restaurantmanagement.product.util.RmaTestContainer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +36,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
-class CategoryServiceImplTest extends RmaServiceTest {
+class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -226,7 +227,7 @@ class CategoryServiceImplTest extends RmaServiceTest {
         );
 
         // When
-        Mockito.when(categoryRepository.findByName(createCommand.name())).thenReturn(true);
+        Mockito.when(categoryRepository.existsByName(createCommand.name())).thenReturn(true);
 
         // Then
         Assertions.assertThrows(CategoryAlreadyExistsException.class,
@@ -234,7 +235,7 @@ class CategoryServiceImplTest extends RmaServiceTest {
 
         // Verify
         Mockito.verify(categoryRepository, times(1))
-                .findByName(createCommand.name());
+                .existsByName(createCommand.name());
 
         Mockito.verify(categoryRepository, Mockito.never())
                 .save(any(CategoryEntity.class));
@@ -288,7 +289,7 @@ class CategoryServiceImplTest extends RmaServiceTest {
         CategoryUpdateCommand command = new CategoryUpdateCommand(existingName, CategoryStatus.ACTIVE);
 
         // When
-        Mockito.when(categoryRepository.findByName(existingName)).thenReturn(true);
+        Mockito.when(categoryRepository.existsByName(existingName)).thenReturn(true);
 
         CategoryEntity categoryEntity = new CategoryEntity();
         Mockito.when(categoryRepository.findById(categoryId))
@@ -299,7 +300,7 @@ class CategoryServiceImplTest extends RmaServiceTest {
                 () -> categoryService.updateCategory(categoryId, command));
 
         // Verify
-        Mockito.verify(categoryRepository).findByName(existingName);
+        Mockito.verify(categoryRepository).existsByName(existingName);
         Mockito.verify(categoryRepository, Mockito.never()).save(any());
     }
 
