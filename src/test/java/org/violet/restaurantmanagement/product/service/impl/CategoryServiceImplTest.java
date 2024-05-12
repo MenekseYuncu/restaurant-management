@@ -2,19 +2,17 @@ package org.violet.restaurantmanagement.product.service.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.violet.restaurantmanagement.common.pegable.Pagination;
-import org.violet.restaurantmanagement.common.pegable.RmaPage;
-import org.violet.restaurantmanagement.common.pegable.Sorting;
+import org.violet.restaurantmanagement.common.model.Pagination;
+import org.violet.restaurantmanagement.common.model.RmaPage;
+import org.violet.restaurantmanagement.common.model.Sorting;
 import org.violet.restaurantmanagement.product.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
@@ -27,6 +25,7 @@ import org.violet.restaurantmanagement.product.service.command.CategoryCreateCom
 import org.violet.restaurantmanagement.product.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
+import org.violet.restaurantmanagement.product.util.RmaServiceTest;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,8 +35,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
-@ExtendWith(MockitoExtension.class)
-class CategoryServiceImplTest {
+class CategoryServiceImplTest extends RmaServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -53,7 +51,7 @@ class CategoryServiceImplTest {
 
     @Test
     void givenGetAllCategories_whenCategoryListWithoutFilterAndSorting_thenReturnCategories() {
-        // Mock data
+        // Given
         List<CategoryEntity> categoryEntities = new ArrayList<>();
         categoryEntities.add(new CategoryEntity(1L, "Category 1", CategoryStatus.ACTIVE));
         categoryEntities.add(new CategoryEntity(2L, "Category 2", CategoryStatus.DELETED));
@@ -64,17 +62,51 @@ class CategoryServiceImplTest {
                 .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
                 .build();
 
-        // Mock repository method
+        // When
         Mockito.when(categoryRepository.findAll(
                 Mockito.<Specification<CategoryEntity>>any(),
                 Mockito.any(Pageable.class))
         ).thenReturn(categoryEntityPage);
 
-
-        // Call the service method
         RmaPage<Category> result = categoryService.getAllCategories(givenCategoryListCommand);
 
         // Assertions
+        Assertions.assertEquals(categoryEntities.size(), result.getContent().size());
+    }
+
+    @Test
+    void givenGetAllCategories_whenCategoryListWithoutSorting_thenReturnCategories() {
+        // Given
+        List<CategoryEntity> categoryEntities = new ArrayList<>();
+        categoryEntities.add(new CategoryEntity(1L, "Category 1", CategoryStatus.ACTIVE));
+        categoryEntities.add(new CategoryEntity(2L, "Category 2", CategoryStatus.DELETED));
+
+        Page<CategoryEntity> categoryEntityPage = new PageImpl<>(categoryEntities);
+
+        CategoryListCommand givenCategoryListCommand = CategoryListCommand.builder()
+                .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
+                .filter(CategoryListCommand.CategoryFilter.builder()
+                        .name("Category")
+                        .statuses(Collections.singleton(CategoryStatus.ACTIVE)).build())
+                .build();
+
+        // When
+        Mockito.when(categoryRepository.findAll(
+                Mockito.<Specification<CategoryEntity>>any(),
+                Mockito.any(Pageable.class))
+        ).thenReturn(categoryEntityPage);
+
+        RmaPage<Category> result = categoryService.getAllCategories(givenCategoryListCommand);
+
+        // Assertions
+        Mockito.verify(categoryRepository, Mockito.never()).findAll();
+
+        Assertions.assertEquals(categoryEntities.size(), result.getContent().size());
+        Assertions.assertEquals(result.getContent().get(0).getName(), categoryEntities.get(0).getName());
+        Assertions.assertEquals(result.getContent().get(1).getName(), categoryEntities.get(1).getName());
+
+        Assertions.assertEquals(2, result.getPageSize());
+        Assertions.assertEquals(result.getTotalElementCount(), categoryEntities.size());
         Assertions.assertEquals(categoryEntities.size(), result.getContent().size());
     }
 
@@ -91,7 +123,7 @@ class CategoryServiceImplTest {
         CategoryListCommand givenCategoryListCommand = CategoryListCommand.builder()
                 .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
                 .sorting(Sorting.builder().direction(Sort.Direction.ASC).property("name").build())
-                .filter(CategoryListCommand.Filter.builder()
+                .filter(CategoryListCommand.CategoryFilter.builder()
                         .name("Category")
                         .statuses(Collections.singleton(CategoryStatus.ACTIVE)).build())
                 .build();
@@ -109,7 +141,6 @@ class CategoryServiceImplTest {
         Assertions.assertEquals(result.getContent().get(0).getName(), categoryEntities.get(0).getName());
         Assertions.assertEquals(result.getContent().get(1).getName(), categoryEntities.get(1).getName());
         Assertions.assertEquals(result.getContent().get(2).getName(), categoryEntities.get(2).getName());
-
 
         Assertions.assertEquals(3, result.getPageSize());
         Assertions.assertEquals(result.getTotalElementCount(), categoryEntities.size());

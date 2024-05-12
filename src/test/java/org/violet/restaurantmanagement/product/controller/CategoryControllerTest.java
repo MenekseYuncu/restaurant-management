@@ -3,22 +3,16 @@ package org.violet.restaurantmanagement.product.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.violet.restaurantmanagement.common.pegable.PageContent;
-import org.violet.restaurantmanagement.common.pegable.Pagination;
-import org.violet.restaurantmanagement.common.pegable.Sorting;
-import org.violet.restaurantmanagement.product.controller.util.CategoryFilter;
+import org.violet.restaurantmanagement.common.model.Pagination;
+import org.violet.restaurantmanagement.common.model.RmaPage;
+import org.violet.restaurantmanagement.common.model.Sorting;
+import org.violet.restaurantmanagement.product.controller.request.CategoryListRequest;
 import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.product.service.CategoryService;
@@ -26,87 +20,195 @@ import org.violet.restaurantmanagement.product.service.command.CategoryCreateCom
 import org.violet.restaurantmanagement.product.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.product.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Category;
+import org.violet.restaurantmanagement.product.util.RmaControllerTest;
+import org.violet.restaurantmanagement.product.util.RmaTestContainer;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = CategoryController.class)
-class CategoryControllerTest {
+
+class CategoryControllerTest extends RmaControllerTest implements RmaTestContainer {
 
     @MockBean
     private CategoryService categoryService;
-
-    @Autowired
-    private MockMvc mockMvc;
 
     private final static String BASE_URL = "/api/v1/category";
 
     @Test
     void givenGetAllCategories_whenValidInput_thenReturnSuccess() throws Exception {
         // Given
-        Pagination pagination = Pagination.builder()
-                .pageNumber(1).pageSize(5).build();
-
-        CategoryFilter filter = CategoryFilter.builder()
-                .name("Test").statuses(Collections.singleton(CategoryStatus.ACTIVE)).build();
-
-        Sorting sorting = Sorting.builder()
-                .orderBy("name").order(Sort.Direction.DESC).build();
-
-        CategoryListCommand command = CategoryListCommand.builder()
-                .pagination(pagination).filter(filter).sorting(sorting).build();
-
-        PageContent<Category> pageContent = new PageContent<>();
+        CategoryListCommand.CategoryFilter filter = CategoryListCommand.CategoryFilter.builder().name("Test").build();
+        CategoryListRequest categoryListRequest = CategoryListRequest.builder()
+                .pagination(Pagination.builder().pageNumber(2).pageSize(1).build())
+                .sorting(Sorting.builder().direction(Sort.Direction.ASC).property("name").build())
+                .filter(CategoryListRequest.CategoryFilter.builder().name("Category").build())
+                .build();
 
         // When
-        Mockito.when(categoryService.getAllCategories(ArgumentMatchers.any()))
-                .thenReturn(pageContent);
+        List<Category> categories = new ArrayList<>();
+        categories.add(Category.builder().id(1L).name("category 1").status(CategoryStatus.ACTIVE).build());
+        categories.add(Category.builder().id(2L).name("category 2").status(CategoryStatus.ACTIVE).build());
+        categories.add(Category.builder().id(3L).name("category 3").status(CategoryStatus.ACTIVE).build());
 
-        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(command)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+        RmaPage<Category> rmaPage = RmaPage.<Category>builder()
+                .content(categories)
+                .pageNumber(1)
+                .pageSize(3)
+                .totalPageCount(1)
+                .totalElementCount(3L)
+                .sortedBy(categoryListRequest.getSorting())
+                .filteredBy(filter)
+                .build();
+
+        Mockito.when(categoryService.getAllCategories(
+                Mockito.any(CategoryListCommand.class))
+        ).thenReturn(rmaPage);
 
         // Then
-        Mockito.verify(categoryService, Mockito.times(1))
-                .getAllCategories(ArgumentMatchers.any());
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(categoryListRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber")
+                        .value(rmaPage.getPageNumber()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize")
+                        .value(rmaPage.getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
+                        .value(rmaPage.getTotalPageCount()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
+                        .value(filter.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
     }
 
     @Test
-    void testGetAllCategoriesWithEmptyRequest() throws Exception {
+    void givenGetAllCategories_whenCategoryListWithoutSorting_thenReturnSuccess() throws Exception {
         // Given
-        CategoryListCommand command = CategoryListCommand.builder().build();
+        CategoryListCommand.CategoryFilter filter = CategoryListCommand.CategoryFilter.builder().name("Test").build();
+        CategoryListRequest categoryListRequest = CategoryListRequest.builder()
+                .pagination(Pagination.builder().pageNumber(2).pageSize(1).build())
+                .filter(CategoryListRequest.CategoryFilter.builder().name("Category").build())
+                .build();
+
+        // When
+        List<Category> categories = new ArrayList<>();
+        categories.add(Category.builder().id(1L).name("category 1").status(CategoryStatus.ACTIVE).build());
+        categories.add(Category.builder().id(2L).name("category 2").status(CategoryStatus.ACTIVE).build());
+        categories.add(Category.builder().id(3L).name("category 3").status(CategoryStatus.ACTIVE).build());
+
+        RmaPage<Category> rmaPage = RmaPage.<Category>builder()
+                .content(categories)
+                .pageNumber(1)
+                .pageSize(3)
+                .totalPageCount(1)
+                .totalElementCount(3L)
+                .filteredBy(filter)
+                .build();
+
+        Mockito.when(categoryService.getAllCategories(
+                Mockito.any(CategoryListCommand.class))
+        ).thenReturn(rmaPage);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(command)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
-
-        // Verify
-        Mockito.verifyNoInteractions(categoryService);
+                        .content(new ObjectMapper().writeValueAsString(categoryListRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber")
+                        .value(rmaPage.getPageNumber()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize")
+                        .value(rmaPage.getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
+                        .value(rmaPage.getTotalPageCount()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
+                        .value(filter.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
     }
 
     @Test
-    void testGetAllCategoriesWithoutPaginationInfo() throws Exception {
+    void givenGetAllCategories_whenCategoryListWithoutSortingAndFiltering_thenReturnSuccess() throws Exception {
         // Given
-        CategoryFilter filter = CategoryFilter.builder()
-                .name("Test").statuses(Collections.singleton(CategoryStatus.ACTIVE)).build();
+        CategoryListRequest categoryListRequest = CategoryListRequest.builder()
+                .pagination(Pagination.builder().pageNumber(2).pageSize(1).build())
+                .build();
 
-        Sorting sorting = Sorting.builder()
-                .orderBy("name").order(Sort.Direction.ASC).build();
+        // When
+        List<Category> categories = new ArrayList<>();
+        categories.add(Category.builder().id(1L).name("category 1").status(CategoryStatus.ACTIVE).build());
+        categories.add(Category.builder().id(2L).name("category 2").status(CategoryStatus.ACTIVE).build());
+        categories.add(Category.builder().id(3L).name("category 3").status(CategoryStatus.ACTIVE).build());
 
-        CategoryListCommand command = CategoryListCommand.builder().filter(filter).sorting(sorting).build();
+        RmaPage<Category> rmaPage = RmaPage.<Category>builder()
+                .content(categories)
+                .pageNumber(1)
+                .pageSize(3)
+                .totalPageCount(1)
+                .totalElementCount(3L)
+                .build();
+
+        Mockito.when(categoryService.getAllCategories(
+                Mockito.any(CategoryListCommand.class))
+        ).thenReturn(rmaPage);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(command)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                        .content(new ObjectMapper().writeValueAsString(categoryListRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber")
+                        .value(rmaPage.getPageNumber()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize")
+                        .value(rmaPage.getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
+                        .value(rmaPage.getTotalPageCount()))
+                   .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+    }
 
-        // Verify
-        Mockito.verifyNoInteractions(categoryService);
+    @Test
+    void givenGetAllCategories_whenInvalidInput_thenReturnBadRequest() throws Exception {
+        // Given
+        CategoryListRequest givenRequest = CategoryListRequest.builder().build();
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(givenRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void givenGetAllCategories_whenInvalidNegativePageSize_thenReturnBadRequest() throws Exception {
+        // Given
+        CategoryListRequest givenRequest = CategoryListRequest.builder()
+                .pagination(Pagination.builder().pageSize(-1).pageNumber(1).build())
+                .build();
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(givenRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void givenGetAllCategories_whenInvalidNegativePageNumber_thenReturnBadRequest() throws Exception {
+        // Given
+        CategoryListRequest givenRequest = CategoryListRequest.builder()
+                .pagination(Pagination.builder().pageSize(1).pageNumber(-1).build())
+                .build();
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(givenRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
