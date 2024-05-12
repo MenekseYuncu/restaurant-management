@@ -1,6 +1,5 @@
 package org.violet.restaurantmanagement.common.model;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.domain.Sort;
@@ -9,11 +8,9 @@ import org.springframework.data.domain.Sort;
 @Builder
 public class Sorting {
 
-    @NotNull
-    public String property;
+    private String property;
 
-    @NotNull
-    public Sort.Direction direction;
+    private Sort.Direction direction;
 
     public static Sorting toSort(final Sort sort) {
         return sort.stream()
