@@ -81,7 +81,6 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
                         .value(filter.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
-
     }
 
     @Test

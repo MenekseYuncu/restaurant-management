@@ -10,8 +10,7 @@ public interface RmaTestContainer {
     @Container
     PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>("postgres:latest")
             .withUsername("restaurant_user")
-            .withPassword("restaurant_password")
-            .withDatabaseName("restaurant_management");
+            .withPassword("restaurant_password");
 
     @DynamicPropertySource
     static void overrideProps(DynamicPropertyRegistry dynamicPropertyRegistry) {

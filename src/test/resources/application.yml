@@ -1,8 +1,0 @@
-spring:
-  sql:
-    init:
-      mode: always
-  datasource:
-    url: jdbc:tc:postgresql:latest:///test
-    username: restaurant_user
-    password: restaurant_password
