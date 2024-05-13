@@ -21,7 +21,7 @@ public record CategoryCreateRequest(
         @JsonIgnore
         @AssertTrue(message = "Status must be either 'ACTIVE' or 'INACTIVE' or 'DELETED'")
         @SuppressWarnings("This method is unused by the application directly but Spring is using it in the background.")
-        private boolean isEmployeeRoleValid() {
+        private boolean isCategoryStatusValid() {
 
                 if (this.status == null) {
                         return true;
