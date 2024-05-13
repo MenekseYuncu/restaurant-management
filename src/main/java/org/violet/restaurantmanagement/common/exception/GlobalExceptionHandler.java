@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.violet.restaurantmanagement.common.controller.response.ErrorResponse;
-import org.violet.restaurantmanagement.product.exceptions.CategoryAlreadyExistsException;
-import org.violet.restaurantmanagement.product.exceptions.CategoryNotFoundException;
+import org.violet.restaurantmanagement.category.exceptions.CategoryAlreadyExistsException;
+import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
 
 @Slf4j
 @RestControllerAdvice
