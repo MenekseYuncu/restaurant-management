@@ -7,9 +7,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.violet.restaurantmanagement.common.model.Pagination;
-import org.violet.restaurantmanagement.common.model.RmaPage;
-import org.violet.restaurantmanagement.common.model.Sorting;
 import org.violet.restaurantmanagement.category.controller.request.CategoryListRequest;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.category.service.CategoryService;
@@ -17,8 +14,11 @@ import org.violet.restaurantmanagement.category.service.command.CategoryCreateCo
 import org.violet.restaurantmanagement.category.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.category.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.category.service.domain.Category;
-import org.violet.restaurantmanagement.category.util.RmaEndToEndTest;
-import org.violet.restaurantmanagement.category.util.RmaTestContainer;
+import org.violet.restaurantmanagement.common.model.Pagination;
+import org.violet.restaurantmanagement.common.model.RmaPage;
+import org.violet.restaurantmanagement.common.model.Sorting;
+import org.violet.restaurantmanagement.util.RmaEndToEndTest;
+import org.violet.restaurantmanagement.util.RmaTestContainer;
 
 import java.time.LocalDateTime;
 

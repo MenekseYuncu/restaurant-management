@@ -10,9 +10,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.violet.restaurantmanagement.common.model.Pagination;
-import org.violet.restaurantmanagement.common.model.RmaPage;
-import org.violet.restaurantmanagement.common.model.Sorting;
 import org.violet.restaurantmanagement.category.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
@@ -25,8 +22,11 @@ import org.violet.restaurantmanagement.category.service.command.CategoryCreateCo
 import org.violet.restaurantmanagement.category.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.category.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.category.service.domain.Category;
-import org.violet.restaurantmanagement.category.util.RmaServiceTest;
-import org.violet.restaurantmanagement.category.util.RmaTestContainer;
+import org.violet.restaurantmanagement.common.model.Pagination;
+import org.violet.restaurantmanagement.common.model.RmaPage;
+import org.violet.restaurantmanagement.common.model.Sorting;
+import org.violet.restaurantmanagement.util.RmaServiceTest;
+import org.violet.restaurantmanagement.util.RmaTestContainer;
 
 import java.util.ArrayList;
 import java.util.Collections;

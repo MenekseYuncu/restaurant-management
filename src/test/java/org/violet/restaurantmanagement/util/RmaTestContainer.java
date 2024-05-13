@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.util;
+package org.violet.restaurantmanagement.util;
 
 import org.junit.jupiter.api.AfterAll;
 import org.springframework.test.context.DynamicPropertyRegistry;

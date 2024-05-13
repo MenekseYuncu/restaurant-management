@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.util;
+package org.violet.restaurantmanagement.util;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

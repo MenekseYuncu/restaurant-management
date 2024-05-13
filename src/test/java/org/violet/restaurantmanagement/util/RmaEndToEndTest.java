@@ -1,4 +1,4 @@
-package org.violet.restaurantmanagement.product.util;
+package org.violet.restaurantmanagement.util;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
