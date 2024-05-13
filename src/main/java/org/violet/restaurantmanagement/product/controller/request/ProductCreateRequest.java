@@ -25,7 +25,7 @@ public record ProductCreateRequest(
         String name,
 
         @NotBlank
-        @Size(min = 2, max = 300)
+        @Size(min = 2)
         String ingredient,
 
         @NotNull
