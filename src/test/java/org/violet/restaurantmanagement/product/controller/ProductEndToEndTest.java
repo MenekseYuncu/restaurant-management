@@ -10,6 +10,7 @@ import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.service.ProductService;
 import org.violet.restaurantmanagement.product.service.command.ProductCreateCommand;
+import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 import org.violet.restaurantmanagement.util.RmaEndToEndTest;
 import org.violet.restaurantmanagement.util.RmaTestContainer;
 
@@ -39,6 +40,25 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(command)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void testUpdateProduct() throws Exception {
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        ProductUpdateCommand updateCommand = new ProductUpdateCommand(
+                "Product",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.ACTIVE,
+                300,
+                ExtentType.GR
+        );
+        Mockito.doNothing().when(productService).updateProduct(productId, updateCommand);
+
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateCommand)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 }

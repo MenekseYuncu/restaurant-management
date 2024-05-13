@@ -13,6 +13,7 @@ import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.service.ProductService;
 import org.violet.restaurantmanagement.product.service.command.ProductCreateCommand;
+import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 import org.violet.restaurantmanagement.util.RmaControllerTest;
 import org.violet.restaurantmanagement.util.RmaTestContainer;
 
@@ -86,4 +87,87 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
         // Verify
         Mockito.verifyNoInteractions(productService);
     }
+
+    @Test
+    void givenUpdateProduct_whenValidInput_thenReturnSuccess() throws Exception {
+        //Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+
+        // When
+        ProductUpdateCommand updateCommand = new ProductUpdateCommand(
+                "Product",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.ACTIVE,
+                300,
+                ExtentType.GR
+        );
+
+        Mockito.doNothing().when(productService).updateProduct(productId, updateCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(updateCommand)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(productService).updateProduct(productId, updateCommand);
+    }
+
+    @Test
+    void givenUpdateProduct_whenInvalidInput_thenReturnBadRequest() throws Exception {
+        // Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        ProductUpdateCommand command = new ProductUpdateCommand(
+                null,
+                "ingredients",
+                null,
+                ProductStatus.ACTIVE,
+                null,
+                ExtentType.GR
+        );
+
+        //When
+        Mockito.doThrow(new ProductNotFoundException()).when(productService)
+                .updateProduct(productId, command);
+
+        //Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(command)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(productService);
+    }
+
+    @Test
+    void givenUpdateProduct_whenInvalidId_thenReturnBadRequest() throws Exception {
+        //Given
+        String productId = "invalidProductId";
+
+        // When
+        ProductUpdateCommand updateCommand = new ProductUpdateCommand(
+                "Product",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.ACTIVE,
+                300,
+                ExtentType.GR
+        );
+        Mockito.doThrow(ProductNotFoundException.class)
+                .when(productService)
+                .updateProduct(productId, updateCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", productId))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(productService);
+    }
+
+
 }

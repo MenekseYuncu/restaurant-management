@@ -10,14 +10,17 @@ import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.model.mapper.ProductCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
+import org.violet.restaurantmanagement.product.model.mapper.ProductUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 import org.violet.restaurantmanagement.product.service.command.ProductCreateCommand;
+import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Product;
 import org.violet.restaurantmanagement.util.RmaServiceTest;
 import org.violet.restaurantmanagement.util.RmaTestContainer;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -32,7 +35,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
 
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
-
+    private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
 
     @Test
     void givenCreateProduct_whenSaveFails_thenThrowException() {
@@ -83,5 +86,65 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         // Then
         Mockito.verify(productRepository, times(1))
                 .save(any(ProductEntity.class));
+    }
+
+    @Test
+    void givenUpdateProduct_whenProductExists_thenUpdateProductEntity() {
+        // Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        ProductUpdateCommand updateCommand = new ProductUpdateCommand(
+                "Product",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.ACTIVE,
+                300,
+                ExtentType.GR
+        );
+        Product product = productUpdateCommandToDomainMapper.map(updateCommand);
+
+        ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
+
+        // When
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.ofNullable(productEntity));
+
+        productService.updateProduct(productId, updateCommand);
+
+        // Then
+        Mockito.verify(productRepository, times(1))
+                .save(any(ProductEntity.class));
+    }
+
+    @Test
+    void givenUpdateProduct_whenProductIdDoesNotExists_thenThrowProductNotFoundException() {
+        // Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        ProductUpdateCommand updateCommand = new ProductUpdateCommand(
+                "Product",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.ACTIVE,
+                300,
+                ExtentType.GR
+        );
+
+        // When
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        //Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> productService.updateProduct(productId, updateCommand));
+    }
+
+    @Test
+    void givenUpdateProduct_whenNullUpdateCommand_thenThrowException() {
+        // Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        ProductUpdateCommand updateCommand = null;
+
+        // Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> productService.updateProduct(productId, updateCommand));
+
+        Mockito.verify(productRepository, times(0)).save(any(ProductEntity.class));
     }
 }
