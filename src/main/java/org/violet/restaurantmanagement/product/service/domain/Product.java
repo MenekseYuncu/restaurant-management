@@ -8,14 +8,13 @@ import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Builder
 @AllArgsConstructor
 public class Product {
 
-    private UUID id;
+    private String id;
     private Long categoryId;
     private String name;
     private String ingredient;

@@ -18,7 +18,6 @@ import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 
 @Getter
@@ -33,7 +32,7 @@ public class ProductEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
-    private UUID id;
+    private String id;
 
     @Column(name = "category_id")
     private Long categoryId;

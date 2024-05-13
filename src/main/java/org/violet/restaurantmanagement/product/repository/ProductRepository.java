@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 @Repository
-public interface ProductRepository extends JpaRepository<ProductEntity, Long>, JpaSpecificationExecutor<ProductEntity> {
+public interface ProductRepository extends JpaRepository<ProductEntity, String>, JpaSpecificationExecutor<ProductEntity> {
 
 }
