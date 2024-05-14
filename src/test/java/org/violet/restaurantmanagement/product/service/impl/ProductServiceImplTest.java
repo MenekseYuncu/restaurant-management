@@ -10,6 +10,7 @@ import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.model.mapper.ProductCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
+import org.violet.restaurantmanagement.product.model.mapper.ProductEntityToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
@@ -36,6 +37,67 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
+    private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
+
+    @Test
+    void givenGetProductById_whenProductExists_thenReturnProduct() {
+        //Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        ProductEntity productEntity = ProductEntity.builder()
+                .id(productId)
+                .categoryId(1L)
+                .name("Product")
+                .ingredient("ingredients")
+                .price(BigDecimal.valueOf(100))
+                .status(ProductStatus.ACTIVE)
+                .extent(300)
+                .extentType(ExtentType.GR)
+                .build();
+
+
+        //When
+        Mockito.when(productRepository.findById(productId))
+                .thenReturn(Optional.of(productEntity));
+
+        Product mockCategory = productEntityToDomainMapper.map(productEntity);
+
+        //Then
+        Product resultProduct = productService.getProductById(productId);
+
+        Assertions.assertNotNull(resultProduct);
+        Assertions.assertEquals(mockCategory.getId(), resultProduct.getId());
+        Assertions.assertEquals(mockCategory.getCategoryId(), resultProduct.getCategoryId());
+        Assertions.assertEquals(mockCategory.getName(), resultProduct.getName());
+        Assertions.assertEquals(mockCategory.getIngredient(), resultProduct.getIngredient());
+        Assertions.assertEquals(mockCategory.getPrice(), resultProduct.getPrice());
+        Assertions.assertEquals(mockCategory.getStatus(), resultProduct.getStatus());
+        Assertions.assertEquals(mockCategory.getExtent(), resultProduct.getExtent());
+        Assertions.assertEquals(mockCategory.getExtentType(), resultProduct.getExtentType());
+        Assertions.assertEquals(mockCategory.getCreatedAt(), resultProduct.getCreatedAt());
+    }
+
+    @Test
+    void givenGetProductById_whenProductDoesNotExist_thenThrowProductNotFoundException() {
+        //Given
+        String productId = "b5db-4b71-bdb0-8eed335fd6e4";
+
+        //When
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        //Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> productService.getProductById(productId));
+    }
+
+    @Test
+    void givenEmptyProductId_whenGetProductById_thenThrowProductNotFoundException() {
+        // Given
+        String productId = "";
+
+        // Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> productService.getProductById(productId));
+    }
 
     @Test
     void givenCreateProduct_whenSaveFails_thenThrowException() {

@@ -11,10 +11,12 @@ import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.service.ProductService;
 import org.violet.restaurantmanagement.product.service.command.ProductCreateCommand;
 import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
+import org.violet.restaurantmanagement.product.service.domain.Product;
 import org.violet.restaurantmanagement.util.RmaEndToEndTest;
 import org.violet.restaurantmanagement.util.RmaTestContainer;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
 
@@ -22,6 +24,28 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
     private ProductService productService;
 
     private final static String BASE_URL = "/api/v1/product";
+
+
+    @Test
+    void testGetProductById() throws Exception {
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        Product product = Product.builder()
+                .id(productId)
+                .categoryId(1L)
+                .name("Test")
+                .ingredient("ingredients")
+                .price(BigDecimal.valueOf(100))
+                .status(ProductStatus.ACTIVE)
+                .extent(250)
+                .extentType(ExtentType.GR)
+                .createdAt(LocalDateTime.now()).build();
+
+        Mockito.when(productService.getProductById(productId)).thenReturn(product);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", productId))
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 
     @Test
     void testCreateProduct() throws Exception {
