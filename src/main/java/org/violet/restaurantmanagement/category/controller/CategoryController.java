@@ -12,9 +12,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
-import org.violet.restaurantmanagement.common.controller.response.RmaPageResponse;
-import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryCreateRequestToCreateCommandMapper;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryListRequestToListCommandMapper;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryUpdateRequestToUpdateCommandMapper;
@@ -27,6 +24,9 @@ import org.violet.restaurantmanagement.category.service.CategoryService;
 import org.violet.restaurantmanagement.category.service.command.CategoryCreateCommand;
 import org.violet.restaurantmanagement.category.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.category.service.domain.Category;
+import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
+import org.violet.restaurantmanagement.common.controller.response.RmaPageResponse;
+import org.violet.restaurantmanagement.common.model.RmaPage;
 
 @Validated
 @RestController
@@ -43,7 +43,8 @@ public class CategoryController {
 
     @PostMapping("/categories")
     public BaseResponse<RmaPageResponse<CategoryResponse>> getAllCategories(
-            @Valid @RequestBody CategoryListRequest categoryListRequest) {
+            @Valid @RequestBody CategoryListRequest categoryListRequest
+    ) {
 
         RmaPage<Category> categoryPage = categoryService.getAllCategories(
                 toCategoryListCommandMapper.map(categoryListRequest)

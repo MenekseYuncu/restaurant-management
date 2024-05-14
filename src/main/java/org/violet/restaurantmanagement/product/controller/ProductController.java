@@ -11,10 +11,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
+import org.violet.restaurantmanagement.common.controller.response.RmaPageResponse;
+import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductCreateRequestToCreateCommandMapper;
+import org.violet.restaurantmanagement.product.controller.mapper.ProductListRequestToProductListCommandMapper;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductToProductResponseMapper;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductUpdateRequestToProductUpdateCommandMapper;
 import org.violet.restaurantmanagement.product.controller.request.ProductCreateRequest;
+import org.violet.restaurantmanagement.product.controller.request.ProductListRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductUpdateRequest;
 import org.violet.restaurantmanagement.product.controller.response.ProductResponse;
 import org.violet.restaurantmanagement.product.service.ProductService;
@@ -31,7 +35,24 @@ public class ProductController {
     private static final ProductCreateRequestToCreateCommandMapper productCreateRequestToCommandMapper = ProductCreateRequestToCreateCommandMapper.INSTANCE;
     private static final ProductUpdateRequestToProductUpdateCommandMapper productUpdateRequestToCommandMapper = ProductUpdateRequestToProductUpdateCommandMapper.INSTANCE;
     private static final ProductToProductResponseMapper productToProductResponse = ProductToProductResponseMapper.INSTANCE;
+    private static final ProductListRequestToProductListCommandMapper productListRequestToListCommandMapper = ProductListRequestToProductListCommandMapper.INSTANCE;
 
+
+    @PostMapping("/products")
+    public BaseResponse<RmaPageResponse<ProductResponse>> getAllProducts(
+            @Valid @RequestBody ProductListRequest request
+    ) {
+        RmaPage<Product> productPage = productService.getAllProducts(
+                productListRequestToListCommandMapper.map(request)
+        );
+
+        RmaPageResponse<ProductResponse> pageResponse = RmaPageResponse.<ProductResponse>builder()
+                .content(productToProductResponse.map(productPage.getContent()))
+                .page(productPage)
+                .build();
+        return BaseResponse.successOf(pageResponse);
+
+    }
 
     @GetMapping("/{id}")
     public BaseResponse<ProductResponse> getProductById(
