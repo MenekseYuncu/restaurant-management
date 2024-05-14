@@ -169,5 +169,38 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
         Mockito.verifyNoInteractions(productService);
     }
 
+    @Test
+    void givenDeleteProduct_thenReturnSuccess() throws Exception {
+        // Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
 
+        // When
+        Mockito.doNothing().when(productService).deleteProduct(productId);
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}", productId))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(productService).deleteProduct(productId);
+    }
+
+    @Test
+    void givenDeleteProduct_whenInvalidId_thenReturnNotFound() throws Exception {
+        // Given
+        String productId = "1L";
+
+        // When
+        Mockito.doThrow(ProductNotFoundException.class)
+                .when(productService)
+                .deleteProduct(productId);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}", productId))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(productService).deleteProduct(productId);
+    }
 }

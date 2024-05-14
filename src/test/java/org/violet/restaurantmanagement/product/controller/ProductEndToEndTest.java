@@ -61,4 +61,12 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                         .content(objectMapper.writeValueAsString(updateCommand)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
+
+    @Test
+    void testDeleteProduct() throws Exception {
+        Mockito.doNothing().when(productService).deleteProduct( "5f98b326-b5db-4b71-bdb0-8eed335fd6e4");
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}",  "5f98b326-b5db-4b71-bdb0-8eed335fd6e4"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 }

@@ -147,4 +147,33 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
 
         Mockito.verify(productRepository, times(0)).save(any(ProductEntity.class));
     }
+
+    @Test
+    void givenSoftDeleteProduct_whenProductExists_thenUpdatedProductEntity() {
+        // Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        ProductEntity productEntity = new ProductEntity();
+
+        // When
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(productEntity));
+
+        productService.deleteProduct(productId);
+
+        // Then
+        Mockito.verify(productRepository, times(1))
+                .save(any(ProductEntity.class));
+    }
+
+    @Test
+    void givenSoftDeleteProduct_whenProductIdDoesNotExists_thenThrowProductNotFoundException() {
+        //Given
+        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+
+        //When
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        //Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> productService.deleteProduct(productId));
+    }
 }
