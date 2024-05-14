@@ -3,6 +3,7 @@ package org.violet.restaurantmanagement.product.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
+import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.model.mapper.ProductCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductUpdateCommandToDomainMapper;
@@ -45,6 +46,15 @@ class ProductServiceImpl implements ProductService {
         productEntity.setExtent(updatedProduct.getExtent());
         productEntity.setExtentType(updatedProduct.getExtentType());
 
+        productRepository.save(productEntity);
+    }
+
+    @Override
+    public void deleteProduct(String id) {
+        ProductEntity productEntity = productRepository.findById(id)
+                .orElseThrow(ProductNotFoundException::new);
+
+        productEntity.setStatus(ProductStatus.DELETED);
         productRepository.save(productEntity);
     }
 }

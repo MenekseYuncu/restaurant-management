@@ -2,7 +2,7 @@ package org.violet.restaurantmanagement.product.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,7 +18,6 @@ import org.violet.restaurantmanagement.product.service.ProductService;
 import org.violet.restaurantmanagement.product.service.command.ProductCreateCommand;
 import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/product")
@@ -45,6 +44,14 @@ public class ProductController {
     ) {
         ProductUpdateCommand command = productUpdateRequestToCommandMapper.map(request);
         productService.updateProduct(id, command);
+        return BaseResponse.SUCCESS;
+    }
+
+    @DeleteMapping("/{id}")
+    public BaseResponse<Void> deleteProduct(
+            @PathVariable String id
+    ) {
+        productService.deleteProduct(id);
         return BaseResponse.SUCCESS;
     }
 }

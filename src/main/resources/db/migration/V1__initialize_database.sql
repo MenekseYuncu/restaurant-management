@@ -20,7 +20,7 @@ create table if not exists rm_product
     ingredient  varchar(2048)  not null,
     price       numeric(50, 8) not null,
     status      varchar(20)    not null
-        constraint c__rm_product__status check (status in ('ACTIVE', 'INACTIVE')),
+        constraint c__rm_product__status check (status in ('ACTIVE', 'INACTIVE', 'DELETED')),
     extent      integer        not null,
     extent_type varchar(5)     not null
         constraint c__rm_product__extent_type check (extent_type IN ('ML', 'GR')),

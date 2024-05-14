@@ -9,4 +9,5 @@ public interface ProductService {
 
     void updateProduct(String id, ProductUpdateCommand updateCommand);
 
+    void deleteProduct(String id);
 }
