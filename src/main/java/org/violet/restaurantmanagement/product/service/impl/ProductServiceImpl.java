@@ -6,6 +6,7 @@ import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundExcepti
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.model.mapper.ProductCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
+import org.violet.restaurantmanagement.product.model.mapper.ProductEntityToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
@@ -22,6 +23,16 @@ class ProductServiceImpl implements ProductService {
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
+    private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
+
+
+    @Override
+    public Product getProductById(String id) {
+        ProductEntity productEntity = productRepository.findById(id)
+                .orElseThrow(ProductNotFoundException::new);
+
+        return productEntityToDomainMapper.map(productEntity);
+    }
 
     @Override
     public void createProduct(ProductCreateCommand createCommand) {
