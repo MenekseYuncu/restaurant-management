@@ -72,6 +72,11 @@ public class ProductListCommand  extends RmaPaginationCommand implements RmaSpec
         if (this.filter.getPriceRange() != null) {
             BigDecimal minPrice = this.filter.getPriceRange().getMin();
             BigDecimal maxPrice = this.filter.getPriceRange().getMax();
+
+            if (minPrice.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Minimum price cannot be less than zero");
+            }
+
             Specification<C> priceSpecification = (root, _, criteriaBuilder) ->
                     criteriaBuilder.between(root.get("price"), minPrice, maxPrice);
             specification = specification.and(priceSpecification);
