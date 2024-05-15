@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.4</version>
+        <version>3.2.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -109,22 +109,26 @@
             <scope>test</scope>
         </dependency>
 
+        <!--   ===================  -->
+        <!--   Test dependencies    -->
+        <!--   ==================   -->
+
+        <!--   ===================  -->
+        <!--     Test Container     -->
+        <!--   ==================   -->
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.19.7</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.19.7</version>
-            <scope>test</scope>
         </dependency>
 
         <!--   ===================  -->
-        <!--   Test dependencies    -->
+        <!--     Test Container     -->
         <!--   ==================   -->
 
     </dependencies>
@@ -156,9 +160,11 @@
                             <version>0.2.0</version>
                         </path>
                     </annotationProcessorPaths>
+                    <source>21</source>
+                    <target>21</target>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>
