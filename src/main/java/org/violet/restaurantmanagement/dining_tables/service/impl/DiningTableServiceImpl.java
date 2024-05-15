@@ -13,8 +13,8 @@ import org.violet.restaurantmanagement.dining_tables.service.command.DiningTable
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,18 +28,20 @@ class DiningTableServiceImpl implements DiningTableService {
 
 
     @Override
-    public void createDiningTables(List<DiningTableCreateCommand> createCommand) {
+    public void createDiningTables(DiningTableCreateCommand createCommand) {
+        List<DiningTable> diningTables = new ArrayList<>();
 
-        List<DiningTable> diningTables = diningTableCreateCommandToDomainMapper.map(createCommand);
+        for (int i = 0; i < createCommand.numberOfTables(); i++) {
+            DiningTable diningTable = diningTableCreateCommandToDomainMapper.map(createCommand);
+            diningTable.merge();
+            diningTable.tableStatus();
+            diningTables.add(diningTable);
+        }
 
-        diningTables.forEach(
-                diningTable -> diningTable.setMergeId(UUID.randomUUID().toString())
-        );
-
-        List<DiningTableEntity> diningTableEntity = domainToDiningTableEntityMapper.map(diningTables);
-
-        diningTableRepository.saveAll(diningTableEntity);
+        List<DiningTableEntity> diningTableEntities = domainToDiningTableEntityMapper.map(diningTables);
+        diningTableRepository.saveAll(diningTableEntities);
     }
+
 
     @Override
     public void updateDiningTable(Long id, DiningTableUpdateCommand updateCommand) {

@@ -17,8 +17,6 @@ import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/dining-table")
@@ -30,11 +28,9 @@ class DiningTableController {
 
     @PostMapping
     public BaseResponse<Void> createDiningTables(
-            @Valid @RequestBody List<DiningTableCreateRequest> requests
+            @Valid @RequestBody DiningTableCreateRequest requests
     ) {
-        List<DiningTableCreateCommand> createCommands = requests.stream()
-                .map(diningTableCreateRequestToCommandMapper::map)
-                .toList();
+        DiningTableCreateCommand createCommands = diningTableCreateRequestToCommandMapper.map(requests);
         diningTableService.createDiningTables(createCommands);
         return BaseResponse.SUCCESS;
     }

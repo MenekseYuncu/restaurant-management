@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,4 +21,12 @@ public class DiningTable {
     private int size;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void tableStatus() {
+        this.status = DiningTableStatus.VACANT;
+    }
+
+    public void merge() {
+        this.mergeId = UUID.randomUUID().toString();
+    }
 }

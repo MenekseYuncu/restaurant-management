@@ -35,7 +35,7 @@ create table if not exists rm_dining_table
     merge_id            varchar(36)  not null,
     dining_table_status varchar(20)  not null
         constraint c__rm_dining_table_status check (dining_table_status in
-                                                    ('VACANT', 'OCCUPIED', 'TAKING_ORDERS', 'RESERVED')),
+                                                    ('VACANT', 'OCCUPIED', 'TAKING_ORDERS', 'RESERVED', 'DELETED')),
     size                int          not null,
     created_at          timestamp(0) not null,
     updated_at          timestamp(0)
