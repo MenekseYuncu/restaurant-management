@@ -21,7 +21,7 @@ public abstract class RmaPaginationCommand {
 
         if (this.sorting != null) {
             return PageRequest.of(
-                    this.pagination.getPageNumber(),
+                    this.pagination.getPageNumber() - 1,
                     this.pagination.getPageSize(),
                     Sort.by(Sort.Order.by(this.sorting.getProperty()).with(this.sorting.getDirection()))
             );
