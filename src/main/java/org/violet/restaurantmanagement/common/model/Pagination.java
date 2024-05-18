@@ -5,9 +5,11 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 public class Pagination {
@@ -21,9 +23,4 @@ public class Pagination {
     @NotNull
     @Range(min = 1, max = Integer.MAX_VALUE)
     private int pageSize;
-
-    public int getPageNumber(){
-        return pageNumber -1;
-    }
-
 }
