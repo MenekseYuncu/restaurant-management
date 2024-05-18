@@ -372,13 +372,13 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
     @Test
     void givenValidCategoryCreateRequest_whenCreateCategory_thenReturnsSuccess() throws Exception {
         // Given
-        CategoryCreateRequest request = new CategoryCreateRequest(
+        CategoryCreateRequest mockCategoryCreateRequest = new CategoryCreateRequest(
                 "Test",
                 CategoryStatus.ACTIVE
         );
 
         // When
-        CategoryCreateCommand createCommand = categoryCreateRequestToCreateCommandMapper.map(request);
+        CategoryCreateCommand createCommand = categoryCreateRequestToCreateCommandMapper.map(mockCategoryCreateRequest);
         Mockito.doNothing().when(categoryService).createCategory(Mockito.any(CategoryCreateCommand.class));
 
         // Then
@@ -395,7 +395,7 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
     @Test
     void givenInvalidsMaxSizeInput_whenCreateCategory_thenReturnBadRequest() throws Exception {
         // Given
-        CategoryCreateRequest createRequest = new CategoryCreateRequest(
+        CategoryCreateRequest mockCategoryCreateRequest = new CategoryCreateRequest(
                 "Lorem Ipsum is simply dummy text of the printing and typesetting industry." +
                         " Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an " +
                         " Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an " +
@@ -406,7 +406,7 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(createRequest)))
+                        .content(new ObjectMapper().writeValueAsString(mockCategoryCreateRequest)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
         // Verify
@@ -416,7 +416,7 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
     @Test
     void givenInvalidCategoryCreateRequest_whenCategoryCantCreate_thenReturnBadRequest() throws Exception {
         // Given
-        CategoryCreateRequest request = new CategoryCreateRequest(
+        CategoryCreateRequest mockCategoryCreateRequest = new CategoryCreateRequest(
                 null,
                 null
         );
@@ -427,7 +427,7 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(request)))
+                        .content(new ObjectMapper().writeValueAsString(mockCategoryCreateRequest)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
@@ -441,12 +441,12 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
         Long categoryId = 1L;
 
         // When
-        CategoryUpdateRequest request = new CategoryUpdateRequest(
+        CategoryUpdateRequest mockCategoryUpdateRequest = new CategoryUpdateRequest(
                 "UpdateTest",
                 CategoryStatus.ACTIVE
         );
 
-        CategoryUpdateCommand command = categoryUpdateRequestToUpdateCommandMapper.map(request);
+        CategoryUpdateCommand command = categoryUpdateRequestToUpdateCommandMapper.map(mockCategoryUpdateRequest);
 
         Mockito.doNothing().when(categoryService).updateCategory(categoryId, command);
 
@@ -468,11 +468,11 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
         Long categoryId = 1L;
 
         //When
-        CategoryUpdateRequest request = new CategoryUpdateRequest(
+        CategoryUpdateRequest mockCategoryUpdateRequest = new CategoryUpdateRequest(
                 null,
                 null
         );
-        CategoryUpdateCommand command = categoryUpdateRequestToUpdateCommandMapper.map(request);
+        CategoryUpdateCommand command = categoryUpdateRequestToUpdateCommandMapper.map(mockCategoryUpdateRequest);
 
         Mockito.doThrow(new CategoryNotFoundException()).when(categoryService)
                 .updateCategory(categoryId, command);
@@ -494,11 +494,11 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
         Long categoryId = -1L;
 
         // When
-        CategoryUpdateRequest request = new CategoryUpdateRequest(
+        CategoryUpdateRequest mockCategoryUpdateRequest = new CategoryUpdateRequest(
                 "UpdateTest",
                 CategoryStatus.ACTIVE
         );
-        CategoryUpdateCommand command = categoryUpdateRequestToUpdateCommandMapper.map(request);
+        CategoryUpdateCommand command = categoryUpdateRequestToUpdateCommandMapper.map(mockCategoryUpdateRequest);
 
         Mockito.doThrow(ConstraintViolationException.class)
                 .when(categoryService)
