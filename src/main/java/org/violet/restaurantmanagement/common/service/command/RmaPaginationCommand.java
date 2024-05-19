@@ -27,7 +27,7 @@ public abstract class RmaPaginationCommand {
             );
         } else {
             return PageRequest.of(
-                    pagination.getPageNumber(),
+                    pagination.getPageNumber() - 1,
                     pagination.getPageSize()
             );
         }
