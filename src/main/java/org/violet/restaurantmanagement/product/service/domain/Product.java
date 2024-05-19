@@ -24,4 +24,8 @@ public class Product {
     private ExtentType extentType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void activeStatus() {
+        this.status = ProductStatus.ACTIVE;
+    }
 }

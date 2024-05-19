@@ -13,8 +13,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
+import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
 
 
 @Getter
@@ -37,4 +37,8 @@ public class CategoryEntity extends BaseEntity {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private CategoryStatus status;
+
+    public boolean isActive() {
+        return CategoryStatus.ACTIVE == this.status;
+    }
 }
