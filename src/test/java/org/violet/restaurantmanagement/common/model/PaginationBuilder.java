@@ -14,10 +14,6 @@ public class PaginationBuilder {
         return this.pagination;
     }
 
-    public static PaginationBuilder valid() {
-        return new PaginationBuilder().pageNumber(1).pageSize(1);
-    }
-
     public PaginationBuilder pageNumber(int pageNumber) {
         this.pagination.setPageNumber(pageNumber);
         return this;
