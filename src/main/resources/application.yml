@@ -4,3 +4,6 @@ spring:
     username: ${DB_USERNAME:restaurant_user}
     password: ${DB_PASSWORD:restaurant_password}
     driver-class-name: org.postgresql.Driver
+
+  flyway:
+    baseline-on-migrate: true
