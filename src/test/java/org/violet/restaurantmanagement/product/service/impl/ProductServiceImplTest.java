@@ -8,11 +8,16 @@ import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.violet.restaurantmanagement.common.model.Pagination;
+import org.violet.restaurantmanagement.RmaServiceTest;
+import org.violet.restaurantmanagement.RmaTestContainer;
+import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
+import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
+import org.violet.restaurantmanagement.category.repository.CategoryRepository;
+import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
+import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
-import org.violet.restaurantmanagement.common.model.Sorting;
+import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
@@ -26,8 +31,6 @@ import org.violet.restaurantmanagement.product.service.command.ProductCreateComm
 import org.violet.restaurantmanagement.product.service.command.ProductListCommand;
 import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Product;
-import org.violet.restaurantmanagement.util.RmaServiceTest;
-import org.violet.restaurantmanagement.util.RmaTestContainer;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -44,6 +47,9 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private CategoryRepository categoryRepository;
+
     @InjectMocks
     private ProductServiceImpl productService;
 
@@ -54,7 +60,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
 
 
     @Test
-    void givenGetAllProducts_whenProductListExist_thenReturnCategories() {
+    void givenProductListExist_whenGetAllProducts_thenReturnCategories() {
         // Given
         List<ProductEntity> productEntities = new ArrayList<>();
         productEntities.add(new ProductEntity(
@@ -90,8 +96,16 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         Page<ProductEntity> productEntityPage = new PageImpl<>(productEntities);
 
         ProductListCommand givenProductListCommand = ProductListCommand.builder()
-                .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
-                .sorting(Sorting.builder().direction(Sort.Direction.ASC).property("price").build())
+                .pagination(PaginationBuilder.builder()
+                        .pageNumber(1)
+                        .pageSize(3)
+                        .build()
+                )
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("price")
+                        .build()
+                )
                 .filter(ProductListCommand.ProductFilter.builder()
                         .name("Product")
                         .categoryId(1L)
@@ -119,7 +133,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenGetAllProduct_whenProductListWithoutFilterAndSorting_thenReturnCategories() {
+    void givenProductListWithoutFilterAndSorting_whenGetAllProduct_thenReturnCategories() {
         // Given
         List<ProductEntity> productEntities = new ArrayList<>();
         productEntities.add(new ProductEntity(
@@ -132,20 +146,15 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 300,
                 ExtentType.GR
         ));
-        productEntities.add(new ProductEntity(
-                String.valueOf(UUID.randomUUID()),
-                1L,
-                "Product 2",
-                "ingredient",
-                BigDecimal.valueOf(100),
-                ProductStatus.ACTIVE,
-                300,
-                ExtentType.ML
-        ));
+
         Page<ProductEntity> productEntityPage = new PageImpl<>(productEntities);
 
         ProductListCommand givenProductListCommand = ProductListCommand.builder()
-                .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(1)
+                        .pageNumber(1)
+                        .build()
+                )
                 .build();
 
         // When
@@ -161,7 +170,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenGetAllProduct_whenProductListWithoutSorting_thenReturnCategories() {
+    void givenProductListWithoutSorting_whenGetAllProduct_thenReturnCategories() {
         // Given
         List<ProductEntity> productEntities = new ArrayList<>();
         productEntities.add(new ProductEntity(
@@ -189,7 +198,11 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         Page<ProductEntity> productEntityPage = new PageImpl<>(productEntities);
 
         ProductListCommand givenProductListCommand = ProductListCommand.builder()
-                .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
+                .pagination(PaginationBuilder.builder()
+                        .pageNumber(1)
+                        .pageSize(2)
+                        .build()
+                )
                 .filter(ProductListCommand.ProductFilter.builder()
                         .name("Product")
                         .statuses(Collections.singleton(ProductStatus.ACTIVE)).build())
@@ -216,7 +229,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenGetAllProduct_whenProductListInvalidPriceRange_thenThrowIllegalArgumentException() {
+    void givenProductListInvalidPriceRange_whenGetAllProduct_thenThrowIllegalArgumentException() {
         // Given
         ProductListCommand.ProductPriceRange invalidPriceRange = new ProductListCommand.ProductPriceRange(
                 BigDecimal.valueOf(-100),
@@ -224,7 +237,12 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         );
 
         ProductListCommand givenProductListCommand = ProductListCommand.builder()
-                .pagination(Pagination.builder().pageNumber(1).pageSize(5).build())
+                .pagination(PaginationBuilder
+                        .builder()
+                        .pageNumber(1)
+                        .pageSize(1)
+                        .build()
+                )
                 .filter(ProductListCommand.ProductFilter.builder()
                         .name("Product")
                         .statuses(Collections.singleton(ProductStatus.ACTIVE))
@@ -239,7 +257,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenGetAllProducts_whenResultIsNull_thenThrowNullPointerException() {
+    void givenResultIsNull_whenGetAllProducts_thenThrowNullPointerException() {
         // When
         ProductListCommand productListCommand = ProductListCommand.builder().build();
 
@@ -250,11 +268,10 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenGetProductById_whenProductExists_thenReturnProduct() {
+    void givenProductExists_whenGetProductById_thenReturnProduct() {
         //Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
         ProductEntity productEntity = ProductEntity.builder()
-                .id(productId)
+                .id(String.valueOf(UUID.randomUUID()))
                 .categoryId(1L)
                 .name("Product")
                 .ingredient("ingredients")
@@ -264,15 +281,14 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 .extentType(ExtentType.GR)
                 .build();
 
-
         //When
-        Mockito.when(productRepository.findById(productId))
+        Mockito.when(productRepository.findById(productEntity.getId()))
                 .thenReturn(Optional.of(productEntity));
 
         Product mockProduct = productEntityToDomainMapper.map(productEntity);
 
         //Then
-        Product resultProduct = productService.getProductById(productId);
+        Product resultProduct = productService.getProductById(productEntity.getId());
 
         Assertions.assertNotNull(resultProduct);
         Assertions.assertEquals(mockProduct.getId(), resultProduct.getId());
@@ -287,12 +303,12 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenGetProductById_whenProductDoesNotExist_thenThrowProductNotFoundException() {
+    void givenProductDoesNotExist_whenGetProductById_thenThrowProductNotFoundException() {
         //Given
-        String productId = "b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = String.valueOf(UUID.randomUUID());
 
         //When
-        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.empty());
+        Mockito.when(productRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
 
         //Then
         Assertions.assertThrows(ProductNotFoundException.class,
@@ -310,19 +326,26 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenCreateProduct_whenSaveFails_thenThrowException() {
+    void givenInvalidCreateProductCommand_whenSaveFails_thenThrowException() {
         // Given
         ProductCreateCommand createCommand = new ProductCreateCommand(
+                1L,
                 null,
-                "Product",
                 "ingredients",
                 null,
                 ProductStatus.ACTIVE,
                 300,
                 ExtentType.GR
         );
+        CategoryEntity categoryEntity = new CategoryEntity(
+                1L,
+                "Category",
+                CategoryStatus.ACTIVE
+        );
 
         // When
+        Mockito.when(categoryRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(categoryEntity));
+
         Mockito.when(productRepository.save(any(ProductEntity.class)))
                 .thenThrow(ProductNotFoundException.class);
 
@@ -330,12 +353,11 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         Assertions.assertThrows(ProductNotFoundException.class,
                 () -> productService.createProduct(createCommand));
 
-        Mockito.verify(productRepository, times(1))
-                .save(any(ProductEntity.class));
+        Mockito.verify(productRepository, times(1)).save(any(ProductEntity.class));
     }
 
     @Test
-    void givenCreateProduct_thenSaveProductEntity() {
+    void givenInvalidCategoryId_whenCreateProduct_thenThrowCategoryNotFoundException() {
         // Gİven
         ProductCreateCommand createCommand = new ProductCreateCommand(
                 1L,
@@ -347,11 +369,44 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 ExtentType.GR
         );
 
+        // When
+        Mockito.when(categoryRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> productService.createProduct(createCommand));
+
+        // Verify
+        Mockito.verify(productRepository, Mockito.never()).save(any(ProductEntity.class));
+    }
+
+    @Test
+    void givenValidCreateProductCommand_whenCreateProductCorrect_thenSaveProductEntity() {
+        // Gİven
+        ProductCreateCommand createCommand = new ProductCreateCommand(
+                1L,
+                "Product",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.ACTIVE,
+                300,
+                ExtentType.GR
+        );
+        CategoryEntity categoryEntity = new CategoryEntity(
+                1L,
+                "Category",
+                CategoryStatus.ACTIVE
+        );
+
+        // When
+        Mockito.when(categoryRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(categoryEntity));
+
         Product product = productCreateCommandToDomainMapper.map(createCommand);
         ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
 
-        // When
-        Mockito.when(productRepository.save(any(ProductEntity.class))).thenReturn(productEntity);
+        Mockito.when(productRepository.save(any(ProductEntity.class)))
+                .thenReturn(productEntity);
 
         productService.createProduct(createCommand);
 
@@ -361,10 +416,12 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenUpdateProduct_whenProductExists_thenUpdateProductEntity() {
+    void givenValidUpdateProductCommand_whenProductAndCategoryExists_thenUpdateProductEntity() {
         // Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = UUID.randomUUID().toString();
+
         ProductUpdateCommand updateCommand = new ProductUpdateCommand(
+                1L,
                 "Product",
                 "ingredients",
                 BigDecimal.valueOf(100),
@@ -372,12 +429,21 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 300,
                 ExtentType.GR
         );
-        Product product = productUpdateCommandToDomainMapper.map(updateCommand);
+        CategoryEntity categoryEntity = new CategoryEntity(
+                1L,
+                "Category",
+                CategoryStatus.ACTIVE
+        );
 
+        Product product = productUpdateCommandToDomainMapper.map(updateCommand);
         ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
 
         // When
-        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.ofNullable(productEntity));
+        Mockito.when(categoryRepository.findById(updateCommand.categoryId()))
+                .thenReturn(Optional.of(categoryEntity));
+
+        Mockito.when(productRepository.findById(productId))
+                .thenReturn(Optional.of(productEntity));
 
         productService.updateProduct(productId, updateCommand);
 
@@ -387,10 +453,11 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenUpdateProduct_whenProductIdDoesNotExists_thenThrowProductNotFoundException() {
+    void givenProductIdDoesNotExists_whenUpdateProduct_thenThrowProductNotFoundException() {
         // Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = UUID.randomUUID().toString();
         ProductUpdateCommand updateCommand = new ProductUpdateCommand(
+                1L,
                 "Product",
                 "ingredients",
                 BigDecimal.valueOf(100),
@@ -398,9 +465,18 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 300,
                 ExtentType.GR
         );
+        CategoryEntity categoryEntity = new CategoryEntity(
+                1L,
+                "Category",
+                CategoryStatus.ACTIVE
+        );
 
         // When
-        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.empty());
+        Mockito.when(categoryRepository.findById(updateCommand.categoryId()))
+                .thenReturn(Optional.of(categoryEntity));
+
+        Mockito.when(productRepository.findById(productId))
+                .thenReturn(Optional.empty());
 
         //Then
         Assertions.assertThrows(ProductNotFoundException.class,
@@ -408,26 +484,14 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenUpdateProduct_whenNullUpdateCommand_thenThrowException() {
-        // Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
-        ProductUpdateCommand updateCommand = null;
-
-        // Then
-        Assertions.assertThrows(ProductNotFoundException.class,
-                () -> productService.updateProduct(productId, updateCommand));
-
-        Mockito.verify(productRepository, times(0)).save(any(ProductEntity.class));
-    }
-
-    @Test
     void givenSoftDeleteProduct_whenProductExists_thenUpdatedProductEntity() {
         // Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = UUID.randomUUID().toString();
         ProductEntity productEntity = new ProductEntity();
 
         // When
-        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(productEntity));
+        Mockito.when(productRepository.findById(productId))
+                .thenReturn(Optional.of(productEntity));
 
         productService.deleteProduct(productId);
 
@@ -437,12 +501,13 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
-    void givenSoftDeleteProduct_whenProductIdDoesNotExists_thenThrowProductNotFoundException() {
+    void givenProductIdDoesNotExists_whenSoftDeleteProduct_thenThrowProductNotFoundException() {
         //Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = UUID.randomUUID().toString();
 
         //When
-        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.empty());
+        Mockito.when(productRepository.findById(productId))
+                .thenReturn(Optional.empty());
 
         //Then
         Assertions.assertThrows(ProductNotFoundException.class,

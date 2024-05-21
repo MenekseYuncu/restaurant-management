@@ -25,7 +25,7 @@ public class Product {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public void activeStatus() {
+    public void isActive() {
         this.status = ProductStatus.ACTIVE;
     }
 }
