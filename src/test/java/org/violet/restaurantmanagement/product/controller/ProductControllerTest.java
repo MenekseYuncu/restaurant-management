@@ -115,6 +115,11 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
                         .value(mockFilter.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(productService, Mockito.times(1))
+                .getAllProducts(Mockito.any(ProductListCommand.class));
+
     }
 
     @Test
@@ -312,7 +317,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
     @Test
     void givenValidProductId_whenProductByIdFound_thenReturnSuccess() throws Exception {
         // Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = String.valueOf(UUID.randomUUID());
 
         // When
         Product product = Product.builder()
@@ -363,7 +368,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
     @Test
     void givenProductByIdEmpty_whenProductByIdNotExist_thenThrowException() throws Exception {
         // Given
-        String productId = "";
+        String productId = null;
 
         // When/Then
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", productId))
@@ -400,7 +405,8 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         // Verify
-        Mockito.verify(productService, Mockito.times(1)).createProduct(productCreateCommand);
+        Mockito.verify(productService, Mockito.times(1))
+                .createProduct(productCreateCommand);
     }
 
     @Test
@@ -419,7 +425,8 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
         // When
         ProductCreateCommand productCreateCommand = productCreateRequestToCommandMapper.map(mockCreateRequest);
 
-        Mockito.doThrow(new ProductNotFoundException()).when(productService).createProduct(productCreateCommand);
+        Mockito.doThrow(new ProductNotFoundException()).when(productService)
+                .createProduct(productCreateCommand);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
@@ -435,7 +442,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
     @Test
     void givenValidUpdateProductRequest_whenProductFound_thenReturnSuccess() throws Exception {
         //Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = String.valueOf(UUID.randomUUID());
 
         // When
         ProductUpdateRequest mockUpdateRequest = new ProductUpdateRequest(
@@ -466,7 +473,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
     @Test
     void givenInvalidUpdateProductRequest_whenProductNotExist_thenReturnBadRequest() throws Exception {
         // Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = String.valueOf(UUID.randomUUID());
         ProductUpdateRequest mockUpdateRequest = new ProductUpdateRequest(
                 null,
                 "ingredients",
@@ -541,7 +548,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
     @Test
     void givenValidDeleteProductId_whenProductFound_thenReturnSuccess() throws Exception {
         // Given
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+        String productId = String.valueOf(UUID.randomUUID());
 
         // When
         Mockito.doNothing().when(productService).deleteProduct(productId);
