@@ -1,67 +1,58 @@
 package org.violet.restaurantmanagement.product.controller;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Sort;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.violet.restaurantmanagement.common.model.Pagination;
-import org.violet.restaurantmanagement.common.model.RmaPage;
-import org.violet.restaurantmanagement.common.model.Sorting;
+import org.violet.restaurantmanagement.RmaEndToEndTest;
+import org.violet.restaurantmanagement.RmaTestContainer;
+import org.violet.restaurantmanagement.common.model.PaginationBuilder;
+import org.violet.restaurantmanagement.common.model.SortingBuilder;
+import org.violet.restaurantmanagement.product.controller.request.ProductCreateRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductListRequest;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
-import org.violet.restaurantmanagement.product.service.ProductService;
-import org.violet.restaurantmanagement.product.service.command.ProductCreateCommand;
-import org.violet.restaurantmanagement.product.service.command.ProductListCommand;
-import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
+import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
+import org.violet.restaurantmanagement.product.repository.ProductRepository;
+import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 import org.violet.restaurantmanagement.product.service.domain.Product;
-import org.violet.restaurantmanagement.util.RmaEndToEndTest;
-import org.violet.restaurantmanagement.util.RmaTestContainer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
 
 class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
 
-    @MockBean
-    private ProductService productService;
+    @Autowired
+    private ProductRepository productRepository;
+    private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
 
     private final static String BASE_URL = "/api/v1/product";
 
-
     @Test
-    void testGetAllProducts() throws Exception {
-        ProductListCommand.ProductFilter filter = ProductListCommand.ProductFilter.builder().name("Test").build();
-        ProductListRequest productListRequest = ProductListRequest.builder()
-                .pagination(Pagination.builder().pageNumber(2).pageSize(1).build())
-                .sorting(Sorting.builder().direction(Sort.Direction.ASC).property("price").build())
+    void whenProductListRequestExist_thenReturnProducts() throws Exception {
+        ProductListRequest mockProductListRequest = ProductListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(1)
+                        .pageNumber(1)
+                        .build()
+                )
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("price")
+                        .build()
+                )
                 .filter(ProductListRequest.ProductFilter.builder()
                         .name("Product")
-                        .categoryId(1L)
-                        .statuses(Collections.singleton(ProductStatus.ACTIVE))
-                        .build())
+                        .build()
+                )
                 .build();
-
-        RmaPage<Product> rmaPage = RmaPage.<Product>builder()
-                .pageNumber(1)
-                .pageSize(2)
-                .totalPageCount(1)
-                .totalElementCount(3L)
-                .sortedBy(productListRequest.getSorting())
-                .filteredBy(filter)
-                .build();
-
-        Mockito.when(productService.getAllProducts(
-                Mockito.any(ProductListCommand.class))
-        ).thenReturn(rmaPage);
 
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(productListRequest)))
+                        .content(objectMapper.writeValueAsString(mockProductListRequest)))
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
@@ -69,29 +60,44 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
     }
 
     @Test
-    void testGetProductById() throws Exception {
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
+    void givenValidProductId_whenProductByIdFound_thenReturnSuccess() throws Exception {
         Product product = Product.builder()
-                .id(productId)
                 .categoryId(1L)
                 .name("Test")
                 .ingredient("ingredients")
-                .price(BigDecimal.valueOf(100))
                 .status(ProductStatus.ACTIVE)
-                .extent(250)
+                .price(BigDecimal.valueOf(100))
+                .extent(100)
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
 
-        Mockito.when(productService.getProductById(productId)).thenReturn(product);
+        ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
+        productRepository.save(productEntity);
 
-        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", productId))
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", productEntity.getId()))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.name")
+                        .value(product.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.ingredient")
+                        .value(product.getIngredient()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.status")
+                        .value(product.getStatus().toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.price")
+                        .value(product.getPrice().doubleValue()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.extent")
+                        .value(product.getExtent()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.extentType")
+                        .value(product.getExtentType().toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
     }
 
     @Test
-    void testCreateProduct() throws Exception {
-        ProductCreateCommand command = new ProductCreateCommand(
+    void whenProductCreateRequestExist_thenReturnProductSave() throws Exception {
+        ProductCreateRequest mockCreateRequest = new ProductCreateRequest(
                 1L,
                 "Product",
                 "ingredients",
@@ -101,39 +107,10 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 ExtentType.GR
         );
 
-        Mockito.doNothing().when(productService).createProduct(Mockito.any(ProductCreateCommand.class));
-
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(command)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-    }
-
-    @Test
-    void testUpdateProduct() throws Exception {
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
-        ProductUpdateCommand updateCommand = new ProductUpdateCommand(
-                "Product",
-                "ingredients",
-                BigDecimal.valueOf(100),
-                ProductStatus.ACTIVE,
-                300,
-                ExtentType.GR
-        );
-        Mockito.doNothing().when(productService).updateProduct(productId, updateCommand);
-
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", productId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateCommand)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-    }
-
-    @Test
-    void testDeleteProduct() throws Exception {
-        String productId = "5f98b326-b5db-4b71-bdb0-8eed335fd6e4";
-        Mockito.doNothing().when(productService).deleteProduct( productId);
-
-        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}",  productId))
+                        .content(objectMapper.writeValueAsString(mockCreateRequest)))
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 }

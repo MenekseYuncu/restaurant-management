@@ -313,7 +313,6 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
         Mockito.verifyNoInteractions(productService);
     }
 
-
     @Test
     void givenValidProductId_whenProductByIdFound_thenReturnSuccess() throws Exception {
         // Given
