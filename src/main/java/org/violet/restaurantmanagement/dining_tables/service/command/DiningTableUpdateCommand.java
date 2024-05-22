@@ -6,6 +6,6 @@ public record DiningTableUpdateCommand(
 
         DiningTableStatus status,
 
-        int size
+        Integer size
 ) {
 }

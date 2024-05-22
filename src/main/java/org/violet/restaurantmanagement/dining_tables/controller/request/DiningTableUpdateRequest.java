@@ -15,7 +15,7 @@ public record DiningTableUpdateRequest(
 
         @NotNull
         @Range(min = 0, max = Integer.MAX_VALUE)
-        int size
+        Integer size
 ) {
     @JsonIgnore
     @AssertTrue(message = "Status must be either 'VACANT' or 'RESERVED' or 'OCCUPIED' or 'TAKING_ORDERS' or 'DELETED'")

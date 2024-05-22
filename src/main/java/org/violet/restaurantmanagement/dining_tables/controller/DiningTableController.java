@@ -1,7 +1,9 @@
 package org.violet.restaurantmanagement.dining_tables.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +21,7 @@ import org.violet.restaurantmanagement.dining_tables.service.command.DiningTable
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/v1/dining-table")
 class DiningTableController {
 
@@ -37,7 +40,7 @@ class DiningTableController {
 
     @PutMapping("/{id}")
     public BaseResponse<Void> updateDiningTable(
-            @PathVariable Long id,
+            @Positive @PathVariable Long id,
             @Valid @RequestBody DiningTableUpdateRequest request
     ) {
         DiningTableUpdateCommand command = diningTableUpdateRequestToCommandMapper.map(request);
