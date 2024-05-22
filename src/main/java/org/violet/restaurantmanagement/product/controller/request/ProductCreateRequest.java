@@ -44,7 +44,7 @@ public record ProductCreateRequest(
 ) {
 
     @JsonIgnore
-    @AssertTrue(message = "Status must be either 'ACTIVE' or 'INACTIVE' or 'DELETED'")
+    @AssertTrue(message = "Status must be either 'ACTIVE' or 'INACTIVE'")
     @SuppressWarnings("This method is unused by the application directly but Spring is using it in the background.")
     private boolean isProductStatusValid() {
 
@@ -54,8 +54,7 @@ public record ProductCreateRequest(
 
         EnumSet<ProductStatus> acceptableStatus = EnumSet.of(
                 ProductStatus.ACTIVE,
-                ProductStatus.INACTIVE,
-                ProductStatus.DELETED
+                ProductStatus.INACTIVE
         );
         return acceptableStatus.contains(this.status);
     }

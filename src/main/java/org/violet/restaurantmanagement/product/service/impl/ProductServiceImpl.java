@@ -3,6 +3,9 @@ package org.violet.restaurantmanagement.product.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
+import org.violet.restaurantmanagement.category.repository.CategoryRepository;
+import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
@@ -18,11 +21,15 @@ import org.violet.restaurantmanagement.product.service.command.ProductListComman
 import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Product;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+
+    private final CategoryRepository categoryRepository;
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
@@ -55,7 +62,15 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     public void createProduct(ProductCreateCommand createCommand) {
+        Optional<CategoryEntity> categoryEntity = categoryRepository.findById(createCommand.categoryId())
+                .filter(CategoryEntity::isActive);
+
+        if (categoryEntity.isEmpty()) {
+            throw new CategoryNotFoundException();
+        }
+
         Product product = productCreateCommandToDomainMapper.map(createCommand);
+        product.isActive();
 
         ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
 
@@ -64,17 +79,19 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(String id, ProductUpdateCommand updateCommand) {
+        Optional<CategoryEntity> categoryEntity = categoryRepository.findById(updateCommand.categoryId())
+                .filter(CategoryEntity::isActive);
+
+        if (categoryEntity.isEmpty()) {
+            throw new CategoryNotFoundException();
+        }
+
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(ProductNotFoundException::new);
 
         Product updatedProduct = productUpdateCommandToDomainMapper.map(updateCommand);
 
-        productEntity.setName(updatedProduct.getName());
-        productEntity.setIngredient(updatedProduct.getIngredient());
-        productEntity.setPrice(updatedProduct.getPrice());
-        productEntity.setStatus(updatedProduct.getStatus());
-        productEntity.setExtent(updatedProduct.getExtent());
-        productEntity.setExtentType(updatedProduct.getExtentType());
+        productDomainToProductEntityMapper.map(updatedProduct);
 
         productRepository.save(productEntity);
     }

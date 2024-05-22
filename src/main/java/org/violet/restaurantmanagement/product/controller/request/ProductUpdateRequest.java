@@ -5,6 +5,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.Range;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
@@ -14,6 +15,10 @@ import java.math.BigDecimal;
 import java.util.EnumSet;
 
 public record ProductUpdateRequest(
+
+        @NotNull
+        @Positive
+        Long categoryId,
 
         @NotBlank
         @Size(min = 2, max = 300)

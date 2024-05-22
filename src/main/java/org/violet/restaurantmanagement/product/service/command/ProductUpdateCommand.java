@@ -6,6 +6,7 @@ import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import java.math.BigDecimal;
 
 public record ProductUpdateCommand(
+        Long categoryId,
         String name,
         String ingredient,
         BigDecimal price,
