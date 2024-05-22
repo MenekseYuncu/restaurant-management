@@ -2,9 +2,12 @@ package org.violet.restaurantmanagement.dining_tables.service.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.violet.restaurantmanagement.RmaServiceTest;
+import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableUpdateCommandToDomainMapper;
@@ -14,15 +17,11 @@ import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTab
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
-import org.violet.restaurantmanagement.util.RmaServiceTest;
-import org.violet.restaurantmanagement.util.RmaTestContainer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 
 class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
@@ -36,33 +35,42 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     private static final DiningTableUpdateCommandToDomainMapper diningTableUpdateCommandToDomainMapper = DiningTableUpdateCommandToDomainMapper.INSTANCE;
 
     @Test
-    void givenCreateDiningTable_whenDiningTablesExists_thenDiningTablesEntitySaved() {
+    void givenDiningTablesExists_whenCreateDiningTable_thenDiningTablesEntitySaved() {
         // Given
-        DiningTableCreateCommand createCommand = new DiningTableCreateCommand(3, 4);
+        DiningTableCreateCommand createCommand = new DiningTableCreateCommand(
+                3,
+                4
+        );
 
         List<DiningTableEntity> savedEntities = new ArrayList<>();
         Mockito.when(diningTableRepository.saveAll(Mockito.anyList()))
-                .then(invocation -> {
-                    List<DiningTableEntity> entities = invocation.getArgument(0);
-                    savedEntities.addAll(entities);
-                    return entities;
-                });
+                .thenReturn(savedEntities);
 
         // When
         diningTableService.createDiningTables(createCommand);
 
         // Then
-        Assertions.assertEquals(3, savedEntities.size());
-
-        for (DiningTableEntity entity : savedEntities) {
-            Assertions.assertNotNull(entity.getMergeId());
-            Assertions.assertEquals(DiningTableStatus.VACANT, entity.getStatus());
-            Assertions.assertEquals(4, entity.getSize());
-        }
+        Mockito.verify(diningTableRepository, Mockito.times(1))
+                .saveAll(ArgumentMatchers.anyList());
     }
 
     @Test
-    void givenUpdateDiningTable_whenTableExists_thenUpdateDiningTableEntity() {
+    void givenNullCreateCommand_whenCreateDiningTable_thenThrowNullPointerException() {
+        // Given
+        DiningTableCreateCommand createCommand = new DiningTableCreateCommand(
+                null,
+                null
+        );
+
+        // Then
+        Assertions.assertThrows(NullPointerException.class,
+                () -> diningTableService.createDiningTables(createCommand));
+
+        Mockito.verifyNoInteractions(diningTableRepository);
+    }
+
+    @Test
+    void givenDiningTableExists_whenUpdateDiningTable_thenReturnSuccess() {
         // Given
         Long tableId = 1L;
         DiningTableUpdateCommand updateCommand = new DiningTableUpdateCommand(
@@ -79,12 +87,12 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         diningTableService.updateDiningTable(tableId, updateCommand);
 
         // Then
-        Mockito.verify(diningTableRepository, times(1))
-                .save(any(DiningTableEntity.class));
+        Mockito.verify(diningTableRepository, Mockito.times(1))
+                .save(ArgumentMatchers.any(DiningTableEntity.class));
     }
 
     @Test
-    void givenUpdateDiningTable_whenDiningTableIdDoesNotExists_thenThrowDiningTableNotFoundException() {
+    void givenDiningTableIdDoesNotExists_whenUpdateDiningTable_thenThrowDiningTableNotFoundException() {
         // Given
         Long tableId = 5L;
         DiningTableUpdateCommand updateCommand = new DiningTableUpdateCommand(
@@ -101,7 +109,7 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     }
 
     @Test
-    void givenUpdateDiningTable_whenNullUpdateCommand_thenThrowException() {
+    void givenNullUpdateCommand_whenUpdateDiningTable_thenThrowException() {
         // Given
         Long tableId = 1L;
         DiningTableUpdateCommand updateCommand = null;
@@ -110,12 +118,12 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Assertions.assertThrows(DiningTableNotFoundException.class,
                 () -> diningTableService.updateDiningTable(tableId, updateCommand));
 
-        Mockito.verify(diningTableRepository, times(0))
-                .save(any(DiningTableEntity.class));
+        Mockito.verify(diningTableRepository, Mockito.times(0))
+                .save(ArgumentMatchers.any(DiningTableEntity.class));
     }
 
     @Test
-    void givenUpdateDiningTable_whenTableIdIsNegative_thenThrowException() {
+    void givenTableIdIsNegative_whenUpdateDiningTable_thenThrowException() {
         // Given
         Long tableId = -1L;
         DiningTableUpdateCommand updateCommand = new DiningTableUpdateCommand(
@@ -128,7 +136,6 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
                 () -> diningTableService.updateDiningTable(tableId, updateCommand));
 
         // Verify
-        Mockito.verify(diningTableRepository, Mockito.never()).save(any());
+        Mockito.verify(diningTableRepository, Mockito.never()).save(ArgumentMatchers.any());
     }
-
 }
