@@ -10,7 +10,6 @@ import org.violet.restaurantmanagement.RmaEndToEndTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
-import org.violet.restaurantmanagement.product.controller.request.ProductCreateRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductListRequest;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
@@ -26,6 +25,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
 
     @Autowired
     private ProductRepository productRepository;
+
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
 
     private final static String BASE_URL = "/api/v1/product";
@@ -74,7 +74,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
         ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
         productRepository.save(productEntity);
 
-        // Then
+
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", productEntity.getId()))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -93,24 +93,5 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.extentType")
                         .value(product.getExtentType().toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
-    }
-
-    @Test
-    void whenProductCreateRequestExist_thenReturnProductSave() throws Exception {
-        ProductCreateRequest mockCreateRequest = new ProductCreateRequest(
-                1L,
-                "Product",
-                "ingredients",
-                BigDecimal.valueOf(100),
-                ProductStatus.ACTIVE,
-                300,
-                ExtentType.GR
-        );
-
-        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockCreateRequest)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 }

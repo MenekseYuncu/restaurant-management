@@ -412,9 +412,9 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
     void givenInvalidCreateProductRequest_whenCreateProduct_thenReturnBadRequest() throws Exception {
         // Given
         ProductCreateRequest mockCreateRequest = new ProductCreateRequest(
+                1L,
                 null,
                 null,
-                "ingredients",
                 BigDecimal.valueOf(100),
                 ProductStatus.ACTIVE,
                 300,
@@ -445,6 +445,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
 
         // When
         ProductUpdateRequest mockUpdateRequest = new ProductUpdateRequest(
+                1L,
                 "Product",
                 "ingredients",
                 BigDecimal.valueOf(100),
@@ -474,6 +475,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
         // Given
         String productId = String.valueOf(UUID.randomUUID());
         ProductUpdateRequest mockUpdateRequest = new ProductUpdateRequest(
+                1L,
                 null,
                 "ingredients",
                 null,
@@ -521,6 +523,7 @@ class ProductControllerTest extends RmaControllerTest implements RmaTestContaine
 
         // When
         ProductUpdateRequest mockUpdateRequest = new ProductUpdateRequest(
+                1L,
                 "Product",
                 "ingredients",
                 BigDecimal.valueOf(100),
