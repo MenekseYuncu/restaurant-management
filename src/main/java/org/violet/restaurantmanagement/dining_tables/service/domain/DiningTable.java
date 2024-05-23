@@ -14,17 +14,12 @@ import java.util.UUID;
 public class DiningTable {
 
     private Long id;
-    private String mergeId;
-    private DiningTableStatus status;
+    @Builder.Default
+    private String mergeId = UUID.randomUUID().toString();
+    @Builder.Default
+    private DiningTableStatus status = DiningTableStatus.VACANT;
     private int size;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public void tableStatus() {
-        this.status = DiningTableStatus.VACANT;
-    }
-
-    public void merge() {
-        this.mergeId = UUID.randomUUID().toString();
-    }
 }

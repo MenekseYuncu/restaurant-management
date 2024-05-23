@@ -19,13 +19,14 @@ public class Product {
     private String name;
     private String ingredient;
     private BigDecimal price;
-    private ProductStatus status;
+    @Builder.Default
+    private ProductStatus status = ProductStatus.ACTIVE;
     private Integer extent;
     private ExtentType extentType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public void isActive() {
-        this.status = ProductStatus.ACTIVE;
+    public void delete() {
+        this.status = ProductStatus.DELETED;
     }
 }
