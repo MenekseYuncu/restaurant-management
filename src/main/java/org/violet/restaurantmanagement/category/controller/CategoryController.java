@@ -41,6 +41,7 @@ public class CategoryController {
     private static final CategoryCreateRequestToCreateCommandMapper toCreateCommandMapper = CategoryCreateRequestToCreateCommandMapper.INSTANCE;
     private static final CategoryUpdateRequestToUpdateCommandMapper toUpdateCommandMapper = CategoryUpdateRequestToUpdateCommandMapper.INSTANCE;
 
+
     @PostMapping("/categories")
     public BaseResponse<RmaPageResponse<CategoryResponse>> getAllCategories(
             @Valid @RequestBody CategoryListRequest categoryListRequest
