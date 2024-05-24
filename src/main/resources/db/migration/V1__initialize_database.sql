@@ -16,7 +16,8 @@ create table if not exists rm_product
         constraint pk__rm_product__id primary key,
     category_id bigint
         constraint fk__rm_product__category__id references rm_category (id),
-    name        varchar(300)   not null,
+    name varchar(300) not null
+        constraint u__rm_product__name unique,
     ingredient  varchar(2048)  not null,
     price       numeric(50, 8) not null,
     status      varchar(20)    not null
