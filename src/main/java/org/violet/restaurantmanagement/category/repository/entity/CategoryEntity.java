@@ -41,4 +41,8 @@ public class CategoryEntity extends BaseEntity {
     public boolean isActive() {
         return CategoryStatus.ACTIVE == this.status;
     }
+
+    public void delete() {
+        this.status = CategoryStatus.DELETED;
+    }
 }

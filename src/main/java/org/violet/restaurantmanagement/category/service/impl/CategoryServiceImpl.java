@@ -3,13 +3,12 @@ package org.violet.restaurantmanagement.category.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.category.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
-import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
-import org.violet.restaurantmanagement.category.model.mapper.CategoryCreateCommandToEntityMapper;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryEntityToDomainMapper;
-import org.violet.restaurantmanagement.category.model.mapper.CategoryUpdateCommandToEntityMapper;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryToCategoryEntityMapper;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
 import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.category.service.CategoryService;
@@ -17,6 +16,7 @@ import org.violet.restaurantmanagement.category.service.command.CategoryCreateCo
 import org.violet.restaurantmanagement.category.service.command.CategoryListCommand;
 import org.violet.restaurantmanagement.category.service.command.CategoryUpdateCommand;
 import org.violet.restaurantmanagement.category.service.domain.Category;
+import org.violet.restaurantmanagement.common.model.RmaPage;
 
 
 @Service
@@ -24,9 +24,12 @@ import org.violet.restaurantmanagement.category.service.domain.Category;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+
     private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
-    private static final CategoryCreateCommandToEntityMapper categoryCreateCommandToEntityMapper = CategoryCreateCommandToEntityMapper.INSTANCE;
-    private static final CategoryUpdateCommandToEntityMapper categoryUpdateCommandToEntityMapper = CategoryUpdateCommandToEntityMapper.INSTANCE;
+    private static final CategoryToCategoryEntityMapper categoryToCategoryEntityMapper = CategoryToCategoryEntityMapper.INSTANCE;
+    private static final CategoryCreateCommandToDomainMapper categoryCreateCommandToDomainMapper = CategoryCreateCommandToDomainMapper.INSTANCE;
+    private static final CategoryUpdateCommandToDomainMapper categoryUpdateCommandToDomainMapper = CategoryUpdateCommandToDomainMapper.INSTANCE;
+
 
     @Override
     public RmaPage<Category> getAllCategories(CategoryListCommand categoryListCommand) {
@@ -46,46 +49,71 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getCategoryById(Long id) {
-        CategoryEntity entity = categoryRepository
-                .findById(id)
-                .orElseThrow(CategoryNotFoundException::new);
-        return categoryEntityToDomainMapper.map(entity);
+
+        return this.getById(id);
     }
 
     @Override
     public void createCategory(CategoryCreateCommand createCommand) {
-        CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
 
-        if (categoryRepository.existsByName(categoryEntity.getName())) {
-            throw new CategoryAlreadyExistsException();
-        }
+        this.checkExistingOfCategoryName(createCommand.name());
 
-        categoryRepository.save(categoryEntity);
+        Category category = categoryCreateCommandToDomainMapper.map(createCommand);
+        category.isActive();
+
+        this.save(category);
     }
 
     @Override
     public void updateCategory(Long id, CategoryUpdateCommand updateCommand) {
-        CategoryEntity entity = categoryRepository.findById(id)
+
+        CategoryEntity existingCategory = categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
 
-        CategoryEntity updatedEntity = categoryUpdateCommandToEntityMapper.map(updateCommand);
+        this.checkExistingOfCategoryNameIfChanged(updateCommand, existingCategory);
 
-        entity.setName(updatedEntity.getName());
+        Category updatedCategory = categoryUpdateCommandToDomainMapper.map(updateCommand);
 
-        if (categoryRepository.existsByName(updatedEntity.getName())) {
-            throw new CategoryAlreadyExistsException();
-        }
+        existingCategory.setName(updatedCategory.getName());
+        existingCategory.setStatus(updatedCategory.getStatus());
 
-        entity.setStatus(updatedEntity.getStatus());
-
-        categoryRepository.save(entity);
+        categoryRepository.save(existingCategory);
     }
 
     @Override
     public void deleteCategory(Long id) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
-        categoryEntity.setStatus(CategoryStatus.DELETED);
+
+        categoryEntity.delete();
+
         categoryRepository.save(categoryEntity);
+    }
+
+    private Category getById(Long id) {
+        CategoryEntity categoryEntity = categoryRepository.findById(id)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        return categoryEntityToDomainMapper.map(categoryEntity);
+    }
+
+    private void save(Category category) {
+        CategoryEntity categoryEntityToBeSave = categoryToCategoryEntityMapper.map(category);
+        categoryRepository.save(categoryEntityToBeSave);
+    }
+
+    private void checkExistingOfCategoryName(String name) {
+        boolean isCategoryExistByName = categoryRepository.findByName(name).isPresent();
+        if (isCategoryExistByName) {
+            throw new CategoryAlreadyExistsException();
+        }
+    }
+
+    private void checkExistingOfCategoryNameIfChanged(CategoryUpdateCommand categoryUpdateCommand,
+                                                      CategoryEntity categoryEntity
+    ) {
+        if (!categoryEntity.getName().equalsIgnoreCase(categoryUpdateCommand.name())) {
+            this.checkExistingOfCategoryName(categoryUpdateCommand.name());
+        }
     }
 }

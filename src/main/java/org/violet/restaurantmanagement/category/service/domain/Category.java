@@ -16,12 +16,11 @@ public class Category {
 
     private Long id;
     private String name;
-    @Builder.Default
-    private CategoryStatus status = CategoryStatus.ACTIVE;
+    private CategoryStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public void delete() {
-        this.status = CategoryStatus.DELETED;
+    public void isActive() {
+        this.status = CategoryStatus.ACTIVE;
     }
 }
