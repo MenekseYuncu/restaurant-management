@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.violet.restaurantmanagement.RmaControllerTest;
-import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryCreateRequestToCreateCommandMapper;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryUpdateRequestToUpdateCommandMapper;
 import org.violet.restaurantmanagement.category.controller.request.CategoryCreateRequest;
@@ -32,13 +32,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-class CategoryControllerTest extends RmaControllerTest implements RmaTestContainer {
+@WebMvcTest(controllers = CategoryController.class)
+class CategoryControllerTest extends RmaControllerTest {
 
     @MockBean
     private CategoryService categoryService;
+
     private static final CategoryUpdateRequestToUpdateCommandMapper categoryUpdateRequestToUpdateCommandMapper = CategoryUpdateRequestToUpdateCommandMapper.INSTANCE;
     private static final CategoryCreateRequestToCreateCommandMapper categoryCreateRequestToCreateCommandMapper = CategoryCreateRequestToCreateCommandMapper.INSTANCE;
+
     private final static String BASE_URL = "/api/v1/category";
+
 
     @Test
     void givenValidCategoryListRequest_whenCategoriesFound_thenReturnSuccess() throws Exception {
@@ -384,7 +388,7 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(createCommand)))
+                        .content(new ObjectMapper().writeValueAsString(mockCategoryCreateRequest)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
@@ -532,7 +536,7 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
     }
 
     @Test
-    void givenInvalidDeleteId_whenDeleteCategoryNotFound_thenReturnNotFound() throws Exception {
+    void givenInvalidDeleteId_whenDeleteCategoryNotFound_thenReturnCategoryNotFound() throws Exception {
         // Given
         Long categoryId = 100L;
 
@@ -550,10 +554,8 @@ class CategoryControllerTest extends RmaControllerTest implements RmaTestContain
         Mockito.verify(categoryService).deleteCategory(categoryId);
     }
 
-
-
     @Test
-    void givenInvalidNegativeInput_whenDeleteCategory_thenReturnBadRequest() throws Exception {
+    void givenInvalidNegativeId_whenDeleteCategory_thenReturnBadRequest() throws Exception {
         // Given
         Long categoryId = -1L;
 

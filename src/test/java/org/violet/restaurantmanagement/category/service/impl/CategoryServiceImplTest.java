@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.category.service.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -14,9 +15,10 @@ import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.category.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
-import org.violet.restaurantmanagement.category.model.mapper.CategoryCreateCommandToEntityMapper;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryEntityToDomainMapper;
-import org.violet.restaurantmanagement.category.model.mapper.CategoryUpdateCommandToEntityMapper;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryToCategoryEntityMapper;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
 import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.category.service.command.CategoryCreateCommand;
@@ -32,25 +34,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 
 class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
     @Mock
     private CategoryRepository categoryRepository;
-
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
-    private static final CategoryCreateCommandToEntityMapper categoryCreateCommandToEntityMapper = CategoryCreateCommandToEntityMapper.INSTANCE;
-
-    private static final CategoryUpdateCommandToEntityMapper categoryUpdateCommandToEntityMapper = CategoryUpdateCommandToEntityMapper.INSTANCE;
-
+    private static final CategoryCreateCommandToDomainMapper categoryCreateCommandToDomainMapper = CategoryCreateCommandToDomainMapper.INSTANCE;
+    private static final CategoryUpdateCommandToDomainMapper categoryUpdateCommandToDomainMapper = CategoryUpdateCommandToDomainMapper.INSTANCE;
     private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
+    private static final CategoryToCategoryEntityMapper categoryToCategoryEntityMapper = CategoryToCategoryEntityMapper.INSTANCE;
+
 
     @Test
-    void givenGetAllCategories_whenCategoryListWithoutFilterAndSorting_thenReturnCategories() {
+    void givenCategoryListWithoutFilterAndSorting_whenGetAllCategories_thenReturnCategories() {
         // Given
         List<CategoryEntity> categoryEntities = new ArrayList<>();
         categoryEntities.add(new CategoryEntity(
@@ -88,7 +87,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     }
 
     @Test
-    void givenGetAllCategories_whenCategoryListWithoutSorting_thenReturnCategories() {
+    void givenCategoryListWithoutSorting_whenGetAllCategories_thenReturnCategories() {
         // Given
         List<CategoryEntity> categoryEntities = new ArrayList<>();
         categoryEntities.add(new CategoryEntity(
@@ -138,7 +137,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     }
 
     @Test
-    void givenGetAllCategories_whenCategoryListExist_thenReturnCategories() {
+    void givenCategoryListExist_whenGetAllCategories_thenReturnCategories() {
         // Given
         CategoryListCommand.CategoryFilter mockCategoryFilter = CategoryListCommand.CategoryFilter.builder()
                 .name("Category")
@@ -196,7 +195,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     }
 
     @Test
-    void givenGetAllCategories_whenResultIsNull_thenThrowNullPointerException() {
+    void givenResultIsNull_whenGetAllCategories_thenThrowNullPointerException() {
         // When
         CategoryListCommand categoryListCommand = CategoryListCommand.builder().build();
 
@@ -207,7 +206,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     }
 
     @Test
-    void givenGetCategoryById_whenCategoryExists_thenReturnCategory() {
+    void givenCategoryExists_whenGetCategoryById_thenReturnCategory() {
         //Given
         Long categoryId = 1L;
         CategoryEntity categoryEntity = new CategoryEntity();
@@ -232,7 +231,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     }
 
     @Test
-    void givenGetCategoryById_whenCategoryDoesNotExist_thenThrowCategoryNotFoundException() {
+    void givenCategoryDoesNotExist_whenGetCategoryById_thenThrowCategoryNotFoundException() {
         //Given
         Long categoryId = 1L;
 
@@ -245,27 +244,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     }
 
     @Test
-    void givenCreateCategory_whenSaveFails_thenThrowException() {
-        // Given
-        CategoryCreateCommand createCommand = new CategoryCreateCommand(
-                null,
-                CategoryStatus.ACTIVE
-        );
-
-        // When
-        Mockito.when(categoryRepository.save(any(CategoryEntity.class)))
-                .thenThrow(CategoryNotFoundException.class);
-
-        // Then
-        Assertions.assertThrows(CategoryNotFoundException.class,
-                () -> categoryService.createCategory(createCommand));
-
-        Mockito.verify(categoryRepository, times(1))
-                .save(any(CategoryEntity.class));
-    }
-
-    @Test
-    void givenCreateCategory_whenCategoryAlreadyExists_thenThrowException() {
+    void givenValidCreateCategoryCommand_whenCreateCategory_thenReturnSuccess() {
         // Given
         CategoryCreateCommand createCommand = new CategoryCreateCommand(
                 "Category",
@@ -273,123 +252,162 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         );
 
         // When
-        Mockito.when(categoryRepository.existsByName(createCommand.name())).thenReturn(true);
+        Mockito.when(categoryRepository.findByName(createCommand.name()))
+                .thenReturn(Optional.empty());
+
+        categoryService.createCategory(createCommand);
+
+        // Verify
+        Mockito.verify(categoryRepository, Mockito.times(1))
+                .save(Mockito.any(CategoryEntity.class));
+    }
+
+    @Test
+    void givenInvalidCreateCategoryCommand_whenCreateCategory_thenThrowException() {
+        // Given
+        CategoryCreateCommand createCommand = new CategoryCreateCommand(
+                null,
+                CategoryStatus.ACTIVE
+        );
+
+        // When
+        Mockito.when(categoryRepository.save(ArgumentMatchers.any(CategoryEntity.class)))
+                .thenThrow(CategoryNotFoundException.class);
 
         // Then
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.createCategory(createCommand));
+
+        Mockito.verify(categoryRepository, Mockito.times(1))
+                .save(ArgumentMatchers.any(CategoryEntity.class));
+    }
+
+    @Test
+    void givenCategoryAlreadyExists_whenCreateCategory_ThrowsException() {
+        // Given
+        CategoryCreateCommand createCommand = new CategoryCreateCommand(
+                "Category",
+                CategoryStatus.ACTIVE
+        );
+
+        // When
+        Category category = categoryCreateCommandToDomainMapper.map(createCommand);
+        CategoryEntity categoryEntity = categoryToCategoryEntityMapper.map(category);
+
+        Mockito.when(categoryRepository.findByName(createCommand.name()))
+                .thenReturn(Optional.of(categoryEntity));
+
+        // Assert
         Assertions.assertThrows(CategoryAlreadyExistsException.class,
                 () -> categoryService.createCategory(createCommand));
 
         // Verify
-        Mockito.verify(categoryRepository, times(1))
-                .existsByName(createCommand.name());
-
         Mockito.verify(categoryRepository, Mockito.never())
-                .save(any(CategoryEntity.class));
+                .save(ArgumentMatchers.any(CategoryEntity.class));
     }
 
     @Test
-    void givenCreateCategory_thenSaveCategoryEntity() {
+    void givenValidUpdateCategoryCommand_whenUpdateCategory_thenReturnSuccess() {
         // Given
-        CategoryCreateCommand createCommand = new CategoryCreateCommand(
-                "TestCategory",
+        Long id = 1L;
+        CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
+                "Updated Category",
                 CategoryStatus.ACTIVE
         );
-        CategoryEntity categoryEntity = categoryCreateCommandToEntityMapper.map(createCommand);
 
         // When
-        Mockito.when(categoryRepository.save(any(CategoryEntity.class)))
-                .thenReturn(categoryEntity);
+        Category updatedCategory = categoryUpdateCommandToDomainMapper.map(updateCommand);
+        CategoryEntity categoryEntity = categoryToCategoryEntityMapper.map(updatedCategory);
 
-        categoryService.createCategory(createCommand);
-
-        // Then
-        Mockito.verify(categoryRepository, times(1))
-                .save(any(CategoryEntity.class));
-    }
-
-    @Test
-    void givenUpdateCategory_whenCategoryExists_thenUpdateCategoryEntity() {
-        // Given
-        Long categoryId = 1L;
-        CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
-                "UpdateTest",
-                CategoryStatus.INACTIVE
-        );
-        CategoryEntity categoryEntity = categoryUpdateCommandToEntityMapper.map(updateCommand);
-
-        // When
-        Mockito.when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(categoryEntity));
-
-        categoryService.updateCategory(categoryId, updateCommand);
-
-        // Then
-        Mockito.verify(categoryRepository, times(1))
-                .save(any(CategoryEntity.class));
-    }
-
-    @Test
-    void givenUpdateCategory_whenWithExistingName_thenThrowCategoryAlreadyExistsException() {
-        // Given
-        Long categoryId = 1L;
-        String existingName = "Category";
-        CategoryUpdateCommand command = new CategoryUpdateCommand(existingName, CategoryStatus.ACTIVE);
-
-        // When
-        Mockito.when(categoryRepository.existsByName(existingName)).thenReturn(true);
-
-        CategoryEntity categoryEntity = new CategoryEntity();
-        Mockito.when(categoryRepository.findById(categoryId))
+        Mockito.when(categoryRepository.findById(id))
                 .thenReturn(Optional.of(categoryEntity));
 
-        // Then
-        Assertions.assertThrows(CategoryAlreadyExistsException.class,
-                () -> categoryService.updateCategory(categoryId, command));
+        // Act
+        categoryService.updateCategory(id, updateCommand);
 
         // Verify
-        Mockito.verify(categoryRepository).existsByName(existingName);
-        Mockito.verify(categoryRepository, Mockito.never()).save(any());
+        Mockito.verify(categoryRepository, Mockito.times(1))
+                .save(categoryEntity);
     }
 
     @Test
-    void givenUpdateCategory_whenCategoryIdDoesNotExists_thenThrowCategoryNotFoundException() {
+    void givenInValidCategoryId_whenUpdateCategory_thenReturnCategoryNotFound() {
+        // Given
+        Long id = 1L;
+        CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
+                "Updated Category",
+                CategoryStatus.ACTIVE
+        );
+
+        Mockito.when(categoryRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Assert
+        Assertions.assertThrows(CategoryNotFoundException.class,
+                () -> categoryService.updateCategory(id, updateCommand));
+
+        // Verify
+        Mockito.verify(categoryRepository, Mockito.never())
+                .save(ArgumentMatchers.any(CategoryEntity.class));
+    }
+
+    @Test
+    void givenInValidCategoryName_whenUpdateCategory_thenReturnCategoryNameAlreadyExists() {
         // Given
         Long categoryId = 1L;
         CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
-                "UpdateTest",
-                CategoryStatus.INACTIVE
+                "Category test",
+                CategoryStatus.ACTIVE
         );
+        CategoryEntity existingCategoryEntity = new CategoryEntity();
+        existingCategoryEntity.setId(categoryId);
+        existingCategoryEntity.setName("Category");
+
+        CategoryEntity anotherCategoryEntity = new CategoryEntity();
+        anotherCategoryEntity.setId(2L);
+        anotherCategoryEntity.setName("Category test");
 
         // When
-        Mockito.when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        Mockito.when(categoryRepository.findById(categoryId))
+                .thenReturn(Optional.of(existingCategoryEntity));
 
-        //Then
-        Assertions.assertThrows(CategoryNotFoundException.class,
+        Mockito.when(categoryRepository.findByName("Category test"))
+                .thenReturn(Optional.of(existingCategoryEntity));
+
+        // Assert
+        Assertions.assertThrows(CategoryAlreadyExistsException.class,
                 () -> categoryService.updateCategory(categoryId, updateCommand));
+
+        // Verify
+        Mockito.verify(categoryRepository, Mockito.never())
+                .save(ArgumentMatchers.any(CategoryEntity.class));
     }
 
     @Test
-    void givenSoftDeleteCategory_whenCategoryExists_thenUpdatedCategoryEntity() {
+    void givenCategoryExists_whenSoftDeleteCategory_thenReturnSuccess() {
         // Given
         Long categoryId = 1L;
         CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.delete();
 
         // When
-        Mockito.when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(categoryEntity));
+        Mockito.when(categoryRepository.findById(categoryId))
+                .thenReturn(Optional.of(categoryEntity));
 
         categoryService.deleteCategory(categoryId);
 
         // Then
-        Mockito.verify(categoryRepository, times(1))
-                .save(any(CategoryEntity.class));
+        Mockito.verify(categoryRepository, Mockito.times(1))
+                .save(ArgumentMatchers.any(CategoryEntity.class));
     }
 
     @Test
-    void givenSoftDeleteCategory_whenCategoryIdDoesNotExists_thenThrowCategoryNotFoundException() {
+    void givenCategoryIdDoesNotExists_whenSoftDeleteCategory_thenThrowCategoryNotFoundException() {
         //Given
         Long categoryId = 1L;
 
         //When
-        Mockito.when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+        Mockito.when(categoryRepository.findById(categoryId))
+                .thenReturn(Optional.empty());
 
         //Then
         Assertions.assertThrows(CategoryNotFoundException.class,

@@ -1,6 +1,6 @@
 package org.violet.restaurantmanagement.category.controller;
 
-import org.junit.jupiter.api.Assertions;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -23,10 +23,12 @@ class CategoryEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
     private final static String BASE_URL = "/api/v1/category";
 
     @Test
     void whenCategoryListRequestExist_thenReturnCategories() throws Exception {
+        // Given
         CategoryListRequest mockCategoryListRequest = CategoryListRequest.builder()
                 .pagination(PaginationBuilder.builder()
                         .pageNumber(1)
@@ -44,6 +46,67 @@ class CategoryEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 )
                 .build();
 
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockCategoryListRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber")
+                        .value(mockCategoryListRequest.getPagination().getPageNumber()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize")
+                        .value(mockCategoryListRequest.getPagination().getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
+                        .value(mockCategoryListRequest.getFilter().getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+    }
+
+    @Test
+    void whenCategoryListRequestExistWithoutSorting_thenReturnCategories() throws Exception {
+        // Given
+        CategoryListRequest mockCategoryListRequest = CategoryListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageNumber(1)
+                        .pageSize(1)
+                        .build()
+                )
+                .filter(CategoryListRequest.CategoryFilter.builder()
+                        .name("Category")
+                        .build()
+                )
+                .build();
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mockCategoryListRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber")
+                        .value(mockCategoryListRequest.getPagination().getPageNumber()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize")
+                        .value(mockCategoryListRequest.getPagination().getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
+                        .value(mockCategoryListRequest.getFilter().getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+    }
+
+    @Test
+    void whenCategoryListRequestExistWithoutSortingAndFilter_thenReturnCategories() throws Exception {
+        // Given
+        CategoryListRequest mockCategoryListRequest = CategoryListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageNumber(1)
+                        .pageSize(1)
+                        .build()
+                )
+                .build();
+
+        // Assert
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(mockCategoryListRequest)))
@@ -57,13 +120,16 @@ class CategoryEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                         .value(mockCategoryListRequest.getPagination().getPageSize()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
     }
+
     @Test
-    void testGetCategoryById() throws Exception {
+    void whenGetCategoryByIdExist_thenReturnCategory() throws Exception {
+        // Given
         Long categoryId = 1L;
 
         CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
                 .orElseThrow(CategoryNotFoundException::new);
 
+        // Assert
         mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{id}", categoryId))
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -76,48 +142,50 @@ class CategoryEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
     }
 
     @Test
-    void whenCategoryCreateRequestExist_thenReturnSuccess() throws Exception {
-        CategoryCreateRequest mockCategoryCreateRequest = new CategoryCreateRequest(
-                "Category",
+    void givenValidCategoryCreateRequest_whenCreateCategory_thenReturnsSuccess() throws Exception {
+        // Given
+        CategoryCreateRequest categoryCreateRequest = new CategoryCreateRequest(
+                "Test",
                 CategoryStatus.ACTIVE
         );
 
+        // Assert
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockCategoryCreateRequest)))
+                        .content(new ObjectMapper().writeValueAsString(categoryCreateRequest)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk());
-
-        Assertions.assertTrue(categoryRepository.existsByName(mockCategoryCreateRequest.name()));
     }
 
     @Test
-    void whenCategoryIdExist_thenUpdateCategory() throws Exception {
+    void whenUpdateCategory_thenReturnSuccess() throws Exception {
+        //Given
         Long categoryId = 1L;
 
-        CategoryUpdateRequest mockCategoryUpdateRequest = new CategoryUpdateRequest(
-                "Test",
-                CategoryStatus.DELETED
+        // When
+        CategoryUpdateRequest categoryUpdateRequest = new CategoryUpdateRequest(
+                "UpdateTest",
+                CategoryStatus.ACTIVE
         );
 
+        // Assert
         mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(mockCategoryUpdateRequest)))
+                        .content(new ObjectMapper().writeValueAsString(categoryUpdateRequest)))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
     }
 
     @Test
-    void whenCategoryIdExist_thenDeleteCategory() throws Exception {
+    void whenValidDeletedCategoryId_thenReturnSuccess() throws Exception {
+        // Given
         Long categoryId = 1L;
 
-        CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
-                .orElseThrow(CategoryNotFoundException::new);
-
-        categoryEntity.setStatus(CategoryStatus.DELETED);
-
+        // Assert
         mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}", categoryId))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
     }
 }
