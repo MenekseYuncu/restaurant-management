@@ -8,9 +8,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.violet.restaurantmanagement.common.controller.response.ErrorResponse;
 import org.violet.restaurantmanagement.category.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
+import org.violet.restaurantmanagement.common.controller.response.ErrorResponse;
+import org.violet.restaurantmanagement.product.exceptions.ProductAlreadyExistException;
 
 @Slf4j
 @RestControllerAdvice
@@ -40,6 +41,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CategoryAlreadyExistsException.class)
     public ResponseEntity<Object> handleCategoryAlreadyExistsException(CategoryAlreadyExistsException exception) {
+        ErrorResponse errorResponse = ErrorResponse.failureOf(HttpStatus.CONFLICT, exception.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ProductAlreadyExistException.class)
+    public ResponseEntity<Object> handleProductAlreadyExistException(ProductAlreadyExistException exception) {
         ErrorResponse errorResponse = ErrorResponse.failureOf(HttpStatus.CONFLICT, exception.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
