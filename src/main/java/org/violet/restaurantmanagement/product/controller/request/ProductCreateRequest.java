@@ -32,11 +32,10 @@ public record ProductCreateRequest(
         @DecimalMin(value = "0", inclusive = false)
         BigDecimal price,
 
-        @NotNull
         ProductStatus status,
 
         @NotNull
-        @Range(min = 0, max = Integer.MAX_VALUE)
+        @Range(min = 10, max = Integer.MAX_VALUE)
         Integer extent,
 
         @NotNull

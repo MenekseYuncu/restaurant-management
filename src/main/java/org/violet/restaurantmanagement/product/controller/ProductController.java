@@ -32,6 +32,7 @@ import org.violet.restaurantmanagement.product.service.domain.Product;
 public class ProductController {
 
     private final ProductService productService;
+
     private static final ProductCreateRequestToCreateCommandMapper productCreateRequestToCommandMapper = ProductCreateRequestToCreateCommandMapper.INSTANCE;
     private static final ProductUpdateRequestToProductUpdateCommandMapper productUpdateRequestToCommandMapper = ProductUpdateRequestToProductUpdateCommandMapper.INSTANCE;
     private static final ProductToProductResponseMapper productToProductResponse = ProductToProductResponseMapper.INSTANCE;

@@ -36,7 +36,7 @@ public record ProductUpdateRequest(
         ProductStatus status,
 
         @NotNull
-        @Range(min = 0, max = Integer.MAX_VALUE)
+        @Range(min = 10, max = Integer.MAX_VALUE)
         Integer extent,
 
         @NotNull
