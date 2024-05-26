@@ -57,4 +57,7 @@ public class ProductEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ExtentType extentType;
 
+    public void delete() {
+        this.status = ProductStatus.DELETED;
+    }
 }

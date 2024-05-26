@@ -5,7 +5,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
+import java.util.Optional;
+
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, String>, JpaSpecificationExecutor<ProductEntity> {
+
+    Optional<ProductEntity> findByName(String name);
 
 }
