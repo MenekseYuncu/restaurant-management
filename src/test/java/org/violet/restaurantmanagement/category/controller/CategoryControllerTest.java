@@ -123,6 +123,81 @@ class CategoryControllerTest extends RmaControllerTest {
     }
 
     @Test
+    void givenValidCategoryListRequestWithoutFilter_whenCategoriesFound_thenReturnSuccess() throws Exception {
+        // Given
+        CategoryListRequest.CategoryFilter mockCategoryFilter = CategoryListRequest.CategoryFilter.builder()
+                .name("Category")
+                .build();
+        CategoryListRequest mockCategoryListRequest = CategoryListRequest.builder()
+                .pagination(
+                        PaginationBuilder.builder()
+                                .pageNumber(1)
+                                .pageSize(3)
+                                .build()
+                )
+                .sorting(
+                        SortingBuilder.builder()
+                                .desc()
+                                .property("name")
+                                .build()
+                )
+                .build();
+
+        // When
+        List<Category> mockCategories = new ArrayList<>();
+        mockCategories.add(
+                Category.builder()
+                        .id(1L)
+                        .name("category 1")
+                        .status(CategoryStatus.ACTIVE)
+                        .build()
+        );
+        mockCategories.add(
+                Category.builder()
+                        .id(2L)
+                        .name("category 2")
+                        .status(CategoryStatus.ACTIVE)
+                        .build()
+        );
+        mockCategories.add(
+                Category.builder()
+                        .id(3L)
+                        .name("category 3")
+                        .status(CategoryStatus.ACTIVE)
+                        .build()
+        );
+
+        RmaPage<Category> rmaPage = RmaPage.<Category>builder()
+                .content(mockCategories)
+                .pageNumber(mockCategoryListRequest.getPagination().getPageNumber())
+                .pageSize(mockCategories.size())
+                .totalPageCount(mockCategoryListRequest.getPagination().getPageNumber())
+                .totalElementCount(mockCategories.size())
+                .sortedBy(mockCategoryListRequest.getSorting())
+                .filteredBy(mockCategoryFilter)
+                .build();
+
+        Mockito.when(categoryService.getAllCategories(Mockito.any(CategoryListCommand.class)))
+                .thenReturn(rmaPage);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mockCategoryListRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber")
+                        .value(rmaPage.getPageNumber()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize")
+                        .value(rmaPage.getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
+                        .value(rmaPage.getTotalPageCount()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+    }
+
+    @Test
     void givenCategoryListRequestWithoutSorting_whenCategoriesFound_thenReturnSuccess() throws Exception {
         // Given
         CategoryListRequest.CategoryFilter mockCategoryFilter = CategoryListRequest.CategoryFilter.builder()
