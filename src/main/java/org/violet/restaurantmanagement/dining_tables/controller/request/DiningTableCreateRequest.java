@@ -5,7 +5,7 @@ import org.hibernate.validator.constraints.Range;
 
 public record DiningTableCreateRequest(
 
-        Integer numberOfTables,
+        Integer count,
 
         @NotNull
         @Range(min = 0, max = Integer.MAX_VALUE)
