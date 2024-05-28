@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -12,12 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableCreateRequestToCommandMapper;
+import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToDiningTableResponseMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableCreateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
+import org.violet.restaurantmanagement.dining_tables.controller.response.DiningTableResponse;
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
+import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +33,16 @@ class DiningTableController {
     private final DiningTableService diningTableService;
     private static final DiningTableCreateRequestToCommandMapper diningTableCreateRequestToCommandMapper = DiningTableCreateRequestToCommandMapper.INSTANCE;
     private static final DiningTableUpdateRequestToCommandMapper diningTableUpdateRequestToCommandMapper = DiningTableUpdateRequestToCommandMapper.INSTANCE;
+    private static final DiningTableToDiningTableResponseMapper diningTableToResponseMapper = DiningTableToDiningTableResponseMapper.INSTANCE;
+
+
+    @GetMapping("/{id}")
+    public BaseResponse<DiningTableResponse> getDiningTableById(
+            @PathVariable @Positive Long id) {
+        DiningTable diningTable = diningTableService.getDiningTableById(id);
+        DiningTableResponse diningTableResponse = diningTableToResponseMapper.map(diningTable);
+        return BaseResponse.successOf(diningTableResponse);
+    }
 
     @PostMapping
     public BaseResponse<Void> createDiningTables(
@@ -45,6 +60,14 @@ class DiningTableController {
     ) {
         DiningTableUpdateCommand command = diningTableUpdateRequestToCommandMapper.map(request);
         diningTableService.updateDiningTable(id, command);
+        return BaseResponse.SUCCESS;
+    }
+
+    @DeleteMapping("/{id}")
+    public BaseResponse<Void> deletedCategory(
+            @PathVariable @Positive Long id
+    ) {
+        diningTableService.deleteDiningTable(id);
         return BaseResponse.SUCCESS;
     }
 }

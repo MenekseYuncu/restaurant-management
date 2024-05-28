@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableCreateCommandToDomainMapper;
+import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableEntityToDomainMapper;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DomainToDiningTableEntityMapper;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
@@ -25,16 +26,23 @@ class DiningTableServiceImpl implements DiningTableService {
     private static final DiningTableCreateCommandToDomainMapper diningTableCreateCommandToDomainMapper = DiningTableCreateCommandToDomainMapper.INSTANCE;
     private static final DomainToDiningTableEntityMapper domainToDiningTableEntityMapper = DomainToDiningTableEntityMapper.INSTANCE;
     private static final DiningTableUpdateCommandToDomainMapper diningTableUpdateCommandToDomainMapper = DiningTableUpdateCommandToDomainMapper.INSTANCE;
+    private static final DiningTableEntityToDomainMapper diningTableEntityToDomainMapper = DiningTableEntityToDomainMapper.INSTANCE;
 
+
+    @Override
+    public DiningTable getDiningTableById(Long id) {
+        DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
+                .orElseThrow(DiningTableNotFoundException::new);
+
+        return diningTableEntityToDomainMapper.map(diningTableEntity);
+    }
 
     @Override
     public void createDiningTables(DiningTableCreateCommand createCommand) {
         List<DiningTable> diningTables = new ArrayList<>();
 
-        for (int i = 0; i < createCommand.numberOfTables(); i++) {
+        for (int i = 0; i < createCommand.count(); i++) {
             DiningTable diningTable = diningTableCreateCommandToDomainMapper.map(createCommand);
-            diningTable.merge();
-            diningTable.tableStatus();
             diningTables.add(diningTable);
         }
 
@@ -53,6 +61,16 @@ class DiningTableServiceImpl implements DiningTableService {
 
         diningTableEntity.setStatus(updateTable.getStatus());
         diningTableEntity.setSize(updateTable.getSize());
+
+        diningTableRepository.save(diningTableEntity);
+    }
+
+    @Override
+    public void deleteDiningTable(Long id) {
+        DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
+                .orElseThrow(DiningTableNotFoundException::new);
+
+        diningTableEntity.delete();
 
         diningTableRepository.save(diningTableEntity);
     }
