@@ -38,5 +38,9 @@ public class DiningTableEntity extends BaseEntity {
     private DiningTableStatus status;
 
     @Column(name = "size")
-    private int size;
+    private Integer size;
+
+    public void delete() {
+        this.status = DiningTableStatus.DELETED;
+    }
 }

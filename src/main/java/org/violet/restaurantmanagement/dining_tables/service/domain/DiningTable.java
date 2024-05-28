@@ -18,8 +18,7 @@ public class DiningTable {
     private String mergeId = UUID.randomUUID().toString();
     @Builder.Default
     private DiningTableStatus status = DiningTableStatus.VACANT;
-    private int size;
+    private Integer size;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
 }
