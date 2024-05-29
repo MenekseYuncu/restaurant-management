@@ -13,10 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
+import org.violet.restaurantmanagement.common.controller.response.RmaPageResponse;
+import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableCreateRequestToCommandMapper;
+import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableListRequestToListCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToDiningTableResponseMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableCreateRequest;
+import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableListRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.response.DiningTableResponse;
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
@@ -34,7 +38,24 @@ class DiningTableController {
     private static final DiningTableCreateRequestToCommandMapper diningTableCreateRequestToCommandMapper = DiningTableCreateRequestToCommandMapper.INSTANCE;
     private static final DiningTableUpdateRequestToCommandMapper diningTableUpdateRequestToCommandMapper = DiningTableUpdateRequestToCommandMapper.INSTANCE;
     private static final DiningTableToDiningTableResponseMapper diningTableToResponseMapper = DiningTableToDiningTableResponseMapper.INSTANCE;
+    private static final DiningTableListRequestToListCommandMapper diningTableListRequestToListCommandMapper = DiningTableListRequestToListCommandMapper.INSTANCE;
 
+
+    @PostMapping("/tables")
+    public BaseResponse<RmaPageResponse<DiningTableResponse>> getAllCategories(
+            @Valid @RequestBody DiningTableListRequest diningTableListRequest
+    ) {
+
+        RmaPage<DiningTable> diningTableRmaPage = diningTableService.getAllDiningTables(
+                diningTableListRequestToListCommandMapper.map(diningTableListRequest)
+        );
+
+        RmaPageResponse<DiningTableResponse> diningTableResponsePage = RmaPageResponse.<DiningTableResponse>builder()
+                .content(diningTableToResponseMapper.map(diningTableRmaPage.getContent()))
+                .page(diningTableRmaPage)
+                .build();
+        return BaseResponse.successOf(diningTableResponsePage);
+    }
 
     @GetMapping("/{id}")
     public BaseResponse<DiningTableResponse> getDiningTableById(
