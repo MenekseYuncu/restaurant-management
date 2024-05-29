@@ -8,7 +8,7 @@ public record DiningTableCreateRequest(
         Integer count,
 
         @NotNull
-        @Range(min = 0, max = Integer.MAX_VALUE)
+        @Range(min = 0, max = 10)
         Integer size
 ) {
 }

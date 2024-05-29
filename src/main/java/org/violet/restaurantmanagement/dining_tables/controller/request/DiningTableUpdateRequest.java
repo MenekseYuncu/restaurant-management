@@ -14,7 +14,7 @@ public record DiningTableUpdateRequest(
         DiningTableStatus status,
 
         @NotNull
-        @Range(min = 0, max = Integer.MAX_VALUE)
+        @Range(min = 0, max = 10)
         Integer size
 ) {
     @JsonIgnore
