@@ -38,10 +38,6 @@ public class CategoryEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CategoryStatus status;
 
-    public boolean isActive() {
-        return CategoryStatus.ACTIVE == this.status;
-    }
-
     public void delete() {
         this.status = CategoryStatus.DELETED;
     }

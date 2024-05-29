@@ -30,6 +30,7 @@ import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundExcepti
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +50,7 @@ class DiningTableControllerTest extends RmaControllerTest {
         // Given
         DiningTableListRequest.DiningTableFilter mockDiningTableFilter = DiningTableListRequest.DiningTableFilter.builder()
                 .size(2)
+                .statuses(Collections.singleton(DiningTableStatus.VACANT))
                 .build();
         DiningTableListRequest mockDiningTableListRequest = DiningTableListRequest.builder()
                 .pagination(
@@ -72,7 +74,7 @@ class DiningTableControllerTest extends RmaControllerTest {
                 DiningTable.builder()
                         .id(1L)
                         .mergeId(String.valueOf(UUID.randomUUID()))
-                        .status(DiningTableStatus.OCCUPIED)
+                        .status(DiningTableStatus.VACANT)
                         .size(2)
                         .build()
         );
@@ -88,7 +90,7 @@ class DiningTableControllerTest extends RmaControllerTest {
                 DiningTable.builder()
                         .id(3L)
                         .mergeId(String.valueOf(UUID.randomUUID()))
-                        .status(DiningTableStatus.RESERVED)
+                        .status(DiningTableStatus.VACANT)
                         .size(2)
                         .build()
         );
