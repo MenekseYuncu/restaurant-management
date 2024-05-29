@@ -1,7 +1,9 @@
 package org.violet.restaurantmanagement.dining_tables.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableEntityToDomainMapper;
@@ -11,6 +13,7 @@ import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepos
 import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
@@ -28,6 +31,21 @@ class DiningTableServiceImpl implements DiningTableService {
     private static final DiningTableUpdateCommandToDomainMapper diningTableUpdateCommandToDomainMapper = DiningTableUpdateCommandToDomainMapper.INSTANCE;
     private static final DiningTableEntityToDomainMapper diningTableEntityToDomainMapper = DiningTableEntityToDomainMapper.INSTANCE;
 
+
+    @Override
+    public RmaPage<DiningTable> getAllDiningTables(DiningTableListCommand diningTableListCommand) {
+        Page<DiningTableEntity> diningTableEntityPage = diningTableRepository.findAll(
+                diningTableListCommand.toSpecification(DiningTableEntity.class),
+                diningTableListCommand.toPageable()
+        );
+
+        return RmaPage.<DiningTable>builder()
+                .content(diningTableEntityToDomainMapper.map(diningTableEntityPage.getContent()))
+                .page(diningTableEntityPage)
+                .sortedBy(diningTableListCommand.getSorting())
+                .filteredBy(diningTableListCommand.getFilter())
+                .build();
+    }
 
     @Override
     public DiningTable getDiningTableById(Long id) {
