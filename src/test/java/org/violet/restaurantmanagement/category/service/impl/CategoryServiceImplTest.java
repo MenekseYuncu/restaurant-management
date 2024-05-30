@@ -14,11 +14,11 @@ import org.violet.restaurantmanagement.RmaServiceTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.category.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
+import org.violet.restaurantmanagement.category.exceptions.CategoryStatusAlreadyChangedException;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryToCategoryEntityMapper;
-import org.violet.restaurantmanagement.category.model.mapper.CategoryUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
 import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.category.service.command.CategoryCreateCommand;
@@ -43,7 +43,6 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     private CategoryServiceImpl categoryService;
 
     private static final CategoryCreateCommandToDomainMapper categoryCreateCommandToDomainMapper = CategoryCreateCommandToDomainMapper.INSTANCE;
-    private static final CategoryUpdateCommandToDomainMapper categoryUpdateCommandToDomainMapper = CategoryUpdateCommandToDomainMapper.INSTANCE;
     private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
     private static final CategoryToCategoryEntityMapper categoryToCategoryEntityMapper = CategoryToCategoryEntityMapper.INSTANCE;
 
@@ -315,19 +314,50 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
                 CategoryStatus.ACTIVE
         );
 
-        // When
-        Category updatedCategory = categoryUpdateCommandToDomainMapper.map(updateCommand);
-        CategoryEntity categoryEntity = categoryToCategoryEntityMapper.map(updatedCategory);
+        CategoryEntity existingCategoryEntity = new CategoryEntity();
+        existingCategoryEntity.setId(id);
+        existingCategoryEntity.setName("Old Category");
+        existingCategoryEntity.setStatus(CategoryStatus.INACTIVE);
 
+        // When
         Mockito.when(categoryRepository.findById(id))
-                .thenReturn(Optional.of(categoryEntity));
+                .thenReturn(Optional.of(existingCategoryEntity));
 
         // Act
         categoryService.updateCategory(id, updateCommand);
 
         // Verify
         Mockito.verify(categoryRepository, Mockito.times(1))
-                .save(categoryEntity);
+                .save(existingCategoryEntity);
+
+        Assertions.assertEquals("Updated Category", existingCategoryEntity.getName());
+        Assertions.assertEquals(CategoryStatus.ACTIVE, existingCategoryEntity.getStatus());
+    }
+
+    @Test
+    void givenSameStatusAndName_whenUpdateCategory_thenThrowException() {
+        // Given
+        Long id = 1L;
+        CategoryUpdateCommand updateCommand = new CategoryUpdateCommand(
+                "Same Category",
+                CategoryStatus.ACTIVE
+        );
+
+        CategoryEntity existingCategoryEntity = new CategoryEntity();
+        existingCategoryEntity.setId(id);
+        existingCategoryEntity.setName("Same Category");
+        existingCategoryEntity.setStatus(CategoryStatus.ACTIVE);
+
+        // When
+        Mockito.when(categoryRepository.findById(id))
+                .thenReturn(Optional.of(existingCategoryEntity));
+
+        // Then
+        Assertions.assertThrows(CategoryStatusAlreadyChangedException.class,
+                () -> categoryService.updateCategory(id, updateCommand));
+
+        Mockito.verify(categoryRepository, Mockito.times(0))
+                .save(existingCategoryEntity);
     }
 
     @Test
@@ -383,11 +413,11 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
     }
 
     @Test
-    void givenCategoryExists_whenSoftDeleteCategory_thenReturnSuccess() {
+    void givenCategoryExistsAndNotDeleted_whenSoftDeleteCategory_thenReturnSuccess() {
         // Given
         Long categoryId = 1L;
         CategoryEntity categoryEntity = new CategoryEntity();
-        categoryEntity.delete();
+        categoryEntity.setStatus(CategoryStatus.ACTIVE);
 
         // When
         Mockito.when(categoryRepository.findById(categoryId))
@@ -399,6 +429,26 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         Mockito.verify(categoryRepository, Mockito.times(1))
                 .save(ArgumentMatchers.any(CategoryEntity.class));
     }
+
+    @Test
+    void givenCategoryExistsAndAlreadyDeleted_whenSoftDeleteCategory_thenThrowException() {
+        // Given
+        Long categoryId = 1L;
+        CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.setStatus(CategoryStatus.DELETED);
+
+        // When
+        Mockito.when(categoryRepository.findById(categoryId))
+                .thenReturn(Optional.of(categoryEntity));
+
+        // Then
+        Assertions.assertThrows(CategoryStatusAlreadyChangedException.class,
+                () -> categoryService.deleteCategory(categoryId));
+
+        Mockito.verify(categoryRepository, Mockito.times(0))
+                .save(ArgumentMatchers.any(CategoryEntity.class));
+    }
+
 
     @Test
     void givenCategoryIdDoesNotExists_whenSoftDeleteCategory_thenThrowCategoryNotFoundException() {

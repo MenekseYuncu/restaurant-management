@@ -21,12 +21,12 @@ import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.product.exceptions.ProductAlreadyExistException;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
+import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.model.mapper.ProductCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductEntityToDomainMapper;
-import org.violet.restaurantmanagement.product.model.mapper.ProductUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 import org.violet.restaurantmanagement.product.service.command.ProductCreateCommand;
@@ -53,7 +53,6 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
 
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
-    private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
 
 
@@ -483,20 +482,19 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     void givenValidUpdateProductCommand_whenProductAndCategoryExists_thenUpdateProductEntity() {
         // Given
         Long categoryId = 3L;
+        String productId = UUID.randomUUID().toString();
         CategoryEntity categoryEntity = new CategoryEntity(
                 categoryId,
                 "Category rename",
                 CategoryStatus.ACTIVE
         );
-        categoryRepository.save(categoryEntity);
-
         ProductEntity productEntity = new ProductEntity(
-                String.valueOf(UUID.randomUUID()),
+                productId,
                 categoryEntity.getId(),
                 "Test products",
                 "ingredients",
                 BigDecimal.valueOf(100),
-                ProductStatus.ACTIVE,
+                ProductStatus.INACTIVE,
                 100,
                 ExtentType.GR
         );
@@ -512,28 +510,29 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         );
 
         // When
-        Mockito.when(categoryRepository.existsByIdAndStatusIsNot(categoryEntity.getId(), CategoryStatus.DELETED))
+        Mockito.when(categoryRepository.existsByIdAndStatusIsNot(categoryId, CategoryStatus.DELETED))
                 .thenReturn(true);
 
-
-        Mockito.when(productRepository.findById(productEntity.getId()))
+        Mockito.when(productRepository.findById(productId))
                 .thenReturn(Optional.of(productEntity));
 
-
-        Product product = productUpdateCommandToDomainMapper.map(updateCommand);
-        ProductEntity entity = productDomainToProductEntityMapper.map(product);
-
-        Mockito.when(productRepository.save(ArgumentMatchers.any(ProductEntity.class)))
-                .thenReturn(entity);
+        // Act
+        productService.updateProduct(productId, updateCommand);
 
         // Then
-        Assertions.assertDoesNotThrow(
-                () -> productService.updateProduct(productEntity.getId(), updateCommand));
+        Mockito.verify(productRepository, Mockito.times(1))
+                .save(productEntity);
 
         // Verify
-        Mockito.verify(productRepository, Mockito.times(1))
-                .save(ArgumentMatchers.any(ProductEntity.class));
+        Assertions.assertEquals(updateCommand.categoryId(), productEntity.getCategoryId());
+        Assertions.assertEquals(updateCommand.name(), productEntity.getName());
+        Assertions.assertEquals(updateCommand.ingredient(), productEntity.getIngredient());
+        Assertions.assertEquals(updateCommand.price(), productEntity.getPrice());
+        Assertions.assertEquals(updateCommand.status(), productEntity.getStatus());
+        Assertions.assertEquals(updateCommand.extent(), productEntity.getExtent());
+        Assertions.assertEquals(updateCommand.extentType(), productEntity.getExtentType());
     }
+
 
     @Test
     void givenExistingProductName_whenUpdateProduct_thenThrowProductAlreadyExistException() {
@@ -642,7 +641,16 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     void givenSoftDeleteProduct_whenProductExists_thenUpdatedProductEntity() {
         // Given
         String productId = UUID.randomUUID().toString();
-        ProductEntity productEntity = new ProductEntity();
+        ProductEntity productEntity = new ProductEntity(
+                productId,
+                1L,
+                "Test products",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.ACTIVE,
+                100,
+                ExtentType.GR
+        );
 
         // When
         Mockito.when(productRepository.findById(productId))
@@ -650,10 +658,42 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
 
         productService.deleteProduct(productId);
 
-        // Then
+        // Verify
         Mockito.verify(productRepository, Mockito.times(1))
-                .save(ArgumentMatchers.any(ProductEntity.class));
+                .save(productEntity);
+
+        // Assert
+        Assertions.assertEquals(ProductStatus.DELETED, productEntity.getStatus());
     }
+
+    @Test
+    void givenSoftDeleteProduct_whenProductAlreadyDeleted_thenThrowException() {
+        // Given
+        String productId = UUID.randomUUID().toString();
+        ProductEntity productEntity = new ProductEntity(
+                productId,
+                1L,
+                "Test products",
+                "ingredients",
+                BigDecimal.valueOf(100),
+                ProductStatus.DELETED,
+                100,
+                ExtentType.GR
+        );
+
+        // When
+        Mockito.when(productRepository.findById(productId))
+                .thenReturn(Optional.of(productEntity));
+
+        // Then
+        Assertions.assertThrows(ProductStatusAlreadyChanged.class,
+                () -> productService.deleteProduct(productId));
+
+        // Verify
+        Mockito.verify(productRepository, Mockito.times(0))
+                .save(productEntity);
+    }
+
 
     @Test
     void givenProductIdDoesNotExists_whenSoftDeleteProduct_thenThrowProductNotFoundException() {

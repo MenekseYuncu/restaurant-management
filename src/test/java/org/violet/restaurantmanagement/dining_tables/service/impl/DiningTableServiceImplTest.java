@@ -16,10 +16,10 @@ import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableEntityToDomainMapper;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableUpdateCommandToDomainMapper;
-import org.violet.restaurantmanagement.dining_tables.model.mapper.DomainToDiningTableEntityMapper;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
 import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
@@ -40,7 +40,6 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     @InjectMocks
     private DiningTableServiceImpl diningTableService;
 
-    private static final DomainToDiningTableEntityMapper domainToDiningTableEntityMapper = DomainToDiningTableEntityMapper.INSTANCE;
     private static final DiningTableEntityToDomainMapper diningTableEntityToDomainMapper = DiningTableEntityToDomainMapper.INSTANCE;
     private static final DiningTableUpdateCommandToDomainMapper diningTableUpdateCommandToDomainMapper = DiningTableUpdateCommandToDomainMapper.INSTANCE;
 
@@ -357,19 +356,25 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     }
 
     @Test
-    void givenDiningTableExists_whenUpdateDiningTable_thenReturnSuccess() {
+    void givenDiningTableExists_whenUpdateDiningTableWithDifferentStatus_thenReturnSuccess() {
         // Given
         Long tableId = 1L;
         DiningTableUpdateCommand updateCommand = new DiningTableUpdateCommand(
                 DiningTableStatus.OCCUPIED,
                 5
         );
-        DiningTable diningTable = diningTableUpdateCommandToDomainMapper.map(updateCommand);
 
-        DiningTableEntity diningTableEntity = domainToDiningTableEntityMapper.map(diningTable);
+        DiningTableEntity existingDiningTableEntity = DiningTableEntity.builder()
+                .id(tableId)
+                .status(DiningTableStatus.VACANT)
+                .size(2)
+                .build();
+
+        diningTableUpdateCommandToDomainMapper.map(updateCommand);
 
         // When
-        Mockito.when(diningTableRepository.findById(tableId)).thenReturn(Optional.ofNullable(diningTableEntity));
+        Mockito.when(diningTableRepository.findById(tableId))
+                .thenReturn(Optional.of(existingDiningTableEntity));
 
         diningTableService.updateDiningTable(tableId, updateCommand);
 
@@ -377,6 +382,34 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Mockito.verify(diningTableRepository, Mockito.times(1))
                 .save(ArgumentMatchers.any(DiningTableEntity.class));
     }
+
+    @Test
+    void givenDiningTableExists_whenUpdateDiningTableWithSameStatus_thenThrowException() {
+        // Given
+        Long tableId = 1L;
+        DiningTableUpdateCommand updateCommand = new DiningTableUpdateCommand(
+                DiningTableStatus.VACANT,
+                2
+        );
+
+        DiningTableEntity existingDiningTableEntity = DiningTableEntity.builder()
+                .id(tableId)
+                .status(DiningTableStatus.VACANT)
+                .size(2)
+                .build();
+
+        // When
+        Mockito.when(diningTableRepository.findById(tableId))
+                .thenReturn(Optional.of(existingDiningTableEntity));
+
+        // Then
+        Assertions.assertThrows(DiningTableStatusAlreadyChangedException.class,
+                () -> diningTableService.updateDiningTable(tableId, updateCommand));
+
+        Mockito.verify(diningTableRepository, Mockito.times(0))
+                .save(ArgumentMatchers.any(DiningTableEntity.class));
+    }
+
 
     @Test
     void givenDiningTableIdDoesNotExists_whenUpdateDiningTable_thenThrowDiningTableNotFoundException() {
@@ -444,11 +477,13 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     }
 
     @Test
-    void givenDiningTableIdExists_whenSoftDeleteDiningTable_thenReturnSuccess() {
+    void givenDiningTableIdExistsAndNotDeleted_whenSoftDeleteDiningTable_thenReturnSuccess() {
         // Given
         Long diningTableId = 1L;
-        DiningTableEntity diningTableEntity = new DiningTableEntity();
-        diningTableEntity.delete();
+        DiningTableEntity diningTableEntity = DiningTableEntity.builder()
+                .id(diningTableId)
+                .status(DiningTableStatus.VACANT)
+                .build();
 
         // When
         Mockito.when(diningTableRepository.findById(diningTableId))
@@ -458,6 +493,27 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
 
         // Then
         Mockito.verify(diningTableRepository, Mockito.times(1))
+                .save(ArgumentMatchers.any(DiningTableEntity.class));
+    }
+
+    @Test
+    void givenDiningTableIdExistsAndAlreadyDeleted_whenSoftDeleteDiningTable_thenThrowException() {
+        // Given
+        Long diningTableId = 1L;
+        DiningTableEntity diningTableEntity = DiningTableEntity.builder()
+                .id(diningTableId)
+                .status(DiningTableStatus.DELETED)
+                .build();
+
+        // When
+        Mockito.when(diningTableRepository.findById(diningTableId))
+                .thenReturn(Optional.of(diningTableEntity));
+
+        // Then
+        Assertions.assertThrows(DiningTableStatusAlreadyChangedException.class,
+                () -> diningTableService.deleteDiningTable(diningTableId));
+
+        Mockito.verify(diningTableRepository, Mockito.times(0))
                 .save(ArgumentMatchers.any(DiningTableEntity.class));
     }
 
