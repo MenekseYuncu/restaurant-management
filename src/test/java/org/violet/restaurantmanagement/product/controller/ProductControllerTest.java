@@ -287,18 +287,21 @@ class ProductControllerTest extends RmaControllerTest {
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 1")
                 .status(ProductStatus.ACTIVE)
+                .price(BigDecimal.valueOf(10))
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
                 .status(ProductStatus.ACTIVE)
+                .price(BigDecimal.valueOf(10))
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
                 .status(ProductStatus.INACTIVE)
+                .price(BigDecimal.valueOf(10))
                 .build()
         );
 

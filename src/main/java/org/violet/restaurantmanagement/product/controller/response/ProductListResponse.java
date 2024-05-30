@@ -9,7 +9,7 @@ import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record ProductResponse(
+public record ProductListResponse(
 
         String id,
         Long categoryId,
