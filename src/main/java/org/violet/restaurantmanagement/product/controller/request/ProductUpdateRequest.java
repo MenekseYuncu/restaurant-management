@@ -3,6 +3,7 @@ package org.violet.restaurantmanagement.product.controller.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -30,13 +31,14 @@ public record ProductUpdateRequest(
 
         @NotNull
         @DecimalMin(value = "0", inclusive = false)
+        @Digits(integer = 5, fraction = 2)
         BigDecimal price,
 
         @NotNull
         ProductStatus status,
 
         @NotNull
-        @Range(min = 10, max = Integer.MAX_VALUE)
+        @Range(min = 10, max = 3000)
         Integer extent,
 
         @NotNull
