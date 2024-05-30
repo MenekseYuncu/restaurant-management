@@ -1,12 +1,10 @@
 package org.violet.restaurantmanagement.category.exceptions;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.violet.restaurantmanagement.common.exception.RmaAlreadyExistException;
 
 import java.io.Serial;
 
-@ResponseStatus(HttpStatus.CONFLICT)
-public class CategoryAlreadyExistsException extends RuntimeException{
+public class CategoryAlreadyExistsException extends RmaAlreadyExistException {
 
     @Serial
     private static final long serialVersionUID = 1721232167659910474L;

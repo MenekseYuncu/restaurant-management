@@ -1,12 +1,10 @@
 package org.violet.restaurantmanagement.category.exceptions;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.violet.restaurantmanagement.common.exception.RmaNotFoundException;
 
 import java.io.Serial;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class CategoryNotFoundException extends RuntimeException{
+public class CategoryNotFoundException extends RmaNotFoundException {
 
     @Serial
     private static final long serialVersionUID = 1721232167659910474L;
