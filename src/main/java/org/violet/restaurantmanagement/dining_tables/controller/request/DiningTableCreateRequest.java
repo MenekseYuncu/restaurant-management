@@ -5,10 +5,11 @@ import org.hibernate.validator.constraints.Range;
 
 public record DiningTableCreateRequest(
 
+        @Range(min = 1, max = 50)
         Integer count,
 
         @NotNull
-        @Range(min = 0, max = 10)
+        @Range(min = 1, max = 10)
         Integer size
 ) {
 }

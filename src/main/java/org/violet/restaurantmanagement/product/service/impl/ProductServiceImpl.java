@@ -9,6 +9,8 @@ import org.violet.restaurantmanagement.category.repository.CategoryRepository;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.exceptions.ProductAlreadyExistException;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
+import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
+import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.model.mapper.ProductCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductEntityToDomainMapper;
@@ -78,15 +80,20 @@ class ProductServiceImpl implements ProductService {
 
         Product updatedProduct = productUpdateCommandToDomainMapper.map(updateCommand);
 
-        existingProduct.setCategoryId(updatedProduct.getCategoryId());
-        existingProduct.setName(updatedProduct.getName());
-        existingProduct.setIngredient(updatedProduct.getIngredient());
-        existingProduct.setPrice(updatedProduct.getPrice());
-        existingProduct.setStatus(updatedProduct.getStatus());
-        existingProduct.setExtent(updatedProduct.getExtent());
-        existingProduct.setExtentType(updatedProduct.getExtentType());
+        if (existingProduct.getStatus() != updatedProduct.getStatus()) {
 
-        productRepository.save(existingProduct);
+            existingProduct.setCategoryId(updatedProduct.getCategoryId());
+            existingProduct.setName(updatedProduct.getName());
+            existingProduct.setIngredient(updatedProduct.getIngredient());
+            existingProduct.setPrice(updatedProduct.getPrice());
+            existingProduct.setStatus(updatedProduct.getStatus());
+            existingProduct.setExtent(updatedProduct.getExtent());
+            existingProduct.setExtentType(updatedProduct.getExtentType());
+
+            productRepository.save(existingProduct);
+        } else {
+            throw new ProductStatusAlreadyChanged();
+        }
     }
 
     @Override
@@ -94,9 +101,12 @@ class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(ProductNotFoundException::new);
 
-        productEntity.delete();
-
-        productRepository.save(productEntity);
+        if (productEntity.getStatus() != ProductStatus.DELETED) {
+            productEntity.delete();
+            productRepository.save(productEntity);
+        } else {
+            throw new ProductStatusAlreadyChanged();
+        }
     }
 
 

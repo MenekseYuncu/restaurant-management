@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
+import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableEntityToDomainMapper;
 import org.violet.restaurantmanagement.dining_tables.model.mapper.DiningTableUpdateCommandToDomainMapper;
@@ -68,7 +70,6 @@ class DiningTableServiceImpl implements DiningTableService {
         diningTableRepository.saveAll(diningTableEntities);
     }
 
-
     @Override
     public void updateDiningTable(Long id, DiningTableUpdateCommand updateCommand) {
 
@@ -77,10 +78,14 @@ class DiningTableServiceImpl implements DiningTableService {
 
         DiningTable updateTable = diningTableUpdateCommandToDomainMapper.map(updateCommand);
 
-        diningTableEntity.setStatus(updateTable.getStatus());
-        diningTableEntity.setSize(updateTable.getSize());
+        if (diningTableEntity.getStatus() != updateTable.getStatus()) {
+            diningTableEntity.setStatus(updateTable.getStatus());
+            diningTableEntity.setSize(updateTable.getSize());
 
-        diningTableRepository.save(diningTableEntity);
+            diningTableRepository.save(diningTableEntity);
+        } else {
+            throw new DiningTableStatusAlreadyChangedException();
+        }
     }
 
     @Override
@@ -88,8 +93,11 @@ class DiningTableServiceImpl implements DiningTableService {
         DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
                 .orElseThrow(DiningTableNotFoundException::new);
 
-        diningTableEntity.delete();
-
-        diningTableRepository.save(diningTableEntity);
+        if (diningTableEntity.getStatus() != DiningTableStatus.DELETED) {
+            diningTableEntity.delete();
+            diningTableRepository.save(diningTableEntity);
+        } else {
+            throw new DiningTableStatusAlreadyChangedException();
+        }
     }
 }

@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.category.exceptions.CategoryAlreadyExistsException;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
+import org.violet.restaurantmanagement.category.exceptions.CategoryStatusAlreadyChangedException;
+import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryCreateCommandToDomainMapper;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.category.model.mapper.CategoryToCategoryEntityMapper;
@@ -66,7 +68,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void updateCategory(Long id, CategoryUpdateCommand updateCommand) {
-
         CategoryEntity existingCategory = categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
 
@@ -74,20 +75,27 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category updatedCategory = categoryUpdateCommandToDomainMapper.map(updateCommand);
 
-        existingCategory.setName(updatedCategory.getName());
-        existingCategory.setStatus(updatedCategory.getStatus());
+        if (existingCategory.getStatus() != updatedCategory.getStatus()) {
 
-        categoryRepository.save(existingCategory);
+            existingCategory.setName(updatedCategory.getName());
+            existingCategory.setStatus(updatedCategory.getStatus());
+
+            categoryRepository.save(existingCategory);
+        } else {
+            throw new CategoryStatusAlreadyChangedException();
+        }
     }
 
     @Override
     public void deleteCategory(Long id) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
-
-        categoryEntity.delete();
-
-        categoryRepository.save(categoryEntity);
+        if (categoryEntity.getStatus() != CategoryStatus.DELETED) {
+            categoryEntity.delete();
+            categoryRepository.save(categoryEntity);
+        } else {
+            throw new CategoryStatusAlreadyChangedException();
+        }
     }
 
     private Category getById(Long id) {
