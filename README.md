@@ -8,7 +8,7 @@ This project is a Back-End application developed to manage the basic processes o
 
 * Core
     * Spring
-        * Spring Boot 3
+        * Spring Boot 3.2x
         * Spring Boot Test (Junit)
         * Spring Boot Dev Tools
         * Spring Web
@@ -56,7 +56,7 @@ git clone https://github.com/kullanici_adi/proje-adı.git
 
 You will need the following requirements to run this project:
 
-- Java JDK 8 or higher
+- Java 17+
 - Maven
 - PostgreSQL database
 - Run the application:
