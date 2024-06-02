@@ -8,7 +8,7 @@ This project is a Back-End application developed to manage the basic processes o
 
 * Core
     * Spring
-        * Spring Boot 3.2x
+        * Spring Boot 3
         * Spring Boot Test (Junit)
         * Spring Boot Dev Tools
         * Spring Web
