@@ -10,6 +10,17 @@ create table if not exists rm_category
     updated_at timestamp(0)
 );
 
+create table if not exists rm_parameter
+(
+    id         bigserial
+        constraint pk__rm_parameter__id primary key,
+    name       varchar(200) not null
+        constraint u__rm_parameter__name unique,
+    definition char(3),
+    created_at timestamp(0) not null,
+    updated_at timestamp(0)
+);
+
 create table if not exists rm_product
 (
     id          varchar(36)
@@ -20,6 +31,8 @@ create table if not exists rm_product
         constraint u__rm_product__name unique,
     ingredient  varchar(2048)  not null,
     price       numeric(50, 8) not null,
+    parameter_id bigint
+        constraint fk__rm_parameter__parameter__id references rm_parameter (id),
     status      varchar(20)    not null
         constraint c__rm_product__status check (status in ('ACTIVE', 'INACTIVE', 'DELETED')),
     extent      integer        not null,
@@ -69,26 +82,16 @@ create table if not exists rm_order_item
     updated_at        timestamp(3)
 );
 
-create table if not exists rm_parameter
-(
-    id         bigserial
-        constraint pk__rm_parameter__id primary key,
-    name       varchar(200) not null
-        constraint u__rm_parameter__name unique,
-    definition char(3),
-    created_at timestamp(0) not null,
-    updated_at timestamp(0)
-);
-
 insert into rm_category (name, status, created_at)
 values ('category 1', 'ACTIVE', current_timestamp),
        ('category 2', 'ACTIVE', current_timestamp);
 
-insert into rm_product (id, category_id, name, ingredient, price, status, extent, extent_type, created_at)
-values (gen_random_uuid(), 1, 'product 1', 'ingredient', 20.3, 'ACTIVE', 200, 'ML',
-        current_timestamp),
-       (gen_random_uuid(), 2, 'product 2', 'ingredient', 20.3, 'ACTIVE', 200, 'GR',
-        current_timestamp);
 
 insert into rm_parameter(name, definition, created_at)
 values ('CURRENCY', 'TRY', current_timestamp);
+
+insert into rm_product (id, category_id, name, ingredient, price, parameter_id, status, extent, extent_type, created_at)
+values (gen_random_uuid(), 1, 'product 1', 'ingredient', 20.3, 1, 'ACTIVE', 200, 'ML',
+        current_timestamp),
+       (gen_random_uuid(), 2, 'product 2', 'ingredient', 20.3, 1, 'ACTIVE', 200, 'GR',
+        current_timestamp);
