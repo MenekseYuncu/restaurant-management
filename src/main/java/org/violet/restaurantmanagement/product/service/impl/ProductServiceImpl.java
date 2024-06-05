@@ -5,9 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
-import org.violet.restaurantmanagement.category.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
-import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.exceptions.ProductAlreadyExistException;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
@@ -37,7 +35,6 @@ class ProductServiceImpl implements ProductService {
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
-    private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
 
 
     @Override
@@ -58,7 +55,10 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductById(String id) {
-        return this.getById(id);
+        ProductEntity productEntity = productRepository.findById(id)
+                .orElseThrow(ProductNotFoundException::new);
+
+        return productEntityToDomainMapper.map(productEntity);
     }
 
     @Override
@@ -66,8 +66,7 @@ class ProductServiceImpl implements ProductService {
         this.checkExistingOfCategory(createCommand.categoryId());
 
         Product product = productCreateCommandToDomainMapper.map(createCommand);
-
-        this.save(product);
+        productRepository.save(productDomainToProductEntityMapper.map(product));
     }
 
     @Override
@@ -93,6 +92,24 @@ class ProductServiceImpl implements ProductService {
         productRepository.save(existingProduct);
     }
 
+    private void checkExistingOfCategory(Long categoryId) {
+        boolean isCategoryNotPresent = !categoryRepository
+                .existsByIdAndStatusIsNot(categoryId, CategoryStatus.DELETED);
+        if (isCategoryNotPresent) {
+            throw new CategoryNotFoundException();
+        }
+    }
+
+    private void checkExistingOfProductNameIfChanged(ProductUpdateCommand productUpdateCommand,
+                                                     ProductEntity productEntity) {
+        if (!productEntity.getName().equalsIgnoreCase(productUpdateCommand.name())) {
+            boolean isProductExistByName = productRepository.findByName(productUpdateCommand.name()).isPresent();
+            if (isProductExistByName) {
+                throw new ProductAlreadyExistException();
+            }
+        }
+    }
+
     @Override
     public void deleteProduct(String id) {
         ProductEntity productEntity = productRepository.findById(id)
@@ -104,55 +121,9 @@ class ProductServiceImpl implements ProductService {
         productRepository.save(productEntity);
     }
 
-
-    private Product getById(String id) {
-        ProductEntity productEntity = productRepository.findById(id)
-                .orElseThrow(ProductNotFoundException::new);
-
-        Product product = productEntityToDomainMapper.map(productEntity);
-        this.getCategory(product);
-
-        return product;
-    }
-
-    private void getCategory(Product product) {
-        CategoryEntity categoryEntity = categoryRepository.findById(product.getCategoryId())
-                .orElseThrow(CategoryNotFoundException::new);
-
-        product.setCategory(categoryEntityToDomainMapper.map(categoryEntity));
-    }
-
-    private void save(Product product) {
-        ProductEntity productEntityToBeSave = productDomainToProductEntityMapper.map(product);
-        productRepository.save(productEntityToBeSave);
-    }
-
     private void checkExistingStatus(ProductStatus currentStatus, ProductStatus targetStatus) {
         if (currentStatus == targetStatus) {
             throw new ProductStatusAlreadyChanged();
-        }
-    }
-
-    private void checkExistingOfProductName(String name) {
-        boolean isProductExistByName = productRepository.findByName(name).isPresent();
-        if (isProductExistByName) {
-            throw new ProductAlreadyExistException();
-        }
-    }
-
-    private void checkExistingOfProductNameIfChanged(ProductUpdateCommand productUpdateCommand,
-                                                     ProductEntity productEntity
-    ) {
-        if (!productEntity.getName().equalsIgnoreCase(productUpdateCommand.name())) {
-            this.checkExistingOfProductName(productUpdateCommand.name());
-        }
-    }
-
-    private void checkExistingOfCategory(Long categoryId) {
-        boolean isCategoryNotPresent = !categoryRepository
-                .existsByIdAndStatusIsNot(categoryId, CategoryStatus.DELETED);
-        if (isCategoryNotPresent) {
-            throw new CategoryNotFoundException();
         }
     }
 }
