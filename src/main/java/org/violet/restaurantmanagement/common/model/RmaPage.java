@@ -35,7 +35,7 @@ public class RmaPage<T> {
         public <Z> RmaPageBuilder<T> page(Page<Z> page) {
             this
                     .pageNumber(page.getNumber() + 1)
-                    .pageSize(page.getSize())
+                    .pageSize(page.getContent().size())
                     .totalPageCount(page.getTotalPages())
                     .totalElementCount(page.getTotalElements())
                     .sortedBy(Sorting.toSort(page.getSort()));
