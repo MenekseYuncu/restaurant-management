@@ -46,9 +46,6 @@ public class ProductEntity extends BaseEntity {
     @Column(name = "price")
     private BigDecimal price;
 
-    @Column(name = "parameter_id")
-    private Long parameter;
-
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private ProductStatus status;

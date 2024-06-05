@@ -5,7 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
+import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.exceptions.ProductAlreadyExistException;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
@@ -29,13 +31,13 @@ import org.violet.restaurantmanagement.product.service.domain.Product;
 class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
-
     private final CategoryRepository categoryRepository;
 
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
+    private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
 
 
     @Override
@@ -56,7 +58,6 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductById(String id) {
-
         return this.getById(id);
     }
 
@@ -108,7 +109,17 @@ class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(ProductNotFoundException::new);
 
-        return productEntityToDomainMapper.map(productEntity);
+        Product product = productEntityToDomainMapper.map(productEntity);
+        this.getCategory(product);
+
+        return product;
+    }
+
+    private void getCategory(Product product) {
+        CategoryEntity categoryEntity = categoryRepository.findById(product.getCategoryId())
+                .orElseThrow(CategoryNotFoundException::new);
+
+        product.setCategory(categoryEntityToDomainMapper.map(categoryEntity));
     }
 
     private void save(Product product) {

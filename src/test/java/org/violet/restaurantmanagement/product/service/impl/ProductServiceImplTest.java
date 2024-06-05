@@ -14,6 +14,7 @@ import org.violet.restaurantmanagement.RmaServiceTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundException;
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
+import org.violet.restaurantmanagement.category.model.mapper.CategoryEntityToDomainMapper;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
 import org.violet.restaurantmanagement.category.repository.entity.CategoryEntity;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
@@ -54,6 +55,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
+    private static final CategoryEntityToDomainMapper categoryEntityToDomainMapper = CategoryEntityToDomainMapper.INSTANCE;
 
 
     @Test
@@ -332,12 +334,18 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         );
     }
 
+
     @Test
     void givenProductExists_whenGetProductById_thenReturnProduct() {
-        //Given
+        // Given
+        CategoryEntity categoryEntity = CategoryEntity.builder()
+                .id(1L)
+                .name("category")
+                .build();
+
         ProductEntity productEntity = ProductEntity.builder()
                 .id(String.valueOf(UUID.randomUUID()))
-                .categoryId(1L)
+                .categoryId(categoryEntity.getId())
                 .name("Product")
                 .ingredient("ingredients")
                 .price(BigDecimal.valueOf(100))
@@ -346,13 +354,16 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 .extentType(ExtentType.GR)
                 .build();
 
-        //When
+        // When
         Mockito.when(productRepository.findById(productEntity.getId()))
                 .thenReturn(Optional.of(productEntity));
+        Mockito.when(categoryRepository.findById(categoryEntity.getId()))
+                .thenReturn(Optional.of(categoryEntity));
 
         Product mockProduct = productEntityToDomainMapper.map(productEntity);
+        mockProduct.setCategory(categoryEntityToDomainMapper.map(categoryEntity));
 
-        //Then
+        // Then
         Product resultProduct = productService.getProductById(productEntity.getId());
 
         Assertions.assertNotNull(resultProduct);
@@ -365,6 +376,8 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
         Assertions.assertEquals(mockProduct.getExtent(), resultProduct.getExtent());
         Assertions.assertEquals(mockProduct.getExtentType(), resultProduct.getExtentType());
         Assertions.assertEquals(mockProduct.getCreatedAt(), resultProduct.getCreatedAt());
+        Assertions.assertEquals(mockProduct.getCategory().getId(), resultProduct.getCategory().getId());
+        Assertions.assertEquals(mockProduct.getCategory().getName(), resultProduct.getCategory().getName());
     }
 
     @Test
