@@ -9,6 +9,7 @@ import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Getter
@@ -29,4 +30,14 @@ public class Product {
     private ExtentType extentType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public static class ProductBuilder {
+        private ProductBuilder() {
+        }
+
+        public ProductBuilder price(BigDecimal price) {
+            this.price = price.setScale(2, RoundingMode.HALF_UP);
+            return this;
+        }
+    }
 }

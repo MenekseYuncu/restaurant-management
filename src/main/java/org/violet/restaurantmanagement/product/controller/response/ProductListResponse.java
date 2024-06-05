@@ -1,8 +1,7 @@
 package org.violet.restaurantmanagement.product.controller.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.Getter;
+import lombok.Setter;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 public record ProductListResponse(
 
         String id,
-        Long categoryId,
+        Category category,
         String name,
         String ingredient,
         BigDecimal price,
@@ -22,9 +21,10 @@ public record ProductListResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    @JsonSerialize(using = ToStringSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    public String getPrice() {
-        return String.format("%.2f", price);
+    @Getter
+    @Setter
+    public static class Category {
+        private Long id;
+        private String name;
     }
 }
