@@ -79,21 +79,17 @@ class ProductServiceImpl implements ProductService {
         this.checkExistingOfProductNameIfChanged(updateCommand, existingProduct);
 
         Product updatedProduct = productUpdateCommandToDomainMapper.map(updateCommand);
+        this.checkExistingStatus(existingProduct.getStatus(), updatedProduct.getStatus());
 
-        if (existingProduct.getStatus() != updatedProduct.getStatus()) {
+        existingProduct.setCategoryId(updatedProduct.getCategoryId());
+        existingProduct.setName(updatedProduct.getName());
+        existingProduct.setIngredient(updatedProduct.getIngredient());
+        existingProduct.setPrice(updatedProduct.getPrice());
+        existingProduct.setStatus(updatedProduct.getStatus());
+        existingProduct.setExtent(updatedProduct.getExtent());
+        existingProduct.setExtentType(updatedProduct.getExtentType());
 
-            existingProduct.setCategoryId(updatedProduct.getCategoryId());
-            existingProduct.setName(updatedProduct.getName());
-            existingProduct.setIngredient(updatedProduct.getIngredient());
-            existingProduct.setPrice(updatedProduct.getPrice());
-            existingProduct.setStatus(updatedProduct.getStatus());
-            existingProduct.setExtent(updatedProduct.getExtent());
-            existingProduct.setExtentType(updatedProduct.getExtentType());
-
-            productRepository.save(existingProduct);
-        } else {
-            throw new ProductStatusAlreadyChanged();
-        }
+        productRepository.save(existingProduct);
     }
 
     @Override
@@ -101,12 +97,10 @@ class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(ProductNotFoundException::new);
 
-        if (productEntity.getStatus() != ProductStatus.DELETED) {
-            productEntity.delete();
-            productRepository.save(productEntity);
-        } else {
-            throw new ProductStatusAlreadyChanged();
-        }
+        this.checkExistingStatus(productEntity.getStatus(), ProductStatus.DELETED);
+        productEntity.delete();
+
+        productRepository.save(productEntity);
     }
 
 
@@ -120,6 +114,12 @@ class ProductServiceImpl implements ProductService {
     private void save(Product product) {
         ProductEntity productEntityToBeSave = productDomainToProductEntityMapper.map(product);
         productRepository.save(productEntityToBeSave);
+    }
+
+    private void checkExistingStatus(ProductStatus currentStatus, ProductStatus targetStatus) {
+        if (currentStatus == targetStatus) {
+            throw new ProductStatusAlreadyChanged();
+        }
     }
 
     private void checkExistingOfProductName(String name) {

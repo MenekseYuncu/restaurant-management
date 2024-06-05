@@ -78,14 +78,13 @@ class DiningTableServiceImpl implements DiningTableService {
 
         DiningTable updateTable = diningTableUpdateCommandToDomainMapper.map(updateCommand);
 
-        if (diningTableEntity.getStatus() != updateTable.getStatus()) {
-            diningTableEntity.setStatus(updateTable.getStatus());
-            diningTableEntity.setSize(updateTable.getSize());
+        this.checkExistingStatus(diningTableEntity.getStatus(), updateTable.getStatus());
 
-            diningTableRepository.save(diningTableEntity);
-        } else {
-            throw new DiningTableStatusAlreadyChangedException();
-        }
+        diningTableEntity.setStatus(updateTable.getStatus());
+        diningTableEntity.setSize(updateTable.getSize());
+
+        diningTableRepository.save(diningTableEntity);
+
     }
 
     @Override
@@ -93,10 +92,14 @@ class DiningTableServiceImpl implements DiningTableService {
         DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
                 .orElseThrow(DiningTableNotFoundException::new);
 
-        if (diningTableEntity.getStatus() != DiningTableStatus.DELETED) {
+        this.checkExistingStatus(diningTableEntity.getStatus(), DiningTableStatus.DELETED);
             diningTableEntity.delete();
             diningTableRepository.save(diningTableEntity);
-        } else {
+
+    }
+
+    private void checkExistingStatus(DiningTableStatus currentStatus, DiningTableStatus targetStatus) {
+        if (currentStatus == targetStatus) {
             throw new DiningTableStatusAlreadyChangedException();
         }
     }

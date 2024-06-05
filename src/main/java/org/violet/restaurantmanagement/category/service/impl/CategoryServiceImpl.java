@@ -75,27 +75,24 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category updatedCategory = categoryUpdateCommandToDomainMapper.map(updateCommand);
 
-        if (existingCategory.getStatus() != updatedCategory.getStatus()) {
+        this.checkExistingStatus(existingCategory.getStatus(), updatedCategory.getStatus());
 
-            existingCategory.setName(updatedCategory.getName());
-            existingCategory.setStatus(updatedCategory.getStatus());
+        existingCategory.setName(updatedCategory.getName());
+        existingCategory.setStatus(updatedCategory.getStatus());
 
-            categoryRepository.save(existingCategory);
-        } else {
-            throw new CategoryStatusAlreadyChangedException();
-        }
+        categoryRepository.save(existingCategory);
     }
 
     @Override
     public void deleteCategory(Long id) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
-        if (categoryEntity.getStatus() != CategoryStatus.DELETED) {
-            categoryEntity.delete();
-            categoryRepository.save(categoryEntity);
-        } else {
-            throw new CategoryStatusAlreadyChangedException();
-        }
+
+        this.checkExistingStatus(categoryEntity.getStatus(), CategoryStatus.DELETED);
+
+        categoryEntity.delete();
+
+        categoryRepository.save(categoryEntity);
     }
 
     private Category getById(Long id) {
@@ -108,6 +105,12 @@ public class CategoryServiceImpl implements CategoryService {
     private void save(Category category) {
         CategoryEntity categoryEntityToBeSave = categoryToCategoryEntityMapper.map(category);
         categoryRepository.save(categoryEntityToBeSave);
+    }
+
+    private void checkExistingStatus(CategoryStatus currentStatus, CategoryStatus targetStatus) {
+        if (currentStatus == targetStatus) {
+            throw new CategoryStatusAlreadyChangedException();
+        }
     }
 
     private void checkExistingOfCategoryName(String name) {
