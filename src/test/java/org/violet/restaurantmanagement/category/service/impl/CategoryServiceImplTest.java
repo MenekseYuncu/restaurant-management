@@ -240,6 +240,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         //Then
         Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.getCategoryById(categoryId));
+
     }
 
     @Test

@@ -37,7 +37,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
                 .pagination(
                         PaginationBuilder.builder()
                                 .pageNumber(1)
-                                .pageSize(3)
+                                .pageSize(1)
                                 .build()
                 )
                 .sorting(
@@ -73,7 +73,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
                 .pagination(
                         PaginationBuilder.builder()
                                 .pageNumber(1)
-                                .pageSize(3)
+                                .pageSize(2)
                                 .build()
                 )
                 .sorting(
@@ -109,7 +109,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
                 .pagination(
                         PaginationBuilder.builder()
                                 .pageNumber(1)
-                                .pageSize(3)
+                                .pageSize(1)
                                 .build()
                 )
                 .filter(mockDiningTableFilter)
@@ -139,7 +139,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
                 .pagination(
                         PaginationBuilder.builder()
                                 .pageNumber(1)
-                                .pageSize(3)
+                                .pageSize(2)
                                 .build()
                 )
                 .build();
