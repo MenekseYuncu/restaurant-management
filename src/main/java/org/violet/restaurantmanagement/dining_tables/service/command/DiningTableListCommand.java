@@ -31,6 +31,7 @@ public class DiningTableListCommand extends RmaPaginationCommand implements RmaS
     }
 
     @Override
+    @SuppressWarnings("This method is unused by the application directly but Spring is using it in the background.")
     public <C> Specification<C> toSpecification(Class<C> clazz) {
 
         if (this.filter == null) {
@@ -40,13 +41,13 @@ public class DiningTableListCommand extends RmaPaginationCommand implements RmaS
         Specification<C> specification = Specification.where(null);
 
         if (this.filter.getSize() != null) {
-            Specification<C> sizeSpecification = (root, _, criteriaBuilder) ->
+            Specification<C> sizeSpecification = (root, query, criteriaBuilder) ->
                     criteriaBuilder.equal(root.get("size"), this.filter.getSize());
             specification = specification.and(sizeSpecification);
         }
 
         if (!CollectionUtils.isEmpty(this.filter.getStatuses())) {
-            Specification<C> statusSpecification = (root, _, _) ->
+            Specification<C> statusSpecification = (root, query, criteriaBuilder) ->
                     root.get("status").in(this.filter.getStatuses());
             specification = specification.and(statusSpecification);
         }

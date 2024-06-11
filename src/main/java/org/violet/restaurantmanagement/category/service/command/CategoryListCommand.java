@@ -7,14 +7,12 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.common.model.Filtering;
 import org.violet.restaurantmanagement.common.model.mapper.RmaSpecification;
 import org.violet.restaurantmanagement.common.service.command.RmaPaginationCommand;
-import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 
 import java.util.Set;
-
-import static java.lang.StringTemplate.STR;
 
 @Getter
 @SuperBuilder
@@ -34,6 +32,7 @@ public class CategoryListCommand extends RmaPaginationCommand implements RmaSpec
     }
 
     @Override
+    @SuppressWarnings("This method is unused by the application directly but Spring is using it in the background.")
     public <C> Specification<C> toSpecification(Class<C> cClass) {
 
         if (this.filter == null) {
@@ -43,13 +42,13 @@ public class CategoryListCommand extends RmaPaginationCommand implements RmaSpec
         Specification<C> specification = Specification.where(null);
 
         if (StringUtils.hasText(this.filter.getName())) {
-            Specification<C> tempSpecification = (root, _, criteriaBuilder) ->
+            Specification<C> tempSpecification = (root, query, criteriaBuilder) ->
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), STR."%\{filter.getName().toLowerCase()}%");
             specification = specification.and(tempSpecification);
         }
 
         if (!CollectionUtils.isEmpty(this.filter.getStatuses())) {
-            Specification<C> statusSpecification = (root, _, _) ->
+            Specification<C> statusSpecification = (root, query, criteriaBuilder) ->
                     root.get("status").in(this.filter.getStatuses());
             specification = specification.and(statusSpecification);
         }
