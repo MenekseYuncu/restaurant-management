@@ -13,8 +13,6 @@ import org.violet.restaurantmanagement.common.exception.RmaAlreadyExistException
 import org.violet.restaurantmanagement.common.exception.RmaNotFoundException;
 import org.violet.restaurantmanagement.common.exception.RmaStatusAlreadyChangedException;
 
-import java.io.IOException;
-
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,13 +30,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex) {
         log.error(ex.getMessage(), ex);
         ErrorResponse errorResponse = ErrorResponse.failureOf(HttpStatus.BAD_REQUEST, ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<ErrorResponse> handleIOException(final IOException exception) {
-        log.error(exception.getMessage(), exception);
-        ErrorResponse errorResponse = ErrorResponse.failureOf(HttpStatus.BAD_REQUEST, exception.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
