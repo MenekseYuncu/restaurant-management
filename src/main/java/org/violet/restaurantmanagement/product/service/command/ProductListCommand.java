@@ -17,7 +17,7 @@ import java.util.Set;
 
 @Getter
 @SuperBuilder
-public class ProductListCommand  extends RmaPaginationCommand implements RmaSpecification {
+public class ProductListCommand extends RmaPaginationCommand implements RmaSpecification {
 
     private ProductFilter filter;
 
@@ -27,11 +27,8 @@ public class ProductListCommand  extends RmaPaginationCommand implements RmaSpec
     public static class ProductFilter implements Filtering {
 
         private String name;
-
         private Long categoryId;
-
         private Set<ProductStatus> statuses;
-
         private ProductPriceRange priceRange;
     }
 
@@ -43,8 +40,8 @@ public class ProductListCommand  extends RmaPaginationCommand implements RmaSpec
     }
 
     @Override
+    @SuppressWarnings("This method is unused by the application directly but Spring is using it in the background.")
     public <C> Specification<C> toSpecification(Class<C> clazz) {
-
         if (this.filter == null) {
             return Specification.allOf();
         }
@@ -52,34 +49,27 @@ public class ProductListCommand  extends RmaPaginationCommand implements RmaSpec
         Specification<C> specification = Specification.where(null);
 
         if (StringUtils.hasText(this.filter.getName())) {
-            Specification<C> tempSpecification = (root, _, criteriaBuilder) ->
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), STR."%\{filter.getName().toLowerCase()}%");
-            specification = specification.and(tempSpecification);
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")),
+                            STR."%\{this.filter.getName().toLowerCase()}%"));
         }
 
         if (this.filter.getCategoryId() != null) {
-            Specification<C> categorySpecification = (root, _, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("categoryId"), this.filter.getCategoryId());
-            specification = specification.and(categorySpecification);
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("categoryId"), filter.getCategoryId()));
         }
 
         if (!CollectionUtils.isEmpty(this.filter.getStatuses())) {
-            Specification<C> statusSpecification = (root, _, _) ->
-                    root.get("status").in(this.filter.getStatuses());
-            specification = specification.and(statusSpecification);
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    root.get("status").in(this.filter.getStatuses()));
         }
 
         if (this.filter.getPriceRange() != null) {
-            BigDecimal minPrice = this.filter.getPriceRange().getMin();
-            BigDecimal maxPrice = this.filter.getPriceRange().getMax();
-
-            if (minPrice.compareTo(BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("Minimum price cannot be less than zero");
-            }
-
-            Specification<C> priceSpecification = (root, _, criteriaBuilder) ->
-                    criteriaBuilder.between(root.get("price"), minPrice, maxPrice);
-            specification = specification.and(priceSpecification);
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.between(root.get("price"),
+                            this.filter.getPriceRange().getMin(),
+                            this.filter.getPriceRange().getMax()
+                    ));
         }
 
         return specification;
