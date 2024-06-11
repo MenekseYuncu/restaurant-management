@@ -1,5 +1,7 @@
 package org.violet.restaurantmanagement.product.controller.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class ProductListRequest extends RmaPaginationRequest {
 
+    @Valid
     private ProductFilter filter;
 
     @Builder
@@ -33,13 +36,17 @@ public class ProductListRequest extends RmaPaginationRequest {
 
         private Set<ProductStatus> statuses;
 
+        @Valid
         private ProductPriceRange priceRange;
     }
 
     @Getter
     @AllArgsConstructor
     public static class ProductPriceRange {
+        @PositiveOrZero
         private BigDecimal min;
+
+        @PositiveOrZero
         private BigDecimal max;
     }
 }
