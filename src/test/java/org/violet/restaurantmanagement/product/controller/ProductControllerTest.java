@@ -197,6 +197,10 @@ class ProductControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
                         .value(mockFilter.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(productService, Mockito.times(1))
+                .getAllProducts(Mockito.any(ProductListCommand.class));
     }
 
     @Test
@@ -333,7 +337,9 @@ class ProductControllerTest extends RmaControllerTest {
                         .value(rmaPage.getTotalPageCount()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
 
-
+        // Verify
+        Mockito.verify(productService, Mockito.times(1))
+                .getAllProducts(Mockito.any(ProductListCommand.class));
     }
 
     @Test
@@ -381,6 +387,36 @@ class ProductControllerTest extends RmaControllerTest {
                 .pagination(PaginationBuilder.builder()
                         .pageNumber(-1)
                         .pageSize(1)
+                        .build()
+                )
+                .build();
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mockProductListRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(productService);
+    }
+
+    @Test
+    void givenInvalidNegativePriceRange_whenGetAllProducts_thenReturnBadRequest() throws Exception {
+        // Given
+        ProductListRequest.ProductPriceRange priceRange = new ProductListRequest.ProductPriceRange(
+                BigDecimal.valueOf(-10),
+                BigDecimal.valueOf(200)
+        );
+        ProductListRequest mockProductListRequest = ProductListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageNumber(1)
+                        .pageSize(1)
+                        .build()
+                )
+                .filter(ProductListRequest.ProductFilter.builder()
+                        .priceRange(priceRange)
                         .build()
                 )
                 .build();
@@ -541,6 +577,8 @@ class ProductControllerTest extends RmaControllerTest {
                         .content(new ObjectMapper().writeValueAsString(createCommand)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
+        // Verify
+        Mockito.verify(productService, Mockito.times(1)).createProduct(Mockito.any(ProductCreateCommand.class));
     }
 
     @Test
@@ -563,6 +601,10 @@ class ProductControllerTest extends RmaControllerTest {
                         .content(new ObjectMapper().writeValueAsString(createCommand)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isConflict());
+
+        // Verify
+        Mockito.verify(productService, Mockito.times(1))
+                .createProduct(Mockito.any(ProductCreateCommand.class));
     }
 
     @Test
@@ -696,6 +738,10 @@ class ProductControllerTest extends RmaControllerTest {
                         .content(new ObjectMapper().writeValueAsString(updateCommand)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isConflict());
+
+        // Verify
+        Mockito.verify(productService, Mockito.times(1))
+                .updateProduct(Mockito.any(String.class), Mockito.any(ProductUpdateCommand.class));
     }
 
     @Test
@@ -768,5 +814,8 @@ class ProductControllerTest extends RmaControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URL + "/{id}", productId))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(productService, Mockito.times(1)).deleteProduct(productId);
     }
 }

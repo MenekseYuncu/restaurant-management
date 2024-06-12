@@ -120,6 +120,10 @@ class CategoryControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
                         .value(mockCategoryFilter.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(categoryService, Mockito.times(1))
+                .getAllCategories(Mockito.any(CategoryListCommand.class));
     }
 
     @Test
@@ -195,6 +199,10 @@ class CategoryControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
                         .value(rmaPage.getTotalPageCount()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(categoryService, Mockito.times(1))
+                .getAllCategories(Mockito.any(CategoryListCommand.class));
     }
 
     @Test
@@ -263,6 +271,10 @@ class CategoryControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.name")
                         .value(mockCategoryFilter.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(categoryService, Mockito.times(1))
+                .getAllCategories(Mockito.any(CategoryListCommand.class));
     }
 
     @Test
@@ -321,6 +333,10 @@ class CategoryControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
                         .value(rmaPage.getTotalPageCount()))
                    .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(categoryService, Mockito.times(1))
+                .getAllCategories(Mockito.any(CategoryListCommand.class));
     }
 
     @Test
@@ -334,6 +350,9 @@ class CategoryControllerTest extends RmaControllerTest {
                         .content(new ObjectMapper().writeValueAsString(givenRequest)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(categoryService);
     }
 
     @Test

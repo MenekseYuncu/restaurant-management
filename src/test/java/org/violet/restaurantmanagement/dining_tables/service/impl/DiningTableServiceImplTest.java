@@ -28,6 +28,7 @@ import org.violet.restaurantmanagement.dining_tables.service.command.DiningTable
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,6 +50,7 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // Given
         DiningTableListCommand.DiningTableFilter mocDiningTableFilter = DiningTableListCommand.DiningTableFilter.builder()
                 .size(2)
+                .statuses(Collections.singleton(DiningTableStatus.OCCUPIED))
                 .build();
         DiningTableListCommand tableListCommand = DiningTableListCommand.builder()
                 .pagination(
@@ -78,7 +80,7 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         diningTableEntities.add(new DiningTableEntity(
                         1L,
                         String.valueOf(UUID.randomUUID()),
-                        DiningTableStatus.RESERVED,
+                DiningTableStatus.OCCUPIED,
                         2
                 )
         );
@@ -92,9 +94,10 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // Then
         RmaPage<DiningTable> result = diningTableService.getAllDiningTables(tableListCommand);
 
-        // Assertions
+        // Verify
         Mockito.verify(diningTableRepository, Mockito.never()).findAll();
 
+        // Assert
         Assertions.assertEquals(result.getContent().get(0).getStatus(), diningTableEntities.get(0).getStatus());
         Assertions.assertEquals(result.getContent().get(1).getStatus(), diningTableEntities.get(1).getStatus());
 
@@ -148,9 +151,10 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // Then
         RmaPage<DiningTable> result = diningTableService.getAllDiningTables(tableListCommand);
 
-        // Assertions
+        // Verify
         Mockito.verify(diningTableRepository, Mockito.never()).findAll();
 
+        // Assert
         Assertions.assertEquals(result.getContent().get(0).getStatus(), diningTableEntities.get(0).getStatus());
         Assertions.assertEquals(result.getContent().get(1).getStatus(), diningTableEntities.get(1).getStatus());
 
@@ -206,9 +210,10 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // Then
         RmaPage<DiningTable> result = diningTableService.getAllDiningTables(tableListCommand);
 
-        // Assertions
+        // Verify
         Mockito.verify(diningTableRepository, Mockito.never()).findAll();
 
+        // Assert
         Assertions.assertEquals(result.getContent().get(0).getStatus(), diningTableEntities.get(0).getStatus());
         Assertions.assertEquals(result.getContent().get(1).getStatus(), diningTableEntities.get(1).getStatus());
 
@@ -256,9 +261,10 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // Then
         RmaPage<DiningTable> result = diningTableService.getAllDiningTables(tableListCommand);
 
-        // Assertions
+        // Verify
         Mockito.verify(diningTableRepository, Mockito.never()).findAll();
 
+        // Assert
         Assertions.assertEquals(result.getContent().get(0).getStatus(), diningTableEntities.get(0).getStatus());
         Assertions.assertEquals(result.getContent().get(1).getStatus(), diningTableEntities.get(1).getStatus());
 
@@ -277,6 +283,9 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Assertions.assertThrows(NullPointerException.class,
                 () -> diningTableService.getAllDiningTables(diningTableListCommand)
         );
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never()).findAll();
     }
 
     @Test
@@ -300,6 +309,11 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         //Then
         DiningTable diningTable = diningTableService.getDiningTableById(diningTableId);
 
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.times(1))
+                .findById(diningTableId);
+
+        // Assert
         Assertions.assertNotNull(diningTable);
         Assertions.assertEquals(mockDiningTable.getId(), diningTable.getId());
         Assertions.assertEquals(mockDiningTable.getMergeId(), diningTable.getMergeId());
@@ -318,6 +332,10 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         //Then
         Assertions.assertThrows(DiningTableNotFoundException.class,
                 () -> diningTableService.getDiningTableById(diningTableId));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .save(ArgumentMatchers.any());
     }
 
     @Test
@@ -335,7 +353,7 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // When
         diningTableService.createDiningTables(createCommand);
 
-        // Then
+        // Verify
         Mockito.verify(diningTableRepository, Mockito.times(1))
                 .saveAll(ArgumentMatchers.anyList());
     }
@@ -352,6 +370,7 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Assertions.assertThrows(NullPointerException.class,
                 () -> diningTableService.createDiningTables(createCommand));
 
+        // Verify
         Mockito.verifyNoInteractions(diningTableRepository);
     }
 
@@ -378,7 +397,7 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
 
         diningTableService.updateDiningTable(tableId, updateCommand);
 
-        // Then
+        // Verify
         Mockito.verify(diningTableRepository, Mockito.times(1))
                 .save(ArgumentMatchers.any(DiningTableEntity.class));
     }
@@ -406,8 +425,9 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Assertions.assertThrows(DiningTableStatusAlreadyChangedException.class,
                 () -> diningTableService.updateDiningTable(tableId, updateCommand));
 
-        Mockito.verify(diningTableRepository, Mockito.times(0))
-                .save(ArgumentMatchers.any(DiningTableEntity.class));
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .save(ArgumentMatchers.any());
     }
 
 
@@ -426,6 +446,10 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         //Then
         Assertions.assertThrows(DiningTableNotFoundException.class,
                 () -> diningTableService.updateDiningTable(tableId, updateCommand));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .save(ArgumentMatchers.any());
     }
 
     @Test
@@ -438,8 +462,9 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Assertions.assertThrows(DiningTableNotFoundException.class,
                 () -> diningTableService.updateDiningTable(tableId, updateCommand));
 
-        Mockito.verify(diningTableRepository, Mockito.times(0))
-                .save(ArgumentMatchers.any(DiningTableEntity.class));
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .save(ArgumentMatchers.any());
     }
 
     @Test
@@ -491,7 +516,7 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
 
         diningTableService.deleteDiningTable(diningTableId);
 
-        // Then
+        // Verify
         Mockito.verify(diningTableRepository, Mockito.times(1))
                 .save(ArgumentMatchers.any(DiningTableEntity.class));
     }
@@ -513,8 +538,9 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Assertions.assertThrows(DiningTableStatusAlreadyChangedException.class,
                 () -> diningTableService.deleteDiningTable(diningTableId));
 
-        Mockito.verify(diningTableRepository, Mockito.times(0))
-                .save(ArgumentMatchers.any(DiningTableEntity.class));
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .save(ArgumentMatchers.any());
     }
 
     @Test
@@ -529,5 +555,9 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         //Then
         Assertions.assertThrows(DiningTableNotFoundException.class,
                 () -> diningTableService.deleteDiningTable(diningTableId));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .save(ArgumentMatchers.any());
     }
 }

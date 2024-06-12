@@ -125,6 +125,10 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.size")
                         .value(mockDiningTableFilter.getSize()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(diningTableService, Mockito.times(1))
+                .getAllDiningTables(Mockito.any(DiningTableListCommand.class));
     }
 
     @Test
@@ -199,6 +203,10 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
                         .value(rmaPage.getTotalPageCount()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(diningTableService, Mockito.times(1))
+                .getAllDiningTables(Mockito.any(DiningTableListCommand.class));
     }
 
     @Test
@@ -273,6 +281,10 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.filteredBy.size")
                         .value(mockDiningTableFilter.getSize()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(diningTableService, Mockito.times(1))
+                .getAllDiningTables(Mockito.any(DiningTableListCommand.class));
     }
 
     @Test
@@ -340,6 +352,10 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
                         .value(rmaPage.getTotalPageCount()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
+
+        // Verify
+        Mockito.verify(diningTableService, Mockito.times(1))
+                .getAllDiningTables(Mockito.any(DiningTableListCommand.class));
     }
 
     @Test
@@ -353,6 +369,9 @@ class DiningTableControllerTest extends RmaControllerTest {
                         .content(new ObjectMapper().writeValueAsString(givenRequest)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(diningTableService);
     }
 
     @Test

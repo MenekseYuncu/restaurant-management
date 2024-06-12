@@ -81,6 +81,8 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         RmaPage<Category> result = categoryService.getAllCategories(givenCategoryListCommand);
 
         // Assertions
+        Mockito.verify(categoryRepository, Mockito.never()).findAll();
+
         Assertions.assertEquals(result.getTotalElementCount(), categoryEntities.size());
         Assertions.assertEquals(categoryEntities.size(), result.getContent().size());
     }
@@ -222,6 +224,10 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         //Then
         Category resultCategory = categoryService.getCategoryById(categoryId);
 
+        // Verify
+        Mockito.verify(categoryRepository, Mockito.times(1))
+                .findById(categoryId);
+
         Assertions.assertNotNull(resultCategory);
         Assertions.assertEquals(mockCategory.getId(), resultCategory.getId());
         Assertions.assertEquals(mockCategory.getName(), resultCategory.getName());
@@ -240,7 +246,6 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         //Then
         Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.getCategoryById(categoryId));
-
     }
 
     @Test
@@ -426,7 +431,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
 
         categoryService.deleteCategory(categoryId);
 
-        // Then
+        // Verify
         Mockito.verify(categoryRepository, Mockito.times(1))
                 .save(ArgumentMatchers.any(CategoryEntity.class));
     }
@@ -446,6 +451,7 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         Assertions.assertThrows(CategoryStatusAlreadyChangedException.class,
                 () -> categoryService.deleteCategory(categoryId));
 
+        // Verify
         Mockito.verify(categoryRepository, Mockito.times(0))
                 .save(ArgumentMatchers.any(CategoryEntity.class));
     }
@@ -463,5 +469,9 @@ class CategoryServiceImplTest extends RmaServiceTest implements RmaTestContainer
         //Then
         Assertions.assertThrows(CategoryNotFoundException.class,
                 () -> categoryService.deleteCategory(categoryId));
+
+        // Verify
+        Mockito.verify(categoryRepository, Mockito.times(0))
+                .save(ArgumentMatchers.any(CategoryEntity.class));
     }
 }
