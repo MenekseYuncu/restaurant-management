@@ -308,6 +308,27 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     }
 
     @Test
+    void givenProductListWithFilterPriceRange_whenGetAllProduct_thenReturnCategories() {
+        // Given
+        ProductListCommand.ProductPriceRange priceRange = new ProductListCommand.ProductPriceRange(
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(20)
+        );
+
+        ProductListCommand.ProductFilter filter = ProductListCommand.ProductFilter.builder()
+                .priceRange(priceRange)
+                .build();
+
+        // Then
+        ProductEntity productEntity = new ProductEntity();
+        productEntity.setPrice(BigDecimal.valueOf(15));
+
+        // Assert
+        Assertions.assertEquals(BigDecimal.valueOf(10), filter.getPriceRange().getMin());
+        Assertions.assertEquals(BigDecimal.valueOf(20), filter.getPriceRange().getMax());
+    }
+
+    @Test
     void givenResultIsNull_whenGetAllProducts_thenThrowNullPointerException() {
         // When
         ProductListCommand productListCommand = ProductListCommand.builder().build();
