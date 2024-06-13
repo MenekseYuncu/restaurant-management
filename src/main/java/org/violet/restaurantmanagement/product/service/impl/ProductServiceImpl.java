@@ -7,6 +7,7 @@ import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundExcep
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
 import org.violet.restaurantmanagement.common.model.RmaPage;
+import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.product.exceptions.ProductAlreadyExistException;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
@@ -23,6 +24,8 @@ import org.violet.restaurantmanagement.product.service.command.ProductListComman
 import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 import org.violet.restaurantmanagement.product.service.domain.Product;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,8 @@ class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final RmaCurrency currency;
+
 
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
@@ -45,8 +50,11 @@ class ProductServiceImpl implements ProductService {
                 productListCommand.toPageable()
         );
 
+        List<Product> products = productEntityToDomainMapper.map(productEntityPage.getContent());
+        products.forEach(product -> product.setCurrency(currency));
+
         return RmaPage.<Product>builder()
-                .content(productEntityToDomainMapper.map(productEntityPage.getContent()))
+                .content(products)
                 .page(productEntityPage)
                 .sortedBy(productListCommand.getSorting())
                 .filteredBy(productListCommand.getFilter())
@@ -58,7 +66,10 @@ class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(ProductNotFoundException::new);
 
-        return productEntityToDomainMapper.map(productEntity);
+        Product product = productEntityToDomainMapper.map(productEntity);
+        product.setCurrency(currency);
+
+        return product;
     }
 
     @Override
