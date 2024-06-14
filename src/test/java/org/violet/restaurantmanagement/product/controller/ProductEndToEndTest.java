@@ -11,6 +11,7 @@ import org.violet.restaurantmanagement.RmaEndToEndTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
+import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.product.controller.request.ProductCreateRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductListRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductUpdateRequest;
@@ -146,6 +147,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .categoryId(1L)
                 .name("Test")
                 .ingredient("ingredients")
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(100))
                 .extent(100)
@@ -169,6 +171,8 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                         .value(product.getStatus().toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.price")
                         .value(product.getPrice().doubleValue()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.currency")
+                        .value(product.getCurrency().name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.extent")
                         .value(product.getExtent()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.extentType")
