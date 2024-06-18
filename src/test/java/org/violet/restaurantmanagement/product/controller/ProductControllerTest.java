@@ -14,6 +14,7 @@ import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundExcep
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
+import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductCreateRequestToCreateCommandMapper;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductUpdateRequestToProductUpdateCommandMapper;
 import org.violet.restaurantmanagement.product.controller.request.ProductCreateRequest;
@@ -77,12 +78,14 @@ class ProductControllerTest extends RmaControllerTest {
                 .name("product 1")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(50))
+                .currency(RmaCurrency.TRY)
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
                 .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
@@ -90,6 +93,7 @@ class ProductControllerTest extends RmaControllerTest {
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
                 .price(BigDecimal.valueOf(100))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.INACTIVE)
                 .build()
         );
@@ -151,19 +155,25 @@ class ProductControllerTest extends RmaControllerTest {
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 1")
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
-                .status(ProductStatus.INACTIVE)
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
+                .status(ProductStatus.ACTIVE)
                 .build()
         );
 
@@ -224,19 +234,25 @@ class ProductControllerTest extends RmaControllerTest {
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 1")
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
-                .status(ProductStatus.INACTIVE)
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
+                .status(ProductStatus.ACTIVE)
                 .build()
         );
 
@@ -290,22 +306,25 @@ class ProductControllerTest extends RmaControllerTest {
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 1")
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
-                .price(BigDecimal.valueOf(10))
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
-                .price(BigDecimal.valueOf(10))
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
-                .status(ProductStatus.INACTIVE)
-                .price(BigDecimal.valueOf(10))
+                .price(BigDecimal.valueOf(150))
+                .currency(RmaCurrency.TRY)
+                .status(ProductStatus.ACTIVE)
                 .build()
         );
 
@@ -445,6 +464,7 @@ class ProductControllerTest extends RmaControllerTest {
                 .ingredient("ingredients")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(100))
+                .currency(RmaCurrency.TRY)
                 .extent(100)
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();

@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.common.model.enums.RmaParameter;
-import org.violet.restaurantmanagement.parameter.model.entity.ParameterEntity;
+import org.violet.restaurantmanagement.parameter.model.ParameterEntity;
 import org.violet.restaurantmanagement.parameter.repository.ParameterRepository;
 
 import java.util.Optional;

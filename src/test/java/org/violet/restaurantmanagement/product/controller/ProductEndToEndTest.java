@@ -150,6 +150,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .currency(RmaCurrency.TRY)
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(100))
+                .currency(RmaCurrency.TRY)
                 .extent(100)
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
@@ -210,6 +211,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .ingredient("ingredients")
                 .status(ProductStatus.INACTIVE)
                 .price(BigDecimal.valueOf(100))
+                .currency(RmaCurrency.TRY)
                 .extent(100)
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
@@ -246,6 +248,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .ingredient("ingredients")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(100))
+                .currency(RmaCurrency.TRY)
                 .extent(100)
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
