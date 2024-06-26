@@ -10,7 +10,6 @@ import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.common.model.Filtering;
 import org.violet.restaurantmanagement.common.model.mapper.RmaSpecification;
 import org.violet.restaurantmanagement.common.service.command.RmaPaginationCommand;
-import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
 import java.util.Set;
 
@@ -25,9 +24,9 @@ public class MenuListCommand extends RmaPaginationCommand implements RmaSpecific
     @AllArgsConstructor
     public static class MenuFilter implements Filtering {
 
-        private Set<CategoryStatus> categoryStatuses;
+        private String name;
 
-        private Set<ProductStatus> productStatuses;
+        private Set<CategoryStatus> categoryStatuses;
 
     }
 
@@ -44,12 +43,6 @@ public class MenuListCommand extends RmaPaginationCommand implements RmaSpecific
         if (!CollectionUtils.isEmpty(this.filter.getCategoryStatuses())) {
             Specification<C> statusSpecification = (root, query, criteriaBuilder) ->
                     root.get("status").in(this.filter.getCategoryStatuses());
-            specification = specification.and(statusSpecification);
-        }
-
-        if (!CollectionUtils.isEmpty(this.filter.getProductStatuses())) {
-            Specification<C> statusSpecification = (root, query, criteriaBuilder) ->
-                    root.get("status").in(this.filter.getProductStatuses());
             specification = specification.and(statusSpecification);
         }
 
