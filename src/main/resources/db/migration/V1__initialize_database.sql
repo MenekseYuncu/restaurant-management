@@ -85,8 +85,8 @@ values ('category 1', 'ACTIVE', current_timestamp),
        ('category 2', 'ACTIVE', current_timestamp);
 
 
-insert into rm_parameter(name, definition, created_at)
-values ('CURRENCY', 'TRY', current_timestamp);
+insert into rm_parameter (name, definition, created_at)
+values ('Currency', 'TRY', current_timestamp);
 
 insert into rm_product (id, category_id, name, ingredient, price, status, extent, extent_type, created_at)
 values (gen_random_uuid(), 1, 'product 1', 'ingredient', 20.3, 'ACTIVE', 200, 'ML',

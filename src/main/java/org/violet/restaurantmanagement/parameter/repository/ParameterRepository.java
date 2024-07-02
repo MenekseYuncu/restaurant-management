@@ -7,7 +7,7 @@ import org.violet.restaurantmanagement.parameter.model.ParameterEntity;
 import java.util.Optional;
 
 @Repository
-public interface ParameterRepository extends JpaRepository<ParameterEntity, Long> {
+public interface ParameterRepository extends JpaRepository<ParameterEntity, Integer> {
 
     Optional<ParameterEntity> findByName(String name);
 }
