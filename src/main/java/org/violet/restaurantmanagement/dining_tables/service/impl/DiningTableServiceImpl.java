@@ -88,6 +88,34 @@ class DiningTableServiceImpl implements DiningTableService {
     }
 
     @Override
+    public void changeStatusToVacant(Long id) {
+        DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
+                .orElseThrow(DiningTableNotFoundException::new);
+
+        this.checkIfStatusChanged(diningTableEntity.getStatus(), DiningTableStatus.VACANT);
+        diningTableEntity.setStatus(DiningTableStatus.VACANT);
+
+        diningTableRepository.save(diningTableEntity);
+    }
+
+    @Override
+    public void changeStatusToOccupied(Long id) {
+        DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
+                .orElseThrow(DiningTableNotFoundException::new);
+
+        this.checkIfStatusChanged(diningTableEntity.getStatus(), DiningTableStatus.OCCUPIED);
+        diningTableEntity.setStatus(DiningTableStatus.OCCUPIED);
+
+        diningTableRepository.save(diningTableEntity);
+    }
+
+    private void checkIfStatusChanged(DiningTableStatus entityStatus, DiningTableStatus status) {
+        if (entityStatus == status) {
+            throw new DiningTableStatusAlreadyChangedException();
+        }
+    }
+
+    @Override
     public void deleteDiningTable(Long id) {
         DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
                 .orElseThrow(DiningTableNotFoundException::new);

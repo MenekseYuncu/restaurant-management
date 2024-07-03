@@ -84,6 +84,18 @@ class DiningTableController {
         return BaseResponse.SUCCESS;
     }
 
+    @PutMapping("/{id}/vacant")
+    public BaseResponse<Void> changeStatusToVacant(@PathVariable Long id) {
+        diningTableService.changeStatusToVacant(id);
+        return BaseResponse.SUCCESS;
+    }
+
+    @PutMapping("/{id}/occupied")
+    public BaseResponse<Void> changeStatusToOccupied(@PathVariable Long id) {
+        diningTableService.changeStatusToOccupied(id);
+        return BaseResponse.SUCCESS;
+    }
+
     @DeleteMapping("/{id}")
     public BaseResponse<Void> deletedCategory(
             @PathVariable @Positive Long id

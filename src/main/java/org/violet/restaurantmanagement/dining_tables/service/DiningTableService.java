@@ -16,5 +16,9 @@ public interface DiningTableService {
 
     void updateDiningTable(Long id, DiningTableUpdateCommand updateCommand);
 
+    void changeStatusToVacant(Long id);
+
+    void changeStatusToOccupied(Long id);
+
     void deleteDiningTable(Long id);
 }
