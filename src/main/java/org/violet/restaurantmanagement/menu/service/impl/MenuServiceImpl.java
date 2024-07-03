@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.common.model.RmaPage;
-import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.menu.service.MenuService;
 import org.violet.restaurantmanagement.menu.service.command.MenuListCommand;
 import org.violet.restaurantmanagement.product.model.mapper.ProductEntityToDomainMapper;
@@ -20,7 +19,7 @@ import java.util.List;
 class MenuServiceImpl implements MenuService {
 
     private final ProductRepository productRepository;
-    private final RmaCurrency currency;
+    private final String currency;
 
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
 

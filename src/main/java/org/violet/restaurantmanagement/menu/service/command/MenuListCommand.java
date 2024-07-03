@@ -6,10 +6,11 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
-import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
+import org.springframework.util.StringUtils;
 import org.violet.restaurantmanagement.common.model.Filtering;
 import org.violet.restaurantmanagement.common.model.mapper.RmaSpecification;
 import org.violet.restaurantmanagement.common.service.command.RmaPaginationCommand;
+import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
 import java.util.Set;
 
@@ -26,24 +27,28 @@ public class MenuListCommand extends RmaPaginationCommand implements RmaSpecific
 
         private String name;
 
-        private Set<CategoryStatus> categoryStatuses;
+        private Set<ProductStatus> statuses;
 
     }
 
     @Override
     @SuppressWarnings("This method is unused by the application directly but Spring is using it in the background.")
-    public <C> Specification<C> toSpecification(Class<C> cClass) {
-
+    public <C> Specification<C> toSpecification(Class<C> clazz) {
         if (this.filter == null) {
             return Specification.allOf();
         }
 
         Specification<C> specification = Specification.where(null);
 
-        if (!CollectionUtils.isEmpty(this.filter.getCategoryStatuses())) {
-            Specification<C> statusSpecification = (root, query, criteriaBuilder) ->
-                    root.get("status").in(this.filter.getCategoryStatuses());
-            specification = specification.and(statusSpecification);
+        if (StringUtils.hasText(this.filter.getName())) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")),
+                            STR."%\{this.filter.getName().toLowerCase()}%"));
+        }
+
+        if (!CollectionUtils.isEmpty(this.filter.getStatuses())) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    root.get("status").in(this.filter.getStatuses()));
         }
 
         return specification;
