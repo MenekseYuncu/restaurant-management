@@ -1,6 +1,5 @@
 package org.violet.restaurantmanagement.common.config;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.violet.restaurantmanagement.parameter.model.ParameterEntity;
@@ -12,7 +11,6 @@ import java.util.Optional;
 public class CurrencyConfiguration {
 
     @Bean
-    @Qualifier("currency")
     String currency(ParameterRepository parameterRepository) {
         Optional<ParameterEntity> parameterEntity = parameterRepository.findByName("Currency");
         return parameterEntity.orElseThrow().getDefinition();
