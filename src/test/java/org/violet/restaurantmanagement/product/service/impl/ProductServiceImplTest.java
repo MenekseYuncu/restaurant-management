@@ -104,6 +104,11 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 .filter(ProductListCommand.ProductFilter.builder()
                         .name("Product")
                         .categoryId(1L)
+                        .priceRange(
+                                ProductListCommand.ProductPriceRange.builder()
+                                        .min(BigDecimal.valueOf(50))
+                                        .build()
+                        )
                         .statuses(Collections.singleton(ProductStatus.ACTIVE))
                         .build())
                 .build();
@@ -282,6 +287,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 )
                 .filter(ProductListCommand.ProductFilter.builder()
                         .name("Product")
+                        .categoryId(1L)
                         .priceRange(priceRange)
                         .statuses(Collections.singleton(ProductStatus.ACTIVE)).build())
                 .build();

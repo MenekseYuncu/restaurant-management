@@ -33,6 +33,7 @@ public class ProductListCommand extends RmaPaginationCommand implements RmaSpeci
     }
 
     @Getter
+    @Builder
     @AllArgsConstructor
     public static class ProductPriceRange {
         private BigDecimal min;
