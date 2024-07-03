@@ -22,6 +22,7 @@ import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTab
 import java.util.UUID;
 
 class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
+
     @Autowired
     private DiningTableRepository diningTableRepository;
 
