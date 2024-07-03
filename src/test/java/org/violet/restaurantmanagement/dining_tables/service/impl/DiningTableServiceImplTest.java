@@ -502,6 +502,92 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     }
 
     @Test
+    void givenChangeStatusValidTableId_whenTableIsNotVacant_thenReturnSuccess() {
+        // Given
+        Long tableId = 1L;
+
+        DiningTableEntity diningTableEntity = DiningTableEntity.builder()
+                .id(tableId)
+                .status(DiningTableStatus.OCCUPIED)
+                .build();
+
+        // When
+        Mockito.when(diningTableRepository.findById(tableId))
+                .thenReturn(Optional.of(diningTableEntity));
+
+        diningTableService.changeStatusToVacant(tableId);
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.times(1)).save(diningTableEntity);
+        Mockito.verify(diningTableRepository, Mockito.times(1)).findById(tableId);
+    }
+
+    @Test
+    void givenChangeStatusToVacant_whenTableIsAlreadyVacant_thenThrowException() {
+        // Given
+        Long tableId = 1L;
+        DiningTableEntity diningTableEntity = DiningTableEntity.builder()
+                .id(tableId)
+                .status(DiningTableStatus.VACANT)
+                .build();
+
+        // When
+        Mockito.when(diningTableRepository.findById(tableId))
+                .thenReturn(Optional.of(diningTableEntity));
+
+        // Then
+        Assertions.assertThrows(DiningTableStatusAlreadyChangedException.class,
+                () -> diningTableService.changeStatusToVacant(tableId));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.times(0)).save(diningTableEntity);
+        Mockito.verify(diningTableRepository, Mockito.times(1)).findById(tableId);
+    }
+
+    @Test
+    void givenChangeStatusValidTableId_whenTableIsNotOccupied_thenReturnSuccess() {
+        // Given
+        Long tableId = 1L;
+
+        DiningTableEntity diningTableEntity = DiningTableEntity.builder()
+                .id(tableId)
+                .status(DiningTableStatus.VACANT)
+                .build();
+
+        // When
+        Mockito.when(diningTableRepository.findById(tableId))
+                .thenReturn(Optional.of(diningTableEntity));
+
+        diningTableService.changeStatusToOccupied(tableId);
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.times(1)).save(diningTableEntity);
+        Mockito.verify(diningTableRepository, Mockito.times(1)).findById(tableId);
+    }
+
+    @Test
+    void givenChangeStatusToOccupied_whenTableIsAlreadyOccupied_thenThrowException() {
+        // Given
+        Long tableId = 1L;
+        DiningTableEntity diningTableEntity = DiningTableEntity.builder()
+                .id(tableId)
+                .status(DiningTableStatus.OCCUPIED)
+                .build();
+
+        // When
+        Mockito.when(diningTableRepository.findById(tableId))
+                .thenReturn(Optional.of(diningTableEntity));
+
+        // Then
+        Assertions.assertThrows(DiningTableStatusAlreadyChangedException.class,
+                () -> diningTableService.changeStatusToOccupied(tableId));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.times(0)).save(diningTableEntity);
+        Mockito.verify(diningTableRepository, Mockito.times(1)).findById(tableId);
+    }
+
+    @Test
     void givenDiningTableIdExistsAndNotDeleted_whenSoftDeleteDiningTable_thenReturnSuccess() {
         // Given
         Long diningTableId = 1L;

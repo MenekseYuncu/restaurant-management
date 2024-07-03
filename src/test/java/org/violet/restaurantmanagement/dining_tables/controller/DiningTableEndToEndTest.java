@@ -229,6 +229,32 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
     }
 
     @Test
+    void givenChangeStatusToVacant_whenDiningTableFound_thenReturnSuccess() throws Exception {
+        // Given
+        Long tableId = 1L;
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", tableId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+    }
+
+    @Test
+    void givenChangeStatusToOccupied_whenDiningTableFound_thenReturnSuccess() throws Exception {
+        // Given
+        Long tableId = 1L;
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", tableId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+    }
+
+    @Test
     void givenValidDeletedDiningTableId_whenDiningTableFound_thenReturnSuccess() throws Exception {
         // Given
         Long diningTableId = 1L;

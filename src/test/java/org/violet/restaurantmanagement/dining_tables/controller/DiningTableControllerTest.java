@@ -20,6 +20,7 @@ import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTa
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableListRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
@@ -690,6 +691,110 @@ class DiningTableControllerTest extends RmaControllerTest {
 
         // Verify
         Mockito.verifyNoInteractions(diningTableService);
+    }
+
+    @Test
+    void givenChangeStatusToVacant_whenDiningTableFound_thenReturnSuccess() throws Exception {
+        // Given
+        Long tableId = 1L;
+
+        // When
+        Mockito.doNothing().when(diningTableService).changeStatusToVacant(tableId);
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", tableId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(diningTableService).changeStatusToVacant(tableId);
+    }
+
+    @Test
+    void givenChangeStatusToVacant_whenTableNotFound_thenReturnNotFound() throws Exception {
+        // Given
+        Long diningTableId = 100L;
+
+        // When
+        Mockito.doThrow(DiningTableNotFoundException.class)
+                .when(diningTableService)
+                .changeStatusToVacant(diningTableId);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", diningTableId))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(diningTableService).changeStatusToVacant(diningTableId);
+    }
+
+    @Test
+    void givenChangeStatusToVacant_whenStatusAlreadyChanged_thenReturnBadRequest() throws Exception {
+        Long diningTableId = 1L;
+
+        // When
+        Mockito.doThrow(DiningTableStatusAlreadyChangedException.class)
+                .when(diningTableService)
+                .changeStatusToVacant(diningTableId);
+
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", diningTableId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
+    void givenChangeStatusToOccupied_whenDiningTableFound_thenReturnSuccess() throws Exception {
+        // Given
+        Long tableId = 1L;
+
+        // When
+        Mockito.doNothing().when(diningTableService).changeStatusToOccupied(tableId);
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", tableId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(diningTableService).changeStatusToOccupied(tableId);
+    }
+
+    @Test
+    void givenChangeStatusToOccupied_whenTableNotFound_thenReturnNotFound() throws Exception {
+        // Given
+        Long diningTableId = 100L;
+
+        // When
+        Mockito.doThrow(DiningTableNotFoundException.class)
+                .when(diningTableService)
+                .changeStatusToOccupied(diningTableId);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", diningTableId))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(diningTableService).changeStatusToOccupied(diningTableId);
+    }
+
+    @Test
+    void givenChangeStatusToOccupied_whenStatusAlreadyChanged_thenReturnBadRequest() throws Exception {
+        // Given
+        Long diningTableId = 1L;
+
+        // When
+        Mockito.doThrow(DiningTableStatusAlreadyChangedException.class)
+                .when(diningTableService)
+                .changeStatusToOccupied(diningTableId);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", diningTableId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
     @Test

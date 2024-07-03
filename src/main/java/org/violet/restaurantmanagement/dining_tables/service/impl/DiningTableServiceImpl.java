@@ -92,7 +92,7 @@ class DiningTableServiceImpl implements DiningTableService {
         DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
                 .orElseThrow(DiningTableNotFoundException::new);
 
-        this.checkIfStatusChanged(diningTableEntity.getStatus(), DiningTableStatus.VACANT);
+        this.checkExistingStatus(diningTableEntity.getStatus(), DiningTableStatus.VACANT);
         diningTableEntity.setStatus(DiningTableStatus.VACANT);
 
         diningTableRepository.save(diningTableEntity);
@@ -103,16 +103,10 @@ class DiningTableServiceImpl implements DiningTableService {
         DiningTableEntity diningTableEntity = diningTableRepository.findById(id)
                 .orElseThrow(DiningTableNotFoundException::new);
 
-        this.checkIfStatusChanged(diningTableEntity.getStatus(), DiningTableStatus.OCCUPIED);
+        this.checkExistingStatus(diningTableEntity.getStatus(), DiningTableStatus.OCCUPIED);
         diningTableEntity.setStatus(DiningTableStatus.OCCUPIED);
 
         diningTableRepository.save(diningTableEntity);
-    }
-
-    private void checkIfStatusChanged(DiningTableStatus entityStatus, DiningTableStatus status) {
-        if (entityStatus == status) {
-            throw new DiningTableStatusAlreadyChangedException();
-        }
     }
 
     @Override
