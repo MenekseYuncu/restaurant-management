@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.violet.restaurantmanagement.RmaServiceTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
-import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
@@ -85,8 +84,8 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                         .property("categoryId")
                         .build())
                 .filter(MenuListCommand.MenuFilter.builder()
-                        .categoryStatuses(Collections.singleton(CategoryStatus.ACTIVE))
-                        .productStatuses(Collections.singleton(ProductStatus.ACTIVE))
+                        .name("product")
+                        .statuses(Collections.singleton(ProductStatus.ACTIVE))
                         .build())
                 .build();
 
@@ -243,8 +242,7 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                         .pageSize(3)
                         .build())
                 .filter(MenuListCommand.MenuFilter.builder()
-                        .categoryStatuses(Collections.singleton(CategoryStatus.ACTIVE))
-                        .productStatuses(Collections.singleton(ProductStatus.ACTIVE))
+                        .statuses(Collections.singleton(ProductStatus.ACTIVE))
                         .build())
                 .build();
 

@@ -10,11 +10,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.violet.restaurantmanagement.RmaControllerTest;
-import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
-import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.menu.controller.request.MenuListRequest;
 import org.violet.restaurantmanagement.menu.service.MenuService;
 import org.violet.restaurantmanagement.menu.service.command.MenuListCommand;
@@ -40,8 +38,7 @@ class MenuControllerTest extends RmaControllerTest {
     void givenValidMenuListRequest_whenProductsAndCategoryFound_thenReturnSuccess() throws Exception {
         // Given
         MenuListRequest.MenuFilter mockFilter = MenuListRequest.MenuFilter.builder()
-                .categoryStatuses(Collections.singleton(CategoryStatus.ACTIVE))
-                .productStatuses(Collections.singleton(ProductStatus.ACTIVE))
+                .statuses(Collections.singleton(ProductStatus.ACTIVE))
                 .build();
         MenuListRequest mockMenuListRequest = MenuListRequest.builder()
                 .pagination(PaginationBuilder.builder()
@@ -64,14 +61,14 @@ class MenuControllerTest extends RmaControllerTest {
                 .name("product 1")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(50))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
                 .price(BigDecimal.valueOf(150))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
@@ -79,7 +76,7 @@ class MenuControllerTest extends RmaControllerTest {
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
                 .price(BigDecimal.valueOf(100))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.INACTIVE)
                 .build()
         );
@@ -123,8 +120,7 @@ class MenuControllerTest extends RmaControllerTest {
     void givenValidMenuListRequestWithoutSorting_whenProductsAndCategoryFound_thenReturnSuccess() throws Exception {
         // Given
         MenuListRequest.MenuFilter mockFilter = MenuListRequest.MenuFilter.builder()
-                .categoryStatuses(Collections.singleton(CategoryStatus.ACTIVE))
-                .productStatuses(Collections.singleton(ProductStatus.ACTIVE))
+                .statuses(Collections.singleton(ProductStatus.ACTIVE))
                 .build();
         MenuListRequest mockMenuListRequest = MenuListRequest.builder()
                 .pagination(PaginationBuilder.builder()
@@ -142,14 +138,14 @@ class MenuControllerTest extends RmaControllerTest {
                 .name("product 1")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(50))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
                 .price(BigDecimal.valueOf(150))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
@@ -157,7 +153,7 @@ class MenuControllerTest extends RmaControllerTest {
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
                 .price(BigDecimal.valueOf(100))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.INACTIVE)
                 .build()
         );
@@ -219,14 +215,14 @@ class MenuControllerTest extends RmaControllerTest {
                 .name("product 1")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(50))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
                 .price(BigDecimal.valueOf(150))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
@@ -234,7 +230,7 @@ class MenuControllerTest extends RmaControllerTest {
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
                 .price(BigDecimal.valueOf(100))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.INACTIVE)
                 .build()
         );
@@ -291,14 +287,14 @@ class MenuControllerTest extends RmaControllerTest {
                 .name("product 1")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(50))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .build()
         );
         mockProducts.add(Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 2")
                 .price(BigDecimal.valueOf(150))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.ACTIVE)
                 .build()
         );
@@ -306,7 +302,7 @@ class MenuControllerTest extends RmaControllerTest {
                 .id(String.valueOf(UUID.randomUUID()))
                 .name("product 3")
                 .price(BigDecimal.valueOf(100))
-                .currency(RmaCurrency.TRY)
+                .currency("TRY")
                 .status(ProductStatus.INACTIVE)
                 .build()
         );
