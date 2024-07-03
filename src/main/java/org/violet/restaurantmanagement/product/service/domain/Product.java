@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.violet.restaurantmanagement.category.service.domain.Category;
-import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
@@ -25,7 +24,7 @@ public class Product {
     private String name;
     private String ingredient;
     private BigDecimal price;
-    private RmaCurrency currency;
+    private String currency;
     @Builder.Default
     private ProductStatus status = ProductStatus.ACTIVE;
     private Integer extent;

@@ -1,8 +1,7 @@
 package org.violet.restaurantmanagement.product.controller.response;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
-import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 
@@ -16,7 +15,7 @@ public record ProductListResponse(
         String name,
         String ingredient,
         BigDecimal price,
-        RmaCurrency currency,
+        String currency,
         ProductStatus status,
         Integer extent,
         ExtentType extentType,
@@ -24,7 +23,7 @@ public record ProductListResponse(
         LocalDateTime updatedAt
 ) {
     @Getter
-    @Setter
+    @Builder
     public static class Category {
         private Long id;
         private String name;

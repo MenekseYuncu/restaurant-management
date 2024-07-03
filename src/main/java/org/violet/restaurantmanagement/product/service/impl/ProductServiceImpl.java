@@ -7,7 +7,6 @@ import org.violet.restaurantmanagement.category.exceptions.CategoryNotFoundExcep
 import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.category.repository.CategoryRepository;
 import org.violet.restaurantmanagement.common.model.RmaPage;
-import org.violet.restaurantmanagement.common.model.enums.RmaCurrency;
 import org.violet.restaurantmanagement.product.exceptions.ProductAlreadyExistException;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
@@ -33,7 +32,7 @@ class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final RmaCurrency currency;
+    private final String currency;
 
 
     private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
