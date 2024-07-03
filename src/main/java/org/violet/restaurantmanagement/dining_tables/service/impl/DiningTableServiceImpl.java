@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.common.model.RmaPage;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotEmptyException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
@@ -16,11 +17,13 @@ import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTab
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -85,6 +88,24 @@ class DiningTableServiceImpl implements DiningTableService {
 
         diningTableRepository.save(diningTableEntity);
 
+    }
+
+    @Override
+    public void mergeDiningTables(DiningTableMergeCommand diningTableMergeCommand) {
+        List<DiningTableEntity> diningTableEntityList = diningTableRepository.findAllById(diningTableMergeCommand.ids());
+
+        String mergeId = UUID.randomUUID().toString();
+
+        for (DiningTableEntity diningTableEntity : diningTableEntityList) {
+            if (diningTableEntity.getStatus() == DiningTableStatus.VACANT) {
+                diningTableEntity.setMergeId(mergeId);
+                diningTableEntity.setStatus(DiningTableStatus.OCCUPIED);
+            } else {
+                throw new DiningTableNotEmptyException();
+            }
+        }
+
+        diningTableRepository.saveAll(diningTableEntityList);
     }
 
     @Override

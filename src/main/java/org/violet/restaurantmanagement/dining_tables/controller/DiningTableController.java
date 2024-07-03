@@ -18,13 +18,16 @@ import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableListRequestToListCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToDiningTableResponseMapper;
+import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToMergeRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableCreateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableListRequest;
+import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableMergeRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.response.DiningTableResponse;
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
@@ -39,6 +42,7 @@ class DiningTableController {
     private static final DiningTableUpdateRequestToCommandMapper diningTableUpdateRequestToCommandMapper = DiningTableUpdateRequestToCommandMapper.INSTANCE;
     private static final DiningTableToDiningTableResponseMapper diningTableToResponseMapper = DiningTableToDiningTableResponseMapper.INSTANCE;
     private static final DiningTableListRequestToListCommandMapper diningTableListRequestToListCommandMapper = DiningTableListRequestToListCommandMapper.INSTANCE;
+    private static final DiningTableToMergeRequestToCommandMapper diningTableMergeRequestToCommandMapper = DiningTableToMergeRequestToCommandMapper.INSTANCE;
 
 
     @PostMapping("/tables")
@@ -82,6 +86,17 @@ class DiningTableController {
         DiningTableUpdateCommand command = diningTableUpdateRequestToCommandMapper.map(request);
         diningTableService.updateDiningTable(id, command);
         return BaseResponse.SUCCESS;
+    }
+
+    @PostMapping("/merge")
+    public BaseResponse<Void> mergeDiningTables(
+            @Valid @RequestBody DiningTableMergeRequest diningTableMergeRequest) {
+
+        DiningTableMergeCommand mergeCommand = diningTableMergeRequestToCommandMapper.map(diningTableMergeRequest);
+        diningTableService.mergeDiningTables(mergeCommand);
+
+        return BaseResponse.SUCCESS;
+
     }
 
     @PutMapping("/{id}/vacant")
