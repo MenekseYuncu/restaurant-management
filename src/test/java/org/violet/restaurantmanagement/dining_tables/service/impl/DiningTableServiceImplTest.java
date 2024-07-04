@@ -15,6 +15,7 @@ import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotEmptyException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
@@ -24,10 +25,12 @@ import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepos
 import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -499,6 +502,73 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
 
         // Verify
         Mockito.verify(diningTableRepository, Mockito.never()).save(ArgumentMatchers.any());
+    }
+
+    @Test
+    void givenValidMergeRequest_whenMergeDiningTable_thenReturnSuccess() {
+        // Given
+        DiningTableMergeCommand mergeCommand = new DiningTableMergeCommand(
+                Arrays.asList(1L, 2L));
+
+        // When
+        List<DiningTableEntity> savedEntities = new ArrayList<>();
+        Mockito.when(diningTableRepository.saveAll(Mockito.anyList()))
+                .thenReturn(savedEntities);
+
+        diningTableService.mergeDiningTables(mergeCommand);
+
+        // Then
+        Mockito.verify(diningTableRepository, Mockito.times(1))
+                .saveAll(Mockito.anyList());
+    }
+
+    @Test
+    void givenInvalidMergeIds_whenMergeDiningTable_thenReturnExceptions() {
+        // Given
+        DiningTableMergeCommand mergeCommand = new DiningTableMergeCommand(
+                Arrays.asList(1L, 2L)
+        );
+
+        DiningTableEntity diningTableEntity1 = new DiningTableEntity();
+        DiningTableEntity diningTableEntity2 = new DiningTableEntity();
+
+        // When
+        Mockito.when(diningTableRepository.findAllById(mergeCommand.tableIds()))
+                .thenReturn(Arrays.asList(diningTableEntity1, diningTableEntity2));
+
+        diningTableEntity1.setStatus(DiningTableStatus.OCCUPIED);
+
+        // Assert
+        Assertions.assertThrows(DiningTableNotEmptyException.class,
+                () -> diningTableService.mergeDiningTables(mergeCommand));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .saveAll(Mockito.anyList());
+    }
+
+    @Test
+    void givenInvalidMergeIds_whenMergeDiningTable_thenThrowException() {
+        // Given
+        DiningTableMergeCommand mergeCommand = new DiningTableMergeCommand(
+                Arrays.asList(1L, 2L)
+        );
+
+        DiningTableEntity diningTableEntity1 = new DiningTableEntity();
+
+        // When
+        Mockito.when(diningTableRepository.findAllById(mergeCommand.tableIds()))
+                .thenReturn(List.of(diningTableEntity1))
+                .thenThrow(new DiningTableNotEmptyException());
+
+
+        // Assert
+        Assertions.assertThrows(DiningTableNotEmptyException.class,
+                () -> diningTableService.mergeDiningTables(mergeCommand));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .saveAll(Mockito.anyList());
     }
 
     @Test

@@ -15,22 +15,28 @@ import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableCreateRequestToCommandMapper;
+import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToMergeRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableCreateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableListRequest;
+import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableMergeRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotEmptyException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
+import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +48,7 @@ class DiningTableControllerTest extends RmaControllerTest {
     private DiningTableService diningTableService;
     private static final DiningTableCreateRequestToCommandMapper diningTableCreateRequestToCommandMapper = DiningTableCreateRequestToCommandMapper.INSTANCE;
     private static final DiningTableUpdateRequestToCommandMapper diningTableUpdateRequestToCommandMapper = DiningTableUpdateRequestToCommandMapper.INSTANCE;
+    private static final DiningTableToMergeRequestToCommandMapper diningTableMergeRequestToCommandMapper = DiningTableToMergeRequestToCommandMapper.INSTANCE;
 
     private final static String BASE_URL = "/api/v1/dining-table";
 
@@ -691,6 +698,73 @@ class DiningTableControllerTest extends RmaControllerTest {
 
         // Verify
         Mockito.verifyNoInteractions(diningTableService);
+    }
+
+    @Test
+    void givenValidDiningTableMergeRequest_whenMergeDiningTable_thenReturnSuccess() throws Exception {
+        //Given
+        DiningTableMergeRequest mergeRequest = new DiningTableMergeRequest(
+                List.of(1L, 2L)
+        );
+
+        DiningTableMergeCommand mergeCommand = diningTableMergeRequestToCommandMapper.map(mergeRequest);
+        Mockito.doNothing().when(diningTableService).mergeDiningTables(mergeCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/merge")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mergeCommand)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(diningTableService).mergeDiningTables(mergeCommand);
+    }
+
+
+    @Test
+    void givenInvalidIds_whenMergeDiningTable_thenReturnBadRequest() throws Exception {
+        //Given
+        DiningTableMergeRequest mergeRequest = new DiningTableMergeRequest(
+                List.of(999L, 2L)
+        );
+
+        DiningTableMergeCommand mergeCommand = diningTableMergeRequestToCommandMapper.map(mergeRequest);
+        Mockito.doThrow(DiningTableNotFoundException.class)
+                .when(diningTableService)
+                .mergeDiningTables(mergeCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/merge"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(diningTableService);
+    }
+
+    @Test
+    void givenInvalidStatusMerge_whenMergeDiningTable_thenReturnExceptions() throws Exception {
+        // Given
+        DiningTableMergeCommand mergeCommand = new DiningTableMergeCommand(
+                Arrays.asList(1L, 2L)
+        );
+
+        DiningTableEntity diningTableEntity1 = new DiningTableEntity();
+
+        diningTableEntity1.setStatus(DiningTableStatus.OCCUPIED);
+
+        // When
+        Mockito.doThrow(DiningTableNotEmptyException.class)
+                .when(diningTableService)
+                .mergeDiningTables(mergeCommand);
+
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/merge")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
