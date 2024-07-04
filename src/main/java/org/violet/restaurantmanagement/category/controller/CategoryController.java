@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.violet.restaurantmanagement.category.controller.mapper.CategoryCreateRequestToCreateCommandMapper;
+import org.violet.restaurantmanagement.category.controller.mapper.CategoryCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryListRequestToListCommandMapper;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryUpdateRequestToUpdateCommandMapper;
 import org.violet.restaurantmanagement.category.controller.request.CategoryCreateRequest;
@@ -38,7 +38,7 @@ public class CategoryController {
 
     private static final CategoryListRequestToListCommandMapper toCategoryListCommandMapper = CategoryListRequestToListCommandMapper.INSTANCE;
     private static final CategoryToCategoryResponseMapper toCategoryResponseMapper = CategoryToCategoryResponseMapper.INSTANCE;
-    private static final CategoryCreateRequestToCreateCommandMapper toCreateCommandMapper = CategoryCreateRequestToCreateCommandMapper.INSTANCE;
+    private static final CategoryCreateRequestToCommandMapper toCreateCommandMapper = CategoryCreateRequestToCommandMapper.INSTANCE;
     private static final CategoryUpdateRequestToUpdateCommandMapper toUpdateCommandMapper = CategoryUpdateRequestToUpdateCommandMapper.INSTANCE;
 
 

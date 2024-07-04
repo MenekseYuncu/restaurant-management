@@ -15,7 +15,7 @@ import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductCreateRequestToCreateCommandMapper;
-import org.violet.restaurantmanagement.product.controller.mapper.ProductUpdateRequestToProductUpdateCommandMapper;
+import org.violet.restaurantmanagement.product.controller.mapper.ProductUpdateRequestToUpdateCommandMapper;
 import org.violet.restaurantmanagement.product.controller.request.ProductCreateRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductListRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductUpdateRequest;
@@ -41,7 +41,7 @@ class ProductControllerTest extends RmaControllerTest {
     @MockBean
     private ProductService productService;
 
-    private static final ProductUpdateRequestToProductUpdateCommandMapper productUpdateRequestToCommandMapper = ProductUpdateRequestToProductUpdateCommandMapper.INSTANCE;
+    private static final ProductUpdateRequestToUpdateCommandMapper productUpdateRequestToCommandMapper = ProductUpdateRequestToUpdateCommandMapper.INSTANCE;
     private static final ProductCreateRequestToCreateCommandMapper productCreateRequestToCommandMapper = ProductCreateRequestToCreateCommandMapper.INSTANCE;
 
     private final static String BASE_URL = "/api/v1/product";

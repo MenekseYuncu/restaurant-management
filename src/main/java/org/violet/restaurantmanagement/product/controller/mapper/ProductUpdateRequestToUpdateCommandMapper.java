@@ -7,8 +7,8 @@ import org.violet.restaurantmanagement.product.controller.request.ProductUpdateR
 import org.violet.restaurantmanagement.product.service.command.ProductUpdateCommand;
 
 @Mapper
-public interface ProductUpdateRequestToProductUpdateCommandMapper extends BaseMapper<ProductUpdateRequest, ProductUpdateCommand> {
+public interface ProductUpdateRequestToUpdateCommandMapper extends BaseMapper<ProductUpdateRequest, ProductUpdateCommand> {
 
-    ProductUpdateRequestToProductUpdateCommandMapper INSTANCE = Mappers.getMapper(ProductUpdateRequestToProductUpdateCommandMapper.class);
+    ProductUpdateRequestToUpdateCommandMapper INSTANCE = Mappers.getMapper(ProductUpdateRequestToUpdateCommandMapper.class);
 
 }

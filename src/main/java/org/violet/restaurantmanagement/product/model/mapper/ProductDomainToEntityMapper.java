@@ -7,7 +7,7 @@ import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 import org.violet.restaurantmanagement.product.service.domain.Product;
 
 @Mapper
-public interface ProductDomainToProductEntityMapper extends BaseMapper<Product, ProductEntity> {
+public interface ProductDomainToEntityMapper extends BaseMapper<Product, ProductEntity> {
 
-    ProductDomainToProductEntityMapper INSTANCE = Mappers.getMapper(ProductDomainToProductEntityMapper.class);
+    ProductDomainToEntityMapper INSTANCE = Mappers.getMapper(ProductDomainToEntityMapper.class);
 }

@@ -16,7 +16,7 @@ import org.violet.restaurantmanagement.product.controller.request.ProductListReq
 import org.violet.restaurantmanagement.product.controller.request.ProductUpdateRequest;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
-import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
+import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToEntityMapper;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 import org.violet.restaurantmanagement.product.service.domain.Product;
@@ -29,7 +29,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
     @Autowired
     private ProductRepository productRepository;
 
-    private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
+    private static final ProductDomainToEntityMapper PRODUCT_DOMAIN_TO_ENTITY_MAPPER = ProductDomainToEntityMapper.INSTANCE;
 
     private final static String BASE_URL = "/api/v1/product";
 
@@ -153,7 +153,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
 
-        ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
+        ProductEntity productEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product);
         productRepository.save(productEntity);
 
         // Then
@@ -214,7 +214,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
 
-        ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
+        ProductEntity productEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product);
         productRepository.save(productEntity);
 
         // When
@@ -251,7 +251,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
 
-        ProductEntity productEntity = productDomainToProductEntityMapper.map(product);
+        ProductEntity productEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product);
         productRepository.save(productEntity);
 
 

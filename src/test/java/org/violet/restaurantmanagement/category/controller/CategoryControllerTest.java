@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.violet.restaurantmanagement.RmaControllerTest;
-import org.violet.restaurantmanagement.category.controller.mapper.CategoryCreateRequestToCreateCommandMapper;
+import org.violet.restaurantmanagement.category.controller.mapper.CategoryCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.category.controller.mapper.CategoryUpdateRequestToUpdateCommandMapper;
 import org.violet.restaurantmanagement.category.controller.request.CategoryCreateRequest;
 import org.violet.restaurantmanagement.category.controller.request.CategoryListRequest;
@@ -39,7 +39,7 @@ class CategoryControllerTest extends RmaControllerTest {
     private CategoryService categoryService;
 
     private static final CategoryUpdateRequestToUpdateCommandMapper categoryUpdateRequestToUpdateCommandMapper = CategoryUpdateRequestToUpdateCommandMapper.INSTANCE;
-    private static final CategoryCreateRequestToCreateCommandMapper categoryCreateRequestToCreateCommandMapper = CategoryCreateRequestToCreateCommandMapper.INSTANCE;
+    private static final CategoryCreateRequestToCommandMapper CATEGORY_CREATE_REQUEST_TO_COMMAND_MAPPER = CategoryCreateRequestToCommandMapper.INSTANCE;
 
     private final static String BASE_URL = "/api/v1/category";
 
@@ -476,7 +476,7 @@ class CategoryControllerTest extends RmaControllerTest {
         );
 
         // When
-        CategoryCreateCommand createCommand = categoryCreateRequestToCreateCommandMapper.map(mockCategoryCreateRequest);
+        CategoryCreateCommand createCommand = CATEGORY_CREATE_REQUEST_TO_COMMAND_MAPPER.map(mockCategoryCreateRequest);
         Mockito.doNothing().when(categoryService).createCategory(Mockito.any(CategoryCreateCommand.class));
 
         // Then

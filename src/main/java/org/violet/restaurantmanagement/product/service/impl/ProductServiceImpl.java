@@ -12,7 +12,7 @@ import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundExcepti
 import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.model.mapper.ProductCreateCommandToDomainMapper;
-import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToProductEntityMapper;
+import org.violet.restaurantmanagement.product.model.mapper.ProductDomainToEntityMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductEntityToDomainMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductUpdateCommandToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
@@ -35,7 +35,7 @@ class ProductServiceImpl implements ProductService {
     private final String currency;
 
 
-    private static final ProductDomainToProductEntityMapper productDomainToProductEntityMapper = ProductDomainToProductEntityMapper.INSTANCE;
+    private static final ProductDomainToEntityMapper PRODUCT_DOMAIN_TO_ENTITY_MAPPER = ProductDomainToEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
@@ -76,7 +76,7 @@ class ProductServiceImpl implements ProductService {
         this.checkExistingOfCategory(createCommand.categoryId());
 
         Product product = productCreateCommandToDomainMapper.map(createCommand);
-        productRepository.save(productDomainToProductEntityMapper.map(product));
+        productRepository.save(PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product));
     }
 
     @Override

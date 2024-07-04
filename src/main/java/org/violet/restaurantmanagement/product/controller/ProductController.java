@@ -14,10 +14,10 @@ import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
 import org.violet.restaurantmanagement.common.controller.response.RmaPageResponse;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductCreateRequestToCreateCommandMapper;
-import org.violet.restaurantmanagement.product.controller.mapper.ProductListRequestToProductListCommandMapper;
+import org.violet.restaurantmanagement.product.controller.mapper.ProductListRequestToListCommandMapper;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductToProductListResponseMapper;
 import org.violet.restaurantmanagement.product.controller.mapper.ProductToProductResponseMapper;
-import org.violet.restaurantmanagement.product.controller.mapper.ProductUpdateRequestToProductUpdateCommandMapper;
+import org.violet.restaurantmanagement.product.controller.mapper.ProductUpdateRequestToUpdateCommandMapper;
 import org.violet.restaurantmanagement.product.controller.request.ProductCreateRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductListRequest;
 import org.violet.restaurantmanagement.product.controller.request.ProductUpdateRequest;
@@ -36,10 +36,10 @@ public class ProductController {
     private final ProductService productService;
 
     private static final ProductCreateRequestToCreateCommandMapper productCreateRequestToCommandMapper = ProductCreateRequestToCreateCommandMapper.INSTANCE;
-    private static final ProductUpdateRequestToProductUpdateCommandMapper productUpdateRequestToCommandMapper = ProductUpdateRequestToProductUpdateCommandMapper.INSTANCE;
+    private static final ProductUpdateRequestToUpdateCommandMapper productUpdateRequestToCommandMapper = ProductUpdateRequestToUpdateCommandMapper.INSTANCE;
     private static final ProductToProductListResponseMapper productToProductListResponse = ProductToProductListResponseMapper.INSTANCE;
     private static final ProductToProductResponseMapper productToProductResponse = ProductToProductResponseMapper.INSTANCE;
-    private static final ProductListRequestToProductListCommandMapper productListRequestToListCommandMapper = ProductListRequestToProductListCommandMapper.INSTANCE;
+    private static final ProductListRequestToListCommandMapper productListRequestToListCommandMapper = ProductListRequestToListCommandMapper.INSTANCE;
 
 
     @PostMapping("/products")
