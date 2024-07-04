@@ -4,6 +4,6 @@ import java.util.List;
 
 public record DiningTableMergeCommand(
 
-        List<Long> ids
+        List<Long> tableIds
 ) {
 }

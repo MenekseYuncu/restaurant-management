@@ -92,7 +92,7 @@ class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public void mergeDiningTables(DiningTableMergeCommand diningTableMergeCommand) {
-        List<DiningTableEntity> diningTableEntityList = diningTableRepository.findAllById(diningTableMergeCommand.ids());
+        List<DiningTableEntity> diningTableEntityList = diningTableRepository.findAllById(diningTableMergeCommand.tableIds());
 
         String mergeId = UUID.randomUUID().toString();
 
