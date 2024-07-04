@@ -8,9 +8,6 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.violet.restaurantmanagement.common.controller.requset.RmaPaginationRequest;
 import org.violet.restaurantmanagement.common.model.Filtering;
-import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
-
-import java.util.Set;
 
 @Getter
 @SuperBuilder
@@ -27,8 +24,6 @@ public class MenuListRequest extends RmaPaginationRequest {
     public static class MenuFilter implements Filtering {
 
         private String name;
-
-        private Set<ProductStatus> statuses;
 
     }
 
