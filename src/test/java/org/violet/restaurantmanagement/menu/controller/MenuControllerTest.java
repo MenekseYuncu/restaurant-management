@@ -21,7 +21,6 @@ import org.violet.restaurantmanagement.product.service.domain.Product;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +37,7 @@ class MenuControllerTest extends RmaControllerTest {
     void givenValidMenuListRequest_whenProductsAndCategoryFound_thenReturnSuccess() throws Exception {
         // Given
         MenuListRequest.MenuFilter mockFilter = MenuListRequest.MenuFilter.builder()
-                .statuses(Collections.singleton(ProductStatus.ACTIVE))
+                .name("product")
                 .build();
         MenuListRequest mockMenuListRequest = MenuListRequest.builder()
                 .pagination(PaginationBuilder.builder()
@@ -120,7 +119,7 @@ class MenuControllerTest extends RmaControllerTest {
     void givenValidMenuListRequestWithoutSorting_whenProductsAndCategoryFound_thenReturnSuccess() throws Exception {
         // Given
         MenuListRequest.MenuFilter mockFilter = MenuListRequest.MenuFilter.builder()
-                .statuses(Collections.singleton(ProductStatus.ACTIVE))
+                .name("product")
                 .build();
         MenuListRequest mockMenuListRequest = MenuListRequest.builder()
                 .pagination(PaginationBuilder.builder()

@@ -11,9 +11,6 @@ import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.menu.controller.request.MenuListRequest;
-import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
-
-import java.util.Collections;
 
 class MenuEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
 
@@ -23,7 +20,7 @@ class MenuEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
     void givenValidMenuListRequest_whenProductsAndCategoryFound_thenReturnSuccess() throws Exception {
         // Given
         MenuListRequest.MenuFilter mockFilter = MenuListRequest.MenuFilter.builder()
-                .statuses(Collections.singleton(ProductStatus.ACTIVE))
+                .name("product")
                 .build();
         MenuListRequest mockMenuListRequest = MenuListRequest.builder()
                 .pagination(PaginationBuilder.builder()

@@ -23,7 +23,6 @@ import org.violet.restaurantmanagement.product.service.domain.Product;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,7 +84,6 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                         .build())
                 .filter(MenuListCommand.MenuFilter.builder()
                         .name("product")
-                        .statuses(Collections.singleton(ProductStatus.ACTIVE))
                         .build())
                 .build();
 
@@ -242,7 +240,6 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                         .pageSize(3)
                         .build())
                 .filter(MenuListCommand.MenuFilter.builder()
-                        .statuses(Collections.singleton(ProductStatus.ACTIVE))
                         .build())
                 .build();
 
