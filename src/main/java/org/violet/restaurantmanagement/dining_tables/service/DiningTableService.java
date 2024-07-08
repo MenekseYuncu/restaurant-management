@@ -4,6 +4,7 @@ import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableSplitCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
@@ -18,6 +19,8 @@ public interface DiningTableService {
     void updateDiningTable(Long id, DiningTableUpdateCommand updateCommand);
 
     void mergeDiningTables(DiningTableMergeCommand diningTableMergeCommand);
+
+    void splitDiningTables(DiningTableSplitCommand splitCommand);
 
     void changeStatusToVacant(Long id);
 

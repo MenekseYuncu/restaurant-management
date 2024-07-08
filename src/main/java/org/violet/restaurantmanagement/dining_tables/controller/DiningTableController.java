@@ -17,17 +17,20 @@ import org.violet.restaurantmanagement.common.controller.response.RmaPageRespons
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableListRequestToListCommandMapper;
+import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableSplitRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToDiningTableResponseMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToMergeRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableCreateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableListRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableMergeRequest;
+import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableSplitRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.response.DiningTableResponse;
 import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableSplitCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
@@ -43,6 +46,7 @@ class DiningTableController {
     private static final DiningTableToDiningTableResponseMapper diningTableToResponseMapper = DiningTableToDiningTableResponseMapper.INSTANCE;
     private static final DiningTableListRequestToListCommandMapper diningTableListRequestToListCommandMapper = DiningTableListRequestToListCommandMapper.INSTANCE;
     private static final DiningTableToMergeRequestToCommandMapper diningTableMergeRequestToCommandMapper = DiningTableToMergeRequestToCommandMapper.INSTANCE;
+    private static final DiningTableSplitRequestToCommandMapper diningTableSplitRequestToCommandMapper = DiningTableSplitRequestToCommandMapper.INSTANCE;
 
 
     @PostMapping("/tables")
@@ -96,8 +100,18 @@ class DiningTableController {
         diningTableService.mergeDiningTables(mergeCommand);
 
         return BaseResponse.SUCCESS;
-
     }
+
+    @PostMapping("/split")
+    public BaseResponse<Void> splitDiningTables(
+            @Valid @RequestBody DiningTableSplitRequest splitRequest
+    ) {
+        DiningTableSplitCommand splitCommand = diningTableSplitRequestToCommandMapper.map(splitRequest);
+        diningTableService.splitDiningTables(splitCommand);
+
+        return BaseResponse.SUCCESS;
+    }
+
 
     @PutMapping("/{id}/vacant")
     public BaseResponse<Void> changeStatusToVacant(@PathVariable Long id) {

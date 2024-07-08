@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.common.model.RmaPage;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableAlreadySplitException;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableMergeNotExistException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotEmptyException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
@@ -18,6 +20,7 @@ import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableSplitCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
@@ -103,6 +106,27 @@ class DiningTableServiceImpl implements DiningTableService {
             } else {
                 throw new DiningTableNotEmptyException();
             }
+        }
+
+        diningTableRepository.saveAll(diningTableEntityList);
+    }
+
+    // TODO : Eğer ödeme yapıldıysa ayrılabilir olsun?
+    @Override
+    public void splitDiningTables(DiningTableSplitCommand splitCommand) {
+        List<DiningTableEntity> diningTableEntityList = diningTableRepository.findByMergeId(splitCommand.mergeId());
+
+        if (diningTableEntityList == null || diningTableEntityList.isEmpty()) {
+            throw new DiningTableMergeNotExistException();
+        }
+
+        if (diningTableEntityList.size() == 1) {
+            throw new DiningTableAlreadySplitException();
+        }
+
+        for (DiningTableEntity diningTableEntity : diningTableEntityList) {
+            diningTableEntity.setMergeId(UUID.randomUUID().toString());
+            diningTableEntity.setStatus(DiningTableStatus.VACANT);
         }
 
         diningTableRepository.saveAll(diningTableEntityList);
