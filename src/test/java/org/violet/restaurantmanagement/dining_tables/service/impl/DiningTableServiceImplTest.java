@@ -15,6 +15,8 @@ import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableAlreadySplitException;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableMergeNotExistException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotEmptyException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
@@ -26,6 +28,7 @@ import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTab
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableSplitCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 
@@ -569,6 +572,94 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // Verify
         Mockito.verify(diningTableRepository, Mockito.never())
                 .saveAll(Mockito.anyList());
+    }
+
+    @Test
+    void givenValidSplitRequest_whenSplitDiningTable_thenReturnSuccess() {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableSplitCommand splitCommand = new DiningTableSplitCommand(mergeId);
+
+        // When
+        DiningTableEntity diningTableEntity1 = new DiningTableEntity();
+        diningTableEntity1.setMergeId(mergeId);
+
+        DiningTableEntity diningTableEntity2 = new DiningTableEntity();
+        diningTableEntity2.setMergeId(mergeId);
+
+        List<DiningTableEntity> diningTableEntityList = Arrays.asList(diningTableEntity1, diningTableEntity2);
+
+        // When
+        Mockito.when(diningTableRepository.findByMergeId(mergeId))
+                .thenReturn(diningTableEntityList);
+
+        diningTableService.splitDiningTables(splitCommand);
+
+        // Then
+        Mockito.verify(diningTableRepository, Mockito.times(1))
+                .saveAll(Mockito.anyList());
+    }
+
+    @Test
+    void givenNonExistentMergeId_whenSplitDiningTable_thenThrowException() {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableSplitCommand splitCommand = new DiningTableSplitCommand(mergeId);
+
+        // When
+        Mockito.when(diningTableRepository.findByMergeId(mergeId))
+                .thenReturn(Collections.emptyList());
+
+        // Then
+        Assertions.assertThrows(DiningTableMergeNotExistException.class,
+                () -> diningTableService.splitDiningTables(splitCommand));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .saveAll(ArgumentMatchers.anyList());
+    }
+
+    @Test
+    void givenAlreadySplitTable_whenSplitDiningTable_thenThrowException() {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableSplitCommand splitCommand = new DiningTableSplitCommand(mergeId);
+
+        DiningTableEntity diningTableEntity = new DiningTableEntity();
+        diningTableEntity.setMergeId(mergeId);
+        diningTableEntity.setStatus(DiningTableStatus.VACANT);
+
+        // When
+        List<DiningTableEntity> diningTableEntityList = Collections.singletonList(diningTableEntity);
+
+        Mockito.when(diningTableRepository.findByMergeId(mergeId)).thenReturn(diningTableEntityList);
+
+        // Then
+        Assertions.assertThrows(DiningTableAlreadySplitException.class,
+                () -> diningTableService.splitDiningTables(splitCommand));
+
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .saveAll(ArgumentMatchers.anyList());
+    }
+
+    @Test
+    void givenSingleTableWithMergeId_whenSplitDiningTable_thenThrowException() {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableSplitCommand splitCommand = new DiningTableSplitCommand(mergeId);
+
+        DiningTableEntity diningTableEntity = new DiningTableEntity();
+        diningTableEntity.setMergeId(mergeId);
+
+        // When
+        List<DiningTableEntity> diningTableEntityList = List.of(diningTableEntity);
+
+        Mockito.when(diningTableRepository.findByMergeId(mergeId))
+                .thenReturn(diningTableEntityList);
+
+        // Assert
+        Assertions.assertThrows(DiningTableAlreadySplitException.class,
+                () -> diningTableService.splitDiningTables(splitCommand));
     }
 
     @Test
