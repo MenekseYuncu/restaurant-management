@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 import org.violet.restaurantmanagement.common.controller.requset.RmaPaginationRequest;
 import org.violet.restaurantmanagement.common.model.Filtering;
 
+import java.util.Set;
+
 @Getter
 @SuperBuilder
 @NoArgsConstructor
@@ -27,4 +29,10 @@ public class MenuListRequest extends RmaPaginationRequest {
 
     }
 
+
+    @Override
+    public boolean isOrderPropertyAccepted() {
+        final Set<String> acceptedFilterFields = Set.of("categoryId", "id");
+        return this.isPropertyAccepted(acceptedFilterFields);
+    }
 }

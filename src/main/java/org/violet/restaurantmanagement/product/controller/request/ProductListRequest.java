@@ -49,4 +49,11 @@ public class ProductListRequest extends RmaPaginationRequest {
         @PositiveOrZero
         private BigDecimal max;
     }
+
+
+    @Override
+    public boolean isOrderPropertyAccepted() {
+        final Set<String> acceptedFilterFields = Set.of("price");
+        return this.isPropertyAccepted(acceptedFilterFields);
+    }
 }

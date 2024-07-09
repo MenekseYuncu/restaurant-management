@@ -6,9 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 import org.violet.restaurantmanagement.common.controller.requset.RmaPaginationRequest;
 import org.violet.restaurantmanagement.common.model.Filtering;
-import org.violet.restaurantmanagement.category.model.enums.CategoryStatus;
 
 import java.util.Set;
 
@@ -30,5 +30,12 @@ public class CategoryListRequest extends RmaPaginationRequest {
 
         private Set<CategoryStatus> statuses;
 
+    }
+
+
+    @Override
+    public boolean isOrderPropertyAccepted() {
+        final Set<String> acceptedFilterFields = Set.of("name");
+        return this.isPropertyAccepted(acceptedFilterFields);
     }
 }

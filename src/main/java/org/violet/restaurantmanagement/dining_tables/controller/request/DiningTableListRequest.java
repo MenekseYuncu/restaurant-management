@@ -31,4 +31,11 @@ public class DiningTableListRequest extends RmaPaginationRequest {
         private Set<DiningTableStatus> statuses;
 
     }
+
+
+    @Override
+    public boolean isOrderPropertyAccepted() {
+        final Set<String> acceptedFilterFields = Set.of("id");
+        return this.isPropertyAccepted(acceptedFilterFields);
+    }
 }
