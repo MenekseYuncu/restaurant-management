@@ -14,12 +14,14 @@ import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableCreateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableListRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableMergeRequest;
+import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableSplitRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStatus;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
 import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -241,6 +243,40 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/merge")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(mergeRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+    }
+
+    @Test
+    void givenValidSplitRequest_whenSplitDiningTable_thenReturnSuccess() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        List<DiningTableEntity> tables = new ArrayList<>();
+        tables.add(
+                DiningTableEntity.builder()
+                        .id(1L)
+                        .mergeId(mergeId)
+                        .status(DiningTableStatus.OCCUPIED)
+                        .size(2)
+                        .build()
+        );
+        tables.add(
+                DiningTableEntity.builder()
+                        .id(2L)
+                        .mergeId(mergeId)
+                        .status(DiningTableStatus.OCCUPIED)
+                        .size(2)
+                        .build()
+        );
+
+        diningTableRepository.saveAll(tables);
+
+        DiningTableSplitRequest splitRequest = new DiningTableSplitRequest(mergeId);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(STR."\{BASE_URL}/split")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(splitRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
     }
