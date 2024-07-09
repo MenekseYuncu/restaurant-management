@@ -15,12 +15,16 @@ import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableCreateRequestToCommandMapper;
+import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableSplitRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableToMergeRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.mapper.DiningTableUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableCreateRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableListRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableMergeRequest;
+import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableSplitRequest;
 import org.violet.restaurantmanagement.dining_tables.controller.request.DiningTableUpdateRequest;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableAlreadySplitException;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableMergeNotExistException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotEmptyException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableStatusAlreadyChangedException;
@@ -30,6 +34,7 @@ import org.violet.restaurantmanagement.dining_tables.service.DiningTableService;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableCreateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableListCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableMergeCommand;
+import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableSplitCommand;
 import org.violet.restaurantmanagement.dining_tables.service.command.DiningTableUpdateCommand;
 import org.violet.restaurantmanagement.dining_tables.service.domain.DiningTable;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
@@ -49,6 +54,8 @@ class DiningTableControllerTest extends RmaControllerTest {
     private static final DiningTableCreateRequestToCommandMapper diningTableCreateRequestToCommandMapper = DiningTableCreateRequestToCommandMapper.INSTANCE;
     private static final DiningTableUpdateRequestToCommandMapper diningTableUpdateRequestToCommandMapper = DiningTableUpdateRequestToCommandMapper.INSTANCE;
     private static final DiningTableToMergeRequestToCommandMapper diningTableMergeRequestToCommandMapper = DiningTableToMergeRequestToCommandMapper.INSTANCE;
+    private static final DiningTableSplitRequestToCommandMapper diningTableSplitRequestToCommandMapper = DiningTableSplitRequestToCommandMapper.INSTANCE;
+
 
     private final static String BASE_URL = "/api/v1/dining-table";
 
@@ -721,7 +728,6 @@ class DiningTableControllerTest extends RmaControllerTest {
         Mockito.verify(diningTableService).mergeDiningTables(mergeCommand);
     }
 
-
     @Test
     void givenInvalidIds_whenMergeDiningTable_thenReturnBadRequest() throws Exception {
         //Given
@@ -765,6 +771,90 @@ class DiningTableControllerTest extends RmaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void givenValidSplitRequest_whenSplitDiningTable_thenReturnSuccess() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableSplitRequest splitRequest = new DiningTableSplitRequest(mergeId);
+
+        DiningTableSplitCommand splitCommand = diningTableSplitRequestToCommandMapper.map(splitRequest);
+
+        // When
+        Mockito.doNothing().when(diningTableService).splitDiningTables(splitCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/split")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(splitRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(diningTableService).splitDiningTables(splitCommand);
+    }
+
+    @Test
+    void givenNonExistentMergeId_whenSplitDiningTable_thenThrowDiningTableMergeNotExistException() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableSplitRequest splitRequest = new DiningTableSplitRequest(mergeId);
+
+        DiningTableSplitCommand splitCommand = diningTableSplitRequestToCommandMapper.map(splitRequest);
+
+        // When
+        Mockito.doThrow(new DiningTableMergeNotExistException())
+                .when(diningTableService).splitDiningTables(splitCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/split")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(splitRequest)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(false));
+
+        // Verify
+        Mockito.verify(diningTableService).splitDiningTables(splitCommand);
+    }
+
+    @Test
+    void givenSingleTableWithMergeId_whenSplitDiningTable_thenThrowDiningTableAlreadySplitException() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableSplitRequest splitRequest = new DiningTableSplitRequest(mergeId);
+
+        DiningTableSplitCommand splitCommand = diningTableSplitRequestToCommandMapper.map(splitRequest);
+
+        // When
+        Mockito.doThrow(new DiningTableAlreadySplitException())
+                .when(diningTableService).splitDiningTables(splitCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/split")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(splitRequest)))
+                .andExpect(MockMvcResultMatchers.status().isConflict())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(false));
+
+        // Verify
+        Mockito.verify(diningTableService).splitDiningTables(splitCommand);
+    }
+
+    @Test
+    void givenNullMergeId_whenSplitDiningTable_thenThrowValidationException() throws Exception {
+        // Given
+        DiningTableSplitRequest splitRequest = new DiningTableSplitRequest(null);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/split")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(splitRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(false));
+
+        // Verify
+        Mockito.verify(diningTableService, Mockito.never()).splitDiningTables(Mockito.any());
     }
 
     @Test
@@ -926,4 +1016,5 @@ class DiningTableControllerTest extends RmaControllerTest {
         // Verify
         Mockito.verifyNoInteractions(diningTableService);
     }
+
 }
