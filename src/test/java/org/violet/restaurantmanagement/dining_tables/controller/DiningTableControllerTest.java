@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.dining_tables.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -410,6 +411,54 @@ class DiningTableControllerTest extends RmaControllerTest {
 
         // Verify
         Mockito.verifyNoInteractions(diningTableService);
+    }
+
+    @Test
+    void givenDiningTableListRequest_whenOrderPropertyAccepted_thenAccepted() {
+        // Given
+        DiningTableListRequest tableListRequest = DiningTableListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("id")
+                        .build())
+                .filter(DiningTableListRequest.DiningTableFilter.builder()
+                        .size(1)
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = tableListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertTrue(isOrderPropertyAccepted);
+    }
+
+    @Test
+    void givenDiningTableListRequest_whenOrderPropertyNotAccepted_thenNotAccepted() {
+        // Given
+        DiningTableListRequest tableListRequest = DiningTableListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("invalidProperty")
+                        .build())
+                .filter(DiningTableListRequest.DiningTableFilter.builder()
+                        .size(2)
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = tableListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertFalse(isOrderPropertyAccepted);
     }
 
     @Test

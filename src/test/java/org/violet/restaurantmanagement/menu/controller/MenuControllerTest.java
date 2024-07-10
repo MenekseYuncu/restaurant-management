@@ -1,6 +1,7 @@
 package org.violet.restaurantmanagement.menu.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -16,8 +17,8 @@ import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.menu.controller.request.MenuListRequest;
 import org.violet.restaurantmanagement.menu.service.MenuService;
 import org.violet.restaurantmanagement.menu.service.command.MenuListCommand;
-import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
-import org.violet.restaurantmanagement.product.service.domain.Product;
+import org.violet.restaurantmanagement.menu.service.domain.Menu;
+import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -53,46 +54,50 @@ class MenuControllerTest extends RmaControllerTest {
                 .filter(mockFilter)
                 .build();
 
-        // When
-        List<Product> mockProducts = new ArrayList<>();
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 1")
-                .status(ProductStatus.ACTIVE)
-                .price(BigDecimal.valueOf(50))
-                .currency("TRY")
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 2")
-                .price(BigDecimal.valueOf(150))
-                .currency("TRY")
-                .status(ProductStatus.ACTIVE)
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 3")
-                .price(BigDecimal.valueOf(100))
-                .currency("TRY")
-                .status(ProductStatus.INACTIVE)
-                .build()
-        );
+        List<Menu> mockMenuList = new ArrayList<>();
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 1")
+                        .price(BigDecimal.valueOf(50))
+                        .currency("TRY")
+                        .extent(10)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 2")
+                        .price(BigDecimal.valueOf(150))
+                        .currency("TRY")
+                        .extent(15)
+                        .extentType(ExtentType.ML)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 3")
+                        .price(BigDecimal.valueOf(100))
+                        .currency("TRY")
+                        .extent(20)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
 
-        RmaPage<Product> rmaPage = RmaPage.<Product>builder()
-                .content(mockProducts)
+        RmaPage<Menu> rmaPage = RmaPage.<Menu>builder()
+                .content(mockMenuList)
                 .pageNumber(mockMenuListRequest.getPagination().getPageNumber())
-                .pageSize(mockProducts.size())
+                .pageSize(mockMenuList.size())
                 .totalPageCount(mockMenuListRequest.getPagination().getPageNumber())
-                .totalElementCount(mockProducts.size())
+                .totalElementCount(mockMenuList.size())
                 .sortedBy(mockMenuListRequest.getSorting())
                 .filteredBy(mockFilter)
                 .build();
 
-        Mockito.when(menuService.getAllMenu(
-                Mockito.any(MenuListCommand.class))
-        ).thenReturn(rmaPage);
+        Mockito.when(menuService.getAllMenu(Mockito.any(MenuListCommand.class)))
+                .thenReturn(rmaPage);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
@@ -102,12 +107,9 @@ class MenuControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber")
-                        .value(rmaPage.getPageNumber()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize")
-                        .value(rmaPage.getPageSize()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount")
-                        .value(rmaPage.getTotalPageCount()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageNumber").value(rmaPage.getPageNumber()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.pageSize").value(rmaPage.getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalPageCount").value(rmaPage.getTotalPageCount()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("OK"));
 
         // Verify
@@ -131,44 +133,49 @@ class MenuControllerTest extends RmaControllerTest {
                 .build();
 
         // When
-        List<Product> mockProducts = new ArrayList<>();
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 1")
-                .status(ProductStatus.ACTIVE)
-                .price(BigDecimal.valueOf(50))
-                .currency("TRY")
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 2")
-                .price(BigDecimal.valueOf(150))
-                .currency("TRY")
-                .status(ProductStatus.ACTIVE)
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 3")
-                .price(BigDecimal.valueOf(100))
-                .currency("TRY")
-                .status(ProductStatus.INACTIVE)
-                .build()
-        );
+        List<Menu> mockMenuList = new ArrayList<>();
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 1")
+                        .price(BigDecimal.valueOf(50))
+                        .currency("TRY")
+                        .extent(10)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 2")
+                        .price(BigDecimal.valueOf(150))
+                        .currency("TRY")
+                        .extent(15)
+                        .extentType(ExtentType.ML)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 3")
+                        .price(BigDecimal.valueOf(100))
+                        .currency("TRY")
+                        .extent(20)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
 
-        RmaPage<Product> rmaPage = RmaPage.<Product>builder()
-                .content(mockProducts)
+        RmaPage<Menu> rmaPage = RmaPage.<Menu>builder()
+                .content(mockMenuList)
                 .pageNumber(mockMenuListRequest.getPagination().getPageNumber())
-                .pageSize(mockProducts.size())
+                .pageSize(mockMenuList.size())
                 .totalPageCount(mockMenuListRequest.getPagination().getPageNumber())
-                .totalElementCount(mockProducts.size())
+                .totalElementCount(mockMenuList.size())
                 .filteredBy(mockFilter)
                 .build();
 
-        Mockito.when(menuService.getAllMenu(
-                Mockito.any(MenuListCommand.class))
-        ).thenReturn(rmaPage);
+        Mockito.when(menuService.getAllMenu(Mockito.any(MenuListCommand.class)))
+                .thenReturn(rmaPage);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
@@ -191,6 +198,7 @@ class MenuControllerTest extends RmaControllerTest {
                 .getAllMenu(Mockito.any(MenuListCommand.class));
     }
 
+
     @Test
     void givenValidMenuListRequestWithoutFilter_whenProductsAndCategoryFound_thenReturnSuccess() throws Exception {
         // Given
@@ -208,44 +216,49 @@ class MenuControllerTest extends RmaControllerTest {
                 .build();
 
         // When
-        List<Product> mockProducts = new ArrayList<>();
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 1")
-                .status(ProductStatus.ACTIVE)
-                .price(BigDecimal.valueOf(50))
-                .currency("TRY")
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 2")
-                .price(BigDecimal.valueOf(150))
-                .currency("TRY")
-                .status(ProductStatus.ACTIVE)
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 3")
-                .price(BigDecimal.valueOf(100))
-                .currency("TRY")
-                .status(ProductStatus.INACTIVE)
-                .build()
-        );
+        List<Menu> mockMenuList = new ArrayList<>();
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 1")
+                        .price(BigDecimal.valueOf(50))
+                        .currency("TRY")
+                        .extent(10)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 2")
+                        .price(BigDecimal.valueOf(150))
+                        .currency("TRY")
+                        .extent(15)
+                        .extentType(ExtentType.ML)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 3")
+                        .price(BigDecimal.valueOf(100))
+                        .currency("TRY")
+                        .extent(20)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
 
-        RmaPage<Product> rmaPage = RmaPage.<Product>builder()
-                .content(mockProducts)
+        RmaPage<Menu> rmaPage = RmaPage.<Menu>builder()
+                .content(mockMenuList)
                 .pageNumber(mockMenuListRequest.getPagination().getPageNumber())
-                .pageSize(mockProducts.size())
+                .pageSize(mockMenuList.size())
                 .totalPageCount(mockMenuListRequest.getPagination().getPageNumber())
-                .totalElementCount(mockProducts.size())
+                .totalElementCount(mockMenuList.size())
                 .sortedBy(mockMenuListRequest.getSorting())
                 .build();
 
-        Mockito.when(menuService.getAllMenu(
-                Mockito.any(MenuListCommand.class))
-        ).thenReturn(rmaPage);
+        Mockito.when(menuService.getAllMenu(Mockito.any(MenuListCommand.class)))
+                .thenReturn(rmaPage);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
@@ -280,43 +293,48 @@ class MenuControllerTest extends RmaControllerTest {
                 .build();
 
         // When
-        List<Product> mockProducts = new ArrayList<>();
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 1")
-                .status(ProductStatus.ACTIVE)
-                .price(BigDecimal.valueOf(50))
-                .currency("TRY")
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 2")
-                .price(BigDecimal.valueOf(150))
-                .currency("TRY")
-                .status(ProductStatus.ACTIVE)
-                .build()
-        );
-        mockProducts.add(Product.builder()
-                .id(String.valueOf(UUID.randomUUID()))
-                .name("product 3")
-                .price(BigDecimal.valueOf(100))
-                .currency("TRY")
-                .status(ProductStatus.INACTIVE)
-                .build()
-        );
+        List<Menu> mockMenuList = new ArrayList<>();
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 1")
+                        .price(BigDecimal.valueOf(50))
+                        .currency("TRY")
+                        .extent(10)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 2")
+                        .price(BigDecimal.valueOf(150))
+                        .currency("TRY")
+                        .extent(15)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
+        mockMenuList.add(Menu.builder()
+                .product(Menu.Product.builder()
+                        .id(String.valueOf(UUID.randomUUID()))
+                        .name("product 3")
+                        .price(BigDecimal.valueOf(100))
+                        .currency("TRY")
+                        .extent(20)
+                        .extentType(ExtentType.GR)
+                        .build())
+                .build());
 
-        RmaPage<Product> rmaPage = RmaPage.<Product>builder()
-                .content(mockProducts)
+        RmaPage<Menu> rmaPage = RmaPage.<Menu>builder()
+                .content(mockMenuList)
                 .pageNumber(mockMenuListRequest.getPagination().getPageNumber())
-                .pageSize(mockProducts.size())
+                .pageSize(mockMenuList.size())
                 .totalPageCount(mockMenuListRequest.getPagination().getPageNumber())
-                .totalElementCount(mockProducts.size())
+                .totalElementCount(mockMenuList.size())
                 .build();
 
-        Mockito.when(menuService.getAllMenu(
-                Mockito.any(MenuListCommand.class))
-        ).thenReturn(rmaPage);
+        Mockito.when(menuService.getAllMenu(Mockito.any(MenuListCommand.class)))
+                .thenReturn(rmaPage);
 
         // Then
         mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
@@ -337,6 +355,54 @@ class MenuControllerTest extends RmaControllerTest {
         // Verify
         Mockito.verify(menuService, Mockito.times(1))
                 .getAllMenu(Mockito.any(MenuListCommand.class));
+    }
+
+    @Test
+    void givenMenuListRequest_whenOrderPropertyAccepted_thenAccepted() {
+        // Given
+        MenuListRequest menuListRequest = MenuListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("categoryId")
+                        .build())
+                .filter(MenuListRequest.MenuFilter.builder()
+                        .name("test")
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = menuListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertTrue(isOrderPropertyAccepted);
+    }
+
+    @Test
+    void givenMenuListRequest_whenOrderPropertyNotAccepted_thenNotAccepted() {
+        // Given
+        MenuListRequest menuListRequest = MenuListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("invalidProperty")
+                        .build())
+                .filter(MenuListRequest.MenuFilter.builder()
+                        .name("test")
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = menuListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertFalse(isOrderPropertyAccepted);
     }
 
     @Test

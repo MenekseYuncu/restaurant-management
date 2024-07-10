@@ -1,6 +1,7 @@
 package org.violet.restaurantmanagement.product.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -358,6 +359,54 @@ class ProductControllerTest extends RmaControllerTest {
         // Verify
         Mockito.verify(productService, Mockito.times(1))
                 .getAllProducts(Mockito.any(ProductListCommand.class));
+    }
+
+    @Test
+    void givenProductListRequest_whenOrderPropertyAccepted_thenAccepted() {
+        // Given
+        ProductListRequest productListRequest = ProductListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("price")
+                        .build())
+                .filter(ProductListRequest.ProductFilter.builder()
+                        .name("test")
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = productListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertTrue(isOrderPropertyAccepted);
+    }
+
+    @Test
+    void givenMenuListRequest_whenOrderPropertyNotAccepted_thenNotAccepted() {
+        // Given
+        ProductListRequest productListRequest = ProductListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("invalidProperty")
+                        .build())
+                .filter(ProductListRequest.ProductFilter.builder()
+                        .name("test")
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = productListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertFalse(isOrderPropertyAccepted);
     }
 
     @Test

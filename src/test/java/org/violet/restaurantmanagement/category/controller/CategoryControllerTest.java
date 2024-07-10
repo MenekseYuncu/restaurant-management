@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.category.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -337,6 +338,54 @@ class CategoryControllerTest extends RmaControllerTest {
         // Verify
         Mockito.verify(categoryService, Mockito.times(1))
                 .getAllCategories(Mockito.any(CategoryListCommand.class));
+    }
+
+    @Test
+    void givenCategoryListRequest_whenOrderPropertyAccepted_thenAccepted() {
+        // Given
+        CategoryListRequest categoryListRequest = CategoryListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("name")
+                        .build())
+                .filter(CategoryListRequest.CategoryFilter.builder()
+                        .name("test")
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = categoryListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertTrue(isOrderPropertyAccepted);
+    }
+
+    @Test
+    void givenCategoryListRequest_whenOrderPropertyNotAccepted_thenNotAccepted() {
+        // Given
+        CategoryListRequest categoryListRequest = CategoryListRequest.builder()
+                .pagination(PaginationBuilder.builder()
+                        .pageSize(10)
+                        .pageNumber(1)
+                        .build())
+                .sorting(SortingBuilder.builder()
+                        .asc()
+                        .property("invalidProperty")
+                        .build())
+                .filter(CategoryListRequest.CategoryFilter.builder()
+                        .name("test")
+                        .build())
+                .build();
+
+        // When
+        boolean isOrderPropertyAccepted = categoryListRequest.isOrderPropertyAccepted();
+
+        // Then
+        Assertions.assertFalse(isOrderPropertyAccepted);
     }
 
     @Test
