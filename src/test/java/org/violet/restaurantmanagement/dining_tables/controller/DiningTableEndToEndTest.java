@@ -240,7 +240,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
         );
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/merge")
+        mockMvc.perform(MockMvcRequestBuilders.post(STR."\{BASE_URL}/merge")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(mergeRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -254,7 +254,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
         List<DiningTableEntity> tables = new ArrayList<>();
         tables.add(
                 DiningTableEntity.builder()
-                        .id(1L)
+                        .id(12L)
                         .mergeId(mergeId)
                         .status(DiningTableStatus.OCCUPIED)
                         .size(2)
@@ -262,7 +262,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
         );
         tables.add(
                 DiningTableEntity.builder()
-                        .id(2L)
+                        .id(22L)
                         .mergeId(mergeId)
                         .status(DiningTableStatus.OCCUPIED)
                         .size(2)
