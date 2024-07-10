@@ -526,7 +526,33 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     }
 
     @Test
-    void givenInvalidMergeIds_whenMergeDiningTable_thenReturnExceptions() {
+    void givenMixedStatusMergeRequest_whenMergeDiningTables_thenThrowException() {
+        // Given
+        DiningTableMergeCommand mergeCommand = new DiningTableMergeCommand(Arrays.asList(1L, 2L));
+
+        DiningTableEntity diningTableEntity1 = DiningTableEntity.builder()
+                .id(1L)
+                .status(DiningTableStatus.OCCUPIED)
+                .build();
+        DiningTableEntity diningTableEntity2 = DiningTableEntity.builder()
+                .id(2L)
+                .status(DiningTableStatus.VACANT)
+                .build();
+
+        Mockito.when(diningTableRepository.findAllById(mergeCommand.tableIds()))
+                .thenReturn(Arrays.asList(diningTableEntity1, diningTableEntity2));
+
+        // When / Then
+        Assertions.assertThrows(DiningTableNotEmptyException.class,
+                () -> diningTableService.mergeDiningTables(mergeCommand));
+
+        Mockito.verify(diningTableRepository, Mockito.never())
+                .saveAll(Mockito.anyList());
+    }
+
+
+    @Test
+    void givenInvalidTableIds_whenMergeDiningTable_thenReturnDiningTableNotEmptyException() {
         // Given
         DiningTableMergeCommand mergeCommand = new DiningTableMergeCommand(
                 Arrays.asList(1L, 2L)
@@ -563,7 +589,6 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         Mockito.when(diningTableRepository.findAllById(mergeCommand.tableIds()))
                 .thenReturn(List.of(diningTableEntity1))
                 .thenThrow(new DiningTableNotEmptyException());
-
 
         // Assert
         Assertions.assertThrows(DiningTableNotEmptyException.class,

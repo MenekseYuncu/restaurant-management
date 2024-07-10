@@ -15,11 +15,11 @@ import org.violet.restaurantmanagement.common.model.PaginationBuilder;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.common.model.SortingBuilder;
 import org.violet.restaurantmanagement.menu.service.command.MenuListCommand;
+import org.violet.restaurantmanagement.menu.service.domain.Menu;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
-import org.violet.restaurantmanagement.product.service.domain.Product;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         ).thenReturn(productEntityPage);
 
         // When
-        RmaPage<Product> result = menuService.getAllMenu(givenMenuListCommand);
+        RmaPage<Menu> result = menuService.getAllMenu(givenMenuListCommand);
 
         // Verify
         Mockito.verify(productRepository, Mockito.times(1)).findAll(
@@ -102,16 +102,23 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         // Assertions
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(result.getContent().getFirst().getName(), productEntities.getFirst().getName());
-        Assertions.assertEquals(result.getContent().getFirst().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getName(), productEntities.getFirst().getName());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getStatus(), productEntities.getFirst().getStatus());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtent(), productEntities.get(0).getExtent());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtentType(), productEntities.get(0).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(1).getName(), productEntities.get(1).getName());
-        Assertions.assertEquals(result.getContent().get(1).getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getName(), productEntities.get(1).getName());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getStatus(), productEntities.get(1).getStatus());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtent(), productEntities.get(1).getExtent());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtentType(), productEntities.get(1).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(2).getName(), productEntities.get(2).getName());
-        Assertions.assertEquals(result.getContent().get(2).getIngredient(), productEntities.get(2).getIngredient());
-
-        Assertions.assertEquals(result.getContent().get(2).getCategoryId(), productEntities.get(2).getCategoryId());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getName(), productEntities.get(2).getName());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getIngredient(), productEntities.get(2).getIngredient());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getStatus(), productEntities.get(2).getStatus());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtent(), productEntities.get(2).getExtent());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtentType(), productEntities.get(2).getExtentType());
 
         Assertions.assertEquals(3, result.getPageSize());
         Assertions.assertEquals(result.getTotalElementCount(), productEntities.size());
@@ -172,7 +179,7 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         ).thenReturn(productEntityPage);
 
         // When
-        RmaPage<Product> result = menuService.getAllMenu(givenMenuListCommand);
+        RmaPage<Menu> result = menuService.getAllMenu(givenMenuListCommand);
 
         // Verify
         Mockito.verify(productRepository, Mockito.times(1)).findAll(
@@ -181,16 +188,23 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         // Assertions
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(result.getContent().getFirst().getName(), productEntities.getFirst().getName());
-        Assertions.assertEquals(result.getContent().getFirst().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getName(), productEntities.getFirst().getName());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getStatus(), productEntities.getFirst().getStatus());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtent(), productEntities.get(0).getExtent());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtentType(), productEntities.get(0).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(1).getName(), productEntities.get(1).getName());
-        Assertions.assertEquals(result.getContent().get(1).getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getName(), productEntities.get(1).getName());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getStatus(), productEntities.get(1).getStatus());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtent(), productEntities.get(1).getExtent());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtentType(), productEntities.get(1).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(2).getName(), productEntities.get(2).getName());
-        Assertions.assertEquals(result.getContent().get(2).getIngredient(), productEntities.get(2).getIngredient());
-
-        Assertions.assertEquals(result.getContent().get(2).getCategoryId(), productEntities.get(2).getCategoryId());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getName(), productEntities.get(2).getName());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getIngredient(), productEntities.get(2).getIngredient());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getStatus(), productEntities.get(2).getStatus());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtent(), productEntities.get(2).getExtent());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtentType(), productEntities.get(2).getExtentType());
 
         Assertions.assertEquals(3, result.getPageSize());
         Assertions.assertEquals(result.getTotalElementCount(), productEntities.size());
@@ -240,6 +254,7 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                         .pageSize(3)
                         .build())
                 .filter(MenuListCommand.MenuFilter.builder()
+                        .name("product")
                         .build())
                 .build();
 
@@ -249,7 +264,7 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         ).thenReturn(productEntityPage);
 
         // When
-        RmaPage<Product> result = menuService.getAllMenu(givenMenuListCommand);
+        RmaPage<Menu> result = menuService.getAllMenu(givenMenuListCommand);
 
         // Verify
         Mockito.verify(productRepository, Mockito.times(1)).findAll(
@@ -258,16 +273,23 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         // Assertions
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(result.getContent().getFirst().getName(), productEntities.getFirst().getName());
-        Assertions.assertEquals(result.getContent().getFirst().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getName(), productEntities.getFirst().getName());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getStatus(), productEntities.getFirst().getStatus());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtent(), productEntities.get(0).getExtent());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtentType(), productEntities.get(0).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(1).getName(), productEntities.get(1).getName());
-        Assertions.assertEquals(result.getContent().get(1).getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getName(), productEntities.get(1).getName());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getStatus(), productEntities.get(1).getStatus());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtent(), productEntities.get(1).getExtent());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtentType(), productEntities.get(1).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(2).getName(), productEntities.get(2).getName());
-        Assertions.assertEquals(result.getContent().get(2).getIngredient(), productEntities.get(2).getIngredient());
-
-        Assertions.assertEquals(result.getContent().get(2).getCategoryId(), productEntities.get(2).getCategoryId());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getName(), productEntities.get(2).getName());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getIngredient(), productEntities.get(2).getIngredient());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getStatus(), productEntities.get(2).getStatus());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtent(), productEntities.get(2).getExtent());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtentType(), productEntities.get(2).getExtentType());
 
         Assertions.assertEquals(3, result.getPageSize());
         Assertions.assertEquals(result.getTotalElementCount(), productEntities.size());
@@ -324,7 +346,7 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         ).thenReturn(productEntityPage);
 
         // When
-        RmaPage<Product> result = menuService.getAllMenu(givenMenuListCommand);
+        RmaPage<Menu> result = menuService.getAllMenu(givenMenuListCommand);
 
         // Verify
         Mockito.verify(productRepository, Mockito.times(1)).findAll(
@@ -333,16 +355,23 @@ class MenuServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         // Assertions
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(result.getContent().getFirst().getName(), productEntities.getFirst().getName());
-        Assertions.assertEquals(result.getContent().getFirst().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getName(), productEntities.getFirst().getName());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getIngredient(), productEntities.getFirst().getIngredient());
+        Assertions.assertEquals(result.getContent().getFirst().getProduct().getStatus(), productEntities.getFirst().getStatus());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtent(), productEntities.get(0).getExtent());
+        Assertions.assertEquals(result.getContent().get(0).getProduct().getExtentType(), productEntities.get(0).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(1).getName(), productEntities.get(1).getName());
-        Assertions.assertEquals(result.getContent().get(1).getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getName(), productEntities.get(1).getName());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getIngredient(), productEntities.get(1).getIngredient());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getStatus(), productEntities.get(1).getStatus());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtent(), productEntities.get(1).getExtent());
+        Assertions.assertEquals(result.getContent().get(1).getProduct().getExtentType(), productEntities.get(1).getExtentType());
 
-        Assertions.assertEquals(result.getContent().get(2).getName(), productEntities.get(2).getName());
-        Assertions.assertEquals(result.getContent().get(2).getIngredient(), productEntities.get(2).getIngredient());
-
-        Assertions.assertEquals(result.getContent().get(2).getCategoryId(), productEntities.get(2).getCategoryId());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getName(), productEntities.get(2).getName());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getIngredient(), productEntities.get(2).getIngredient());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getStatus(), productEntities.get(2).getStatus());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtent(), productEntities.get(2).getExtent());
+        Assertions.assertEquals(result.getContent().get(2).getProduct().getExtentType(), productEntities.get(2).getExtentType());
 
         Assertions.assertEquals(3, result.getPageSize());
         Assertions.assertEquals(result.getTotalElementCount(), productEntities.size());
