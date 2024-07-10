@@ -11,11 +11,11 @@ import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
 import org.violet.restaurantmanagement.common.controller.response.RmaPageResponse;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.menu.controller.mapper.MenuListRequestToListCommand;
-import org.violet.restaurantmanagement.menu.controller.mapper.ProductToMenuListResponseMapper;
+import org.violet.restaurantmanagement.menu.controller.mapper.MenuToMenuResponseMapper;
 import org.violet.restaurantmanagement.menu.controller.request.MenuListRequest;
 import org.violet.restaurantmanagement.menu.controller.response.MenuResponse;
 import org.violet.restaurantmanagement.menu.service.MenuService;
-import org.violet.restaurantmanagement.product.service.domain.Product;
+import org.violet.restaurantmanagement.menu.service.domain.Menu;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,14 +25,14 @@ public class MenuController {
     private final MenuService menuService;
 
     private static final MenuListRequestToListCommand menuListRequestToListCommand = MenuListRequestToListCommand.INSTANCE;
-    private static final ProductToMenuListResponseMapper productToMenuListResponse = ProductToMenuListResponseMapper.INSTANCE;
+    private static final MenuToMenuResponseMapper productToMenuListResponse = MenuToMenuResponseMapper.INSTANCE;
 
 
     @PostMapping
     public BaseResponse<RmaPageResponse<MenuResponse>> getAllMenu(
             @Valid @RequestBody MenuListRequest request
     ) {
-        RmaPage<Product> menuRmaPage = menuService.getAllMenu(
+        RmaPage<Menu> menuRmaPage = menuService.getAllMenu(
                 menuListRequestToListCommand.map(request)
         );
 

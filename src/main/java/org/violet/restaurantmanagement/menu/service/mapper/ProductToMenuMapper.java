@@ -1,16 +1,16 @@
-package org.violet.restaurantmanagement.menu.controller.mapper;
+package org.violet.restaurantmanagement.menu.service.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.violet.restaurantmanagement.common.model.mapper.BaseMapper;
-import org.violet.restaurantmanagement.menu.controller.response.MenuResponse;
+import org.violet.restaurantmanagement.menu.service.domain.Menu;
 import org.violet.restaurantmanagement.product.service.domain.Product;
 
 @Mapper
-public interface ProductToMenuListResponseMapper extends BaseMapper<Product, MenuResponse> {
+public interface ProductToMenuMapper extends BaseMapper<Product, Menu> {
 
-    ProductToMenuListResponseMapper INSTANCE = Mappers.getMapper(ProductToMenuListResponseMapper.class);
+    ProductToMenuMapper INSTANCE = Mappers.getMapper(ProductToMenuMapper.class);
 
     @Mapping(source = "id", target = "product.id")
     @Mapping(source = "name", target = "product.name")
@@ -21,5 +21,5 @@ public interface ProductToMenuListResponseMapper extends BaseMapper<Product, Men
     @Mapping(source = "extent", target = "product.extent")
     @Mapping(source = "extentType", target = "product.extentType")
     @Mapping(source = "category", target = "category")
-    MenuResponse map(Product source);
+    Menu map(Product source);
 }

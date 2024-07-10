@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.common.model.RmaPage;
 import org.violet.restaurantmanagement.menu.service.MenuService;
 import org.violet.restaurantmanagement.menu.service.command.MenuListCommand;
+import org.violet.restaurantmanagement.menu.service.domain.Menu;
+import org.violet.restaurantmanagement.menu.service.mapper.ProductToMenuMapper;
 import org.violet.restaurantmanagement.product.model.mapper.ProductEntityToDomainMapper;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
@@ -22,10 +24,11 @@ class MenuServiceImpl implements MenuService {
     private final String currency;
 
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
+    private static final ProductToMenuMapper productToMenuMapper = ProductToMenuMapper.INSTANCE;
 
 
     @Override
-    public RmaPage<Product> getAllMenu(MenuListCommand menuListCommand) {
+    public RmaPage<Menu> getAllMenu(MenuListCommand menuListCommand) {
         Page<ProductEntity> productEntityPage = productRepository.findAll(
                 menuListCommand.toSpecification(ProductEntity.class),
                 menuListCommand.toPageable()
@@ -34,8 +37,8 @@ class MenuServiceImpl implements MenuService {
         List<Product> products = productEntityToDomainMapper.map(productEntityPage.getContent());
         products.forEach(product -> product.setCurrency(currency));
 
-        return RmaPage.<Product>builder()
-                .content(products)
+        return RmaPage.<Menu>builder()
+                .content(productToMenuMapper.map(products))
                 .page(productEntityPage)
                 .sortedBy(menuListCommand.getSorting())
                 .filteredBy(menuListCommand.getFilter())
