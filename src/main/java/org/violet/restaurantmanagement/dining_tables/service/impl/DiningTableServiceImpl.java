@@ -111,7 +111,6 @@ class DiningTableServiceImpl implements DiningTableService {
         diningTableRepository.saveAll(diningTableEntityList);
     }
 
-    // TODO : Eğer ödeme yapıldıysa ayrılabilir olsun?
     @Override
     public void splitDiningTables(DiningTableSplitCommand splitCommand) {
         List<DiningTableEntity> diningTableEntityList = diningTableRepository.findByMergeId(splitCommand.mergeId());

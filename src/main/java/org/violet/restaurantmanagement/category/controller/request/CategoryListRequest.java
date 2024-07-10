@@ -29,9 +29,7 @@ public class CategoryListRequest extends RmaPaginationRequest {
         private String name;
 
         private Set<CategoryStatus> statuses;
-
     }
-
 
     @Override
     public boolean isOrderPropertyAccepted() {
