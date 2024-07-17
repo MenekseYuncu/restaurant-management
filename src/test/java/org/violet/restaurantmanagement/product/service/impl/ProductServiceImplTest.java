@@ -51,7 +51,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
     @InjectMocks
     private ProductServiceImpl productService;
 
-    private static final ProductDomainToEntityMapper PRODUCT_DOMAIN_TO_ENTITY_MAPPER = ProductDomainToEntityMapper.INSTANCE;
+    private static final ProductDomainToEntityMapper productDomainToEntityMapper = ProductDomainToEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
 
@@ -445,7 +445,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 .thenReturn(true);
 
         Product product = productCreateCommandToDomainMapper.map(createCommand);
-        ProductEntity productEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product);
+        ProductEntity productEntity = productDomainToEntityMapper.map(product);
 
         Mockito.when(productRepository.save(ArgumentMatchers.any(ProductEntity.class)))
                 .thenReturn(productEntity);
@@ -583,7 +583,7 @@ class ProductServiceImplTest extends RmaServiceTest implements RmaTestContainer 
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        ProductEntity existingProductEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(existingProduct);
+        ProductEntity existingProductEntity = productDomainToEntityMapper.map(existingProduct);
         String id = existingProductEntity.getId();
 
         ProductUpdateCommand updateCommand = new ProductUpdateCommand(

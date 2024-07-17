@@ -29,7 +29,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
     @Autowired
     private ProductRepository productRepository;
 
-    private static final ProductDomainToEntityMapper PRODUCT_DOMAIN_TO_ENTITY_MAPPER = ProductDomainToEntityMapper.INSTANCE;
+    private static final ProductDomainToEntityMapper productDomainToEntityMapper = ProductDomainToEntityMapper.INSTANCE;
 
     private final static String BASE_URL = "/api/v1/product";
 
@@ -153,7 +153,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
 
-        ProductEntity productEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product);
+        ProductEntity productEntity = productDomainToEntityMapper.map(product);
         productRepository.save(productEntity);
 
         // Then
@@ -214,7 +214,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
 
-        ProductEntity productEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product);
+        ProductEntity productEntity = productDomainToEntityMapper.map(product);
         productRepository.save(productEntity);
 
         // When
@@ -251,7 +251,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .extentType(ExtentType.GR)
                 .createdAt(LocalDateTime.now()).build();
 
-        ProductEntity productEntity = PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product);
+        ProductEntity productEntity = productDomainToEntityMapper.map(product);
         productRepository.save(productEntity);
 
 

@@ -35,7 +35,7 @@ class ProductServiceImpl implements ProductService {
     private final String currency;
 
 
-    private static final ProductDomainToEntityMapper PRODUCT_DOMAIN_TO_ENTITY_MAPPER = ProductDomainToEntityMapper.INSTANCE;
+    private static final ProductDomainToEntityMapper productDomainToEntityMapper = ProductDomainToEntityMapper.INSTANCE;
     private static final ProductCreateCommandToDomainMapper productCreateCommandToDomainMapper = ProductCreateCommandToDomainMapper.INSTANCE;
     private static final ProductUpdateCommandToDomainMapper productUpdateCommandToDomainMapper = ProductUpdateCommandToDomainMapper.INSTANCE;
     private static final ProductEntityToDomainMapper productEntityToDomainMapper = ProductEntityToDomainMapper.INSTANCE;
@@ -76,7 +76,7 @@ class ProductServiceImpl implements ProductService {
         this.checkExistingOfCategory(createCommand.categoryId());
 
         Product product = productCreateCommandToDomainMapper.map(createCommand);
-        productRepository.save(PRODUCT_DOMAIN_TO_ENTITY_MAPPER.map(product));
+        productRepository.save(productDomainToEntityMapper.map(product));
     }
 
     @Override
