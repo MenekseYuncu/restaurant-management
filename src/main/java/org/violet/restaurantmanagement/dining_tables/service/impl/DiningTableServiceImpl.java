@@ -95,7 +95,12 @@ class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public void mergeDiningTables(DiningTableMergeCommand diningTableMergeCommand) {
+        List<Long> tableIds = diningTableMergeCommand.tableIds();
         List<DiningTableEntity> diningTableEntityList = diningTableRepository.findAllById(diningTableMergeCommand.tableIds());
+
+        if (diningTableEntityList.size() != tableIds.size()) {
+            throw new DiningTableNotFoundException();
+        }
 
         String mergeId = UUID.randomUUID().toString();
 
