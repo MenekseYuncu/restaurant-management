@@ -32,6 +32,9 @@ public class MenuListCommand extends RmaPaginationCommand implements RmaSpecific
     @Override
     @SuppressWarnings("This method is unused by the application directly but Spring is using it in the background.")
     public <C> Specification<C> toSpecification(Class<C> clazz) {
+        if (this.filter == null) {
+            return Specification.allOf();
+        }
 
         Sorting sorting = Sorting.builder()
                 .direction(Sort.Direction.ASC)

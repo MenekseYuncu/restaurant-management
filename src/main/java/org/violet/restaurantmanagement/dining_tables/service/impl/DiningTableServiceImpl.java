@@ -124,11 +124,8 @@ class DiningTableServiceImpl implements DiningTableService {
         }
 
         for (DiningTableEntity diningTableEntity : diningTableEntityList) {
-            if (diningTableEntity.getStatus() == DiningTableStatus.VACANT) {
-                diningTableEntity.setMergeId(UUID.randomUUID().toString());
-            } else {
-                throw new DiningTableNotEmptyException();
-            }
+            diningTableEntity.setMergeId(UUID.randomUUID().toString());
+            diningTableEntity.setStatus(DiningTableStatus.VACANT);
         }
 
         diningTableRepository.saveAll(diningTableEntityList);
