@@ -605,12 +605,13 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         String mergeId = UUID.randomUUID().toString();
         DiningTableSplitCommand splitCommand = new DiningTableSplitCommand(mergeId);
 
-        // When
         DiningTableEntity diningTableEntity1 = new DiningTableEntity();
         diningTableEntity1.setMergeId(mergeId);
+        diningTableEntity1.setStatus(DiningTableStatus.VACANT);
 
         DiningTableEntity diningTableEntity2 = new DiningTableEntity();
         diningTableEntity2.setMergeId(mergeId);
+        diningTableEntity2.setStatus(DiningTableStatus.VACANT);
 
         List<DiningTableEntity> diningTableEntityList = Arrays.asList(diningTableEntity1, diningTableEntity2);
 
@@ -623,6 +624,10 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
         // Then
         Mockito.verify(diningTableRepository, Mockito.times(1))
                 .saveAll(Mockito.anyList());
+
+        // Assert
+        Assertions.assertNotEquals(mergeId, diningTableEntity1.getMergeId());
+        Assertions.assertNotEquals(mergeId, diningTableEntity2.getMergeId());
     }
 
     @Test
