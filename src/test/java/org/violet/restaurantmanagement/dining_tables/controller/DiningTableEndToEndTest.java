@@ -256,7 +256,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
                 DiningTableEntity.builder()
                         .id(12L)
                         .mergeId(mergeId)
-                        .status(DiningTableStatus.OCCUPIED)
+                        .status(DiningTableStatus.VACANT)
                         .size(2)
                         .build()
         );
@@ -264,7 +264,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
                 DiningTableEntity.builder()
                         .id(22L)
                         .mergeId(mergeId)
-                        .status(DiningTableStatus.OCCUPIED)
+                        .status(DiningTableStatus.VACANT)
                         .size(2)
                         .build()
         );
