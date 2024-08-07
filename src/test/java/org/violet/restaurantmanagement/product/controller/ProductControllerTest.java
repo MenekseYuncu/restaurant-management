@@ -386,7 +386,7 @@ class ProductControllerTest extends RmaControllerTest {
     }
 
     @Test
-    void givenMenuListRequest_whenOrderPropertyNotAccepted_thenNotAccepted() {
+    void givenProductListRequest_whenOrderPropertyNotAccepted_thenNotAccepted() {
         // Given
         ProductListRequest productListRequest = ProductListRequest.builder()
                 .pagination(PaginationBuilder.builder()
