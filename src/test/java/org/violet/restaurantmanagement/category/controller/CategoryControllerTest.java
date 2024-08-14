@@ -40,9 +40,9 @@ class CategoryControllerTest extends RmaControllerTest {
     private CategoryService categoryService;
 
     private static final CategoryUpdateRequestToUpdateCommandMapper categoryUpdateRequestToUpdateCommandMapper = CategoryUpdateRequestToUpdateCommandMapper.INSTANCE;
-    private static final CategoryCreateRequestToCommandMapper CATEGORY_CREATE_REQUEST_TO_COMMAND_MAPPER = CategoryCreateRequestToCommandMapper.INSTANCE;
+    private static final CategoryCreateRequestToCommandMapper categoryCreateRequestToCommandMapper = CategoryCreateRequestToCommandMapper.INSTANCE;
 
-    private final static String BASE_URL = "/api/v1/category";
+    private static final String BASE_URL = "/api/v1/category";
 
 
     @Test
@@ -525,7 +525,7 @@ class CategoryControllerTest extends RmaControllerTest {
         );
 
         // When
-        CategoryCreateCommand createCommand = CATEGORY_CREATE_REQUEST_TO_COMMAND_MAPPER.map(mockCategoryCreateRequest);
+        CategoryCreateCommand createCommand = categoryCreateRequestToCommandMapper.map(mockCategoryCreateRequest);
         Mockito.doNothing().when(categoryService).createCategory(Mockito.any(CategoryCreateCommand.class));
 
         // Then
