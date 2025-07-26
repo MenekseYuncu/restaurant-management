@@ -43,7 +43,7 @@ public class CategoryListCommand extends RmaPaginationCommand implements RmaSpec
 
         if (StringUtils.hasText(this.filter.getName())) {
             Specification<C> tempSpecification = (root, query, criteriaBuilder) ->
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), STR."%\{filter.getName().toLowerCase()}%");
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + filter.getName().toLowerCase() + "%");
             specification = specification.and(tempSpecification);
         }
 

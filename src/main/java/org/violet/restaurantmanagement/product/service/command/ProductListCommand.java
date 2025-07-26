@@ -52,7 +52,7 @@ public class ProductListCommand extends RmaPaginationCommand implements RmaSpeci
         if (StringUtils.hasText(this.filter.getName())) {
             specification = specification.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("name")),
-                            STR."%\{this.filter.getName().toLowerCase()}%"));
+                            "%" + this.filter.getName().toLowerCase() + "%"));
         }
 
         if (this.filter.getCategoryId() != null) {

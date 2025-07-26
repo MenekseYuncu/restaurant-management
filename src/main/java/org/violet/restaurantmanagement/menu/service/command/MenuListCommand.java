@@ -56,11 +56,11 @@ public class MenuListCommand extends RmaPaginationCommand implements RmaSpecific
 
             specification = specification.or((root, query, criteriaBuilder) ->
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("category").get("name")),
-                            STR."%\{this.filter.getName().toLowerCase()}%"));
+                            "%" + this.filter.getName().toLowerCase() + "%"));
 
             specification = specification.or((root, query, criteriaBuilder) ->
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("name")),
-                            STR."%\{this.filter.getName().toLowerCase()}%"));
+                            "%" + this.filter.getName().toLowerCase() + "%"));
         }
 
         return specification;
