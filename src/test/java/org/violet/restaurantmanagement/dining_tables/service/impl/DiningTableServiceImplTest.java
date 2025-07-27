@@ -510,9 +510,20 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
     @Test
     void givenValidMergeRequest_whenMergeDiningTable_thenReturnSuccess() {
         // Given
+        DiningTableEntity diningTableEntity1 = DiningTableEntity.builder()
+                .id(1L)
+                .status(DiningTableStatus.VACANT)
+                .build();
+        DiningTableEntity diningTableEntity2 = DiningTableEntity.builder()
+                .id(2L)
+                .status(DiningTableStatus.VACANT)
+                .build();
+
         DiningTableMergeCommand mergeCommand = new DiningTableMergeCommand(
                 Arrays.asList(1L, 2L));
 
+        Mockito.when(diningTableRepository.findAllById(mergeCommand.tableIds()))
+                .thenReturn(Arrays.asList(diningTableEntity1, diningTableEntity2));
         // When
         List<DiningTableEntity> savedEntities = new ArrayList<>();
         Mockito.when(diningTableRepository.saveAll(Mockito.anyList()))
@@ -583,11 +594,19 @@ class DiningTableServiceImplTest extends RmaServiceTest implements RmaTestContai
                 Arrays.asList(1L, 2L)
         );
 
-        DiningTableEntity diningTableEntity1 = new DiningTableEntity();
+        DiningTableEntity diningTableEntity1 = DiningTableEntity.builder()
+                .id(1L)
+                .status(DiningTableStatus.VACANT)
+                .build();
+
+        DiningTableEntity diningTableEntity2 = DiningTableEntity.builder()
+                .id(2L)
+                .status(DiningTableStatus.OCCUPIED)
+                .build();
 
         // When
         Mockito.when(diningTableRepository.findAllById(mergeCommand.tableIds()))
-                .thenReturn(List.of(diningTableEntity1))
+                .thenReturn(List.of(diningTableEntity1, diningTableEntity2))
                 .thenThrow(new DiningTableNotEmptyException());
 
         // Assert

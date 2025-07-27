@@ -234,13 +234,31 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
 
     @Test
     void givenValidDiningTableMergeRequest_whenMergeDiningTable_thenReturnSuccess() throws Exception {
-        //Given
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        DiningTableEntity table1 = diningTableRepository.save(
+                DiningTableEntity.builder()
+                        .mergeId(mergeId)
+                        .status(DiningTableStatus.VACANT)
+                        .size(2)
+                        .build()
+        );
+
+        DiningTableEntity table2 = diningTableRepository.save(
+                DiningTableEntity.builder()
+                        .mergeId(mergeId)
+                        .status(DiningTableStatus.VACANT)
+                        .size(2)
+                        .build()
+        );
+
+        //When
         DiningTableMergeRequest mergeRequest = new DiningTableMergeRequest(
-                List.of(4L, 5L)
+                List.of(table1.getId(), table2.getId())
         );
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.post(STR."\{BASE_URL}/merge")
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/merge")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(mergeRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -274,7 +292,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
         DiningTableSplitRequest splitRequest = new DiningTableSplitRequest(mergeId);
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.post(STR."\{BASE_URL}/split")
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/split")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(splitRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
