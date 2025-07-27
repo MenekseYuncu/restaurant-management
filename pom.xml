@@ -18,6 +18,8 @@
 
     <properties>
         <java.version>21</java.version>
+        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <json-path.version>2.9.0</json-path.version>
         <lombok.version>1.18.32</lombok.version>
@@ -149,7 +151,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
+                    <release>${java.version}</release>  <!-- Changed from source/target to release -->
+                    <compilerArgs>
+                        <arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
+                        <arg>-Amapstruct.suppressGeneratorVersionInfoComment=true</arg>
+                    </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.mapstruct</groupId>
@@ -167,16 +175,16 @@
                             <version>0.2.0</version>
                         </path>
                     </annotationProcessorPaths>
-                    <source>21</source>
-                    <target>21</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
