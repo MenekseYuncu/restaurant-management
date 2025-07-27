@@ -12,4 +12,6 @@ public interface DiningTableRepository extends JpaRepository<DiningTableEntity, 
 
     List<DiningTableEntity> findByMergeId(String mergeId);
 
+    boolean existsByMergeId(String mergeId);
+
 }
