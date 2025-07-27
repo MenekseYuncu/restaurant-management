@@ -74,7 +74,7 @@ create table if not exists rm_order_item
     product_id        varchar(36)
         constraint fk__rm_order_item__product_id references rm_product (id),
     price             numeric(50, 8) not null,
-    order_item_status varchar(5)     not null
+    order_item_status varchar(10)     not null
         constraint c__rm_order_item__order_item_status check (order_item_status in ('PREPARING', 'READY', 'DELIVERED', 'CANCELED')),
     created_at        timestamp(3)   not null,
     updated_at        timestamp(3)
