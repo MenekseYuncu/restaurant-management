@@ -37,7 +37,7 @@ class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
 
     @Override
-    public Order createOrder(OrderCreateCommand createCommand) {
+    public Order createOrder(final OrderCreateCommand createCommand) {
         this.checkExistingDiningTable(createCommand.mergeId());
 
         this.validateProducts(createCommand.products());
@@ -61,7 +61,7 @@ class OrderServiceImpl implements OrderService {
         return order;
     }
 
-    private List<OrderItem> createOrderItems(List<OrderCreateCommand.ProductItem> productItems) {
+    private List<OrderItem> createOrderItems(final List<OrderCreateCommand.ProductItem> productItems) {
         return productItems.stream()
                 .map(item -> {
                     ProductEntity product = productRepository.findById(item.productId())
@@ -77,7 +77,9 @@ class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    private void saveOrderItems(List<OrderItem> orderItems, String orderId) {
+    private void saveOrderItems(final List<OrderItem> orderItems,
+                                final String orderId
+    ) {
         List<OrderItemEntity> itemEntities = orderItems.stream()
                 .map(item -> {
                     OrderItemEntity entity = orderItemDomainToEntityMapper.map(item);
@@ -89,14 +91,14 @@ class OrderServiceImpl implements OrderService {
         orderItemRepository.saveAll(itemEntities);
     }
 
-    private void checkExistingDiningTable(String mergeId) {
+    private void checkExistingDiningTable(final String mergeId) {
         boolean isTableNotPresent = !diningTableRepository.existsByMergeId(mergeId);
         if (isTableNotPresent) {
             throw new DiningTableNotFoundException();
         }
     }
 
-    private void validateProducts(List<OrderCreateCommand.ProductItem> productItems) {
+    private void validateProducts(final List<OrderCreateCommand.ProductItem> productItems) {
         productItems.forEach(item -> {
             boolean productExists = productRepository.existsByIdAndStatusNot(
                     item.productId(),
@@ -108,7 +110,7 @@ class OrderServiceImpl implements OrderService {
         });
     }
 
-    private BigDecimal calculateTotalPrice(List<OrderItem> orderItems) {
+    private BigDecimal calculateTotalPrice(final List<OrderItem> orderItems) {
         return orderItems.stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
