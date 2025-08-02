@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderDomainToOrderResponseMapper;
-import org.violet.restaurantmanagement.order.controller.request.OrderRequest;
+import org.violet.restaurantmanagement.order.controller.request.OrderCreateRequest;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
 import org.violet.restaurantmanagement.order.service.OrderService;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
@@ -24,7 +24,7 @@ class OrderController {
 
     @PostMapping
     public BaseResponse<OrderResponse> createOrder(
-            @Valid @RequestBody OrderRequest requests
+            @Valid @RequestBody OrderCreateRequest requests
     ) {
         OrderCreateCommand createCommand = orderCreateRequestToCommandMapper.map(requests);
         Order order = orderService.createOrder(createCommand);

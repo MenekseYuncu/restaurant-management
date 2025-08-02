@@ -1,15 +1,13 @@
 package org.violet.restaurantmanagement.order.controller.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Builder
 public record OrderResponse(
         String orderId,
         OrderStatus status,
