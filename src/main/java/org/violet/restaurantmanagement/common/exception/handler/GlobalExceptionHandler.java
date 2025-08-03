@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.violet.restaurantmanagement.common.controller.response.ErrorResponse;
 import org.violet.restaurantmanagement.common.exception.RmaAlreadyExistException;
+import org.violet.restaurantmanagement.common.exception.RmaInvalidException;
 import org.violet.restaurantmanagement.common.exception.RmaNotFoundException;
 import org.violet.restaurantmanagement.common.exception.RmaStatusAlreadyChangedException;
 
@@ -63,5 +64,13 @@ public class GlobalExceptionHandler {
         log.error(exception.getMessage(), exception);
         ErrorResponse errorResponse = ErrorResponse.failureOf(HttpStatus.NOT_FOUND, exception.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RmaInvalidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleRmaInvalidException(final RmaInvalidException exception) {
+        log.error(exception.getMessage(), exception);
+        ErrorResponse errorResponse = ErrorResponse.failureOf(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

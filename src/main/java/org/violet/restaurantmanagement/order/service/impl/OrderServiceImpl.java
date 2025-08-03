@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
+import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
+import org.violet.restaurantmanagement.order.exceptions.MergeIdNotFoundException;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.model.mapper.OrderDomainToEntityMapper;
@@ -42,6 +44,10 @@ class OrderServiceImpl implements OrderService {
 
         this.validateProducts(createCommand.products());
 
+        if (createCommand.products().isEmpty()) {
+            throw new ProductNotFoundException();
+        }
+
         List<OrderItem> orderItems = this.createOrderItems(createCommand.products());
 
         BigDecimal totalPrice = calculateTotalPrice(orderItems);
@@ -66,6 +72,10 @@ class OrderServiceImpl implements OrderService {
                 .map(item -> {
                     ProductEntity product = productRepository.findById(item.productId())
                             .orElseThrow(ProductNotFoundException::new);
+
+                    if (item.quantity() <= 0) {
+                        throw new InvalidItemQuantityException();
+                    }
 
                     return OrderItem.builder()
                             .productId(product.getId())
@@ -92,6 +102,9 @@ class OrderServiceImpl implements OrderService {
     }
 
     private void checkExistingDiningTable(final String mergeId) {
+        if (mergeId == null || mergeId.isBlank()) {
+            throw new MergeIdNotFoundException();
+        }
         boolean isTableNotPresent = !diningTableRepository.existsByMergeId(mergeId);
         if (isTableNotPresent) {
             throw new DiningTableNotFoundException();
@@ -110,8 +123,8 @@ class OrderServiceImpl implements OrderService {
         });
     }
 
-    private BigDecimal calculateTotalPrice(final List<OrderItem> orderItems) {
-        return orderItems.stream()
+    private BigDecimal calculateTotalPrice(final List<OrderItem> items) {
+        return items.stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
