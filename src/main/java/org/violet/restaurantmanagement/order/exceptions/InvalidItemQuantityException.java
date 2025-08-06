@@ -7,9 +7,9 @@ import java.io.Serial;
 public class InvalidItemQuantityException extends RmaInvalidException {
 
     @Serial
-    private static final long serialVersionUID = -4861374131790147477L;
+    private static final long serialVersionUID = -4650242922247818249L;
 
     public InvalidItemQuantityException() {
-        super("Product quantity must be greater than zero.");
+        super("Product quantity can not be less than one.");
     }
 }

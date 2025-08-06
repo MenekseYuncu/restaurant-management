@@ -73,7 +73,7 @@ class OrderServiceImpl implements OrderService {
                     ProductEntity product = productRepository.findById(item.productId())
                             .orElseThrow(ProductNotFoundException::new);
 
-                    if (item.quantity() <= 0) {
+                    if (item.quantity() < 1) {
                         throw new InvalidItemQuantityException();
                     }
 
