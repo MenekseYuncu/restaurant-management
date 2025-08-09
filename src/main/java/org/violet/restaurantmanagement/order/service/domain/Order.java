@@ -20,7 +20,7 @@ public class Order {
     private String id;
     private String mergeId;
     private OrderStatus status;
-    private BigDecimal price;
+    private BigDecimal totalAmount;
     private List<OrderItem> items;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -29,8 +29,8 @@ public class Order {
         private OrderBuilder() {
         }
 
-        public OrderBuilder price(BigDecimal price) {
-            this.price = price.setScale(2, RoundingMode.HALF_UP);
+        public OrderBuilder price(BigDecimal totalAmount) {
+            this.totalAmount = totalAmount.setScale(2, RoundingMode.HALF_UP);
             return this;
         }
     }

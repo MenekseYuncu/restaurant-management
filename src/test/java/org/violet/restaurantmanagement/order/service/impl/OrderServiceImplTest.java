@@ -98,7 +98,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         // Assertions
         Assertions.assertNotNull(createdOrder);
         Assertions.assertEquals(mockMergeId, createdOrder.getMergeId());
-        Assertions.assertEquals(BigDecimal.valueOf(200).setScale(2, RoundingMode.HALF_UP), createdOrder.getPrice());
+        Assertions.assertEquals(BigDecimal.valueOf(200).setScale(2, RoundingMode.HALF_UP), createdOrder.getTotalAmount());
     }
 
     @Test
@@ -154,7 +154,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         Order createdOrder = orderService.createOrder(createCommand);
 
         // Assertions
-        Assertions.assertEquals(BigDecimal.valueOf(350).setScale(2, RoundingMode.HALF_UP), createdOrder.getPrice());
+        Assertions.assertEquals(BigDecimal.valueOf(350).setScale(2, RoundingMode.HALF_UP), createdOrder.getTotalAmount());
     }
 
     @Test
@@ -312,6 +312,6 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         Order createdOrder = orderService.createOrder(createCommand);
 
         // Assertions
-        Assertions.assertEquals(BigDecimal.valueOf(200).setScale(2, RoundingMode.HALF_UP), createdOrder.getPrice());
+        Assertions.assertEquals(BigDecimal.valueOf(200).setScale(2, RoundingMode.HALF_UP), createdOrder.getTotalAmount());
     }
 }
