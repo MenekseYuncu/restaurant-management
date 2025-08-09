@@ -60,7 +60,7 @@ create table if not exists rm_order
     dining_table_merge_id varchar(36)    not null,
     order_status          varchar(5)     not null
         constraint c__rm_order__order_status check (order_status in ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELED')),
-    price                 numeric(50, 8) not null,
+    total_amount          numeric(50, 8) not null,
     created_at            timestamp(3)   not null,
     updated_at            timestamp(3)
 );

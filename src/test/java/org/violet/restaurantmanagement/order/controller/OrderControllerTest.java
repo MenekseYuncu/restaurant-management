@@ -57,9 +57,9 @@ class OrderControllerTest extends RmaControllerTest {
                 .price(BigDecimal.valueOf(150))
                 .build();
 
-        List<OrderCreateCommand.ProductItem> productItems = List.of(
-                new OrderCreateCommand.ProductItem(productEntity1.getId(), 2),
-                new OrderCreateCommand.ProductItem(productEntity2.getId(), 1)
+        List<OrderCreateRequest.ProductItem> productItems = List.of(
+                new OrderCreateRequest.ProductItem(productEntity1.getId(), 2),
+                new OrderCreateRequest.ProductItem(productEntity2.getId(), 1)
         );
 
         // When

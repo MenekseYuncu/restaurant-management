@@ -1,12 +1,25 @@
 package org.violet.restaurantmanagement.order.controller.request;
 
-import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 public record OrderCreateRequest(
+
+        @NotNull
         String mergeId,
 
-        List<OrderCreateCommand.ProductItem> products
+        List<ProductItem> products
 ) {
+    public record ProductItem(
+
+            @NotNull
+            String productId,
+
+            @NotNull
+            @Min(1)
+            int quantity
+    ) {
+    }
 }

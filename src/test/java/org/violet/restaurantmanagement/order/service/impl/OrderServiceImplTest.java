@@ -71,7 +71,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                 .id(UUID.randomUUID().toString())
                 .status(OrderStatus.OPEN)
                 .mergeId(mockMergeId)
-                .price(productEntity.getPrice().multiply(BigDecimal.valueOf(productItem.quantity())))
+                .totalAmount(productEntity.getPrice().multiply(BigDecimal.valueOf(productItem.quantity())))
                 .build();
 
         // When
@@ -129,7 +129,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                 .id(UUID.randomUUID().toString())
                 .status(OrderStatus.OPEN)
                 .mergeId(mockMergeId)
-                .price(BigDecimal.valueOf(350))
+                .totalAmount(BigDecimal.valueOf(350))
                 .build();
 
         // When
@@ -292,7 +292,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                 .id(UUID.randomUUID().toString())
                 .status(OrderStatus.OPEN)
                 .mergeId(mockMergeId)
-                .price(BigDecimal.valueOf(200))
+                .totalAmount(BigDecimal.valueOf(200))
                 .build();
 
         // When
