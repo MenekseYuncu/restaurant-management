@@ -3,6 +3,8 @@ package org.violet.restaurantmanagement.order.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -11,15 +13,19 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.violet.restaurantmanagement.RmaControllerTest;
+import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
+import org.violet.restaurantmanagement.order.controller.mapper.OrderCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderDomainToOrderResponseMapper;
 import org.violet.restaurantmanagement.order.controller.request.OrderCreateRequest;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
+import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.service.OrderService;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
+import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 import java.math.BigDecimal;
@@ -38,6 +44,8 @@ class OrderControllerTest extends RmaControllerTest {
     @MockBean
     private OrderDomainToOrderResponseMapper orderDomainToOrderResponseMapper;
 
+    @MockBean
+    private static final OrderCreateRequestToCommandMapper orderCreateRequestToCommandMapper = OrderCreateRequestToCommandMapper.INSTANCE;
 
     @Test
     void givenOrderCreateRequest_whenCreateOrder_thenReturnsSuccess() throws Exception {
@@ -125,5 +133,106 @@ class OrderControllerTest extends RmaControllerTest {
         Mockito.verify(orderService, Mockito.times(1))
                 .createOrder(Mockito.any(OrderCreateCommand.class));
     }
+
+    @Test
+    void givenInvalidMergeId_whenCreateOrder_thenBadRequest() throws Exception {
+        // Given
+        ProductEntity productEntity1 = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .categoryId(1L)
+                .name("Product 1")
+                .price(BigDecimal.valueOf(100))
+                .build();
+
+        List<OrderCreateRequest.ProductItem> productItems = List.of(
+                new OrderCreateRequest.ProductItem(productEntity1.getId(), 2)
+        );
+
+        // When
+        OrderCreateRequest mockOrderRequest = new OrderCreateRequest(null, productItems);
+
+        OrderCreateCommand mockOrderCreateCommand = orderCreateRequestToCommandMapper.map(mockOrderRequest);
+
+        Mockito.doThrow(new DiningTableNotFoundException()).when(orderService)
+                .createOrder(mockOrderCreateCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mockOrderRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verifyNoInteractions(orderService);
+    }
+
+    @Test
+    void givenInvalidProductId_whenCreateOrder_thenNotFound() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        String invalidProductId = UUID.randomUUID().toString();
+
+        List<OrderCreateRequest.ProductItem> productItems = List.of(
+                new OrderCreateRequest.ProductItem(invalidProductId, 2)
+        );
+
+        // When
+        OrderCreateRequest mockOrderRequest = new OrderCreateRequest(mergeId, productItems);
+
+        OrderCreateCommand mockOrderCreateCommand = orderCreateRequestToCommandMapper.map(mockOrderRequest);
+
+        Mockito.doThrow(new ProductNotFoundException()).when(orderService)
+                .createOrder(mockOrderCreateCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mockOrderRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(orderService).createOrder(mockOrderCreateCommand);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {
+            -1,
+            0,
+    })
+    void givenInvalidProductQuantity_whenCreateOrder_thenBadRequest(int quantity) throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        ProductEntity productEntity1 = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .categoryId(1L)
+                .name("Product 1")
+                .price(BigDecimal.valueOf(100))
+                .build();
+
+        List<OrderCreateRequest.ProductItem> productItems = List.of(
+                new OrderCreateRequest.ProductItem(productEntity1.getId(), quantity)
+        );
+
+        // When
+        OrderCreateRequest mockOrderRequest = new OrderCreateRequest(mergeId, productItems);
+
+        OrderCreateCommand mockOrderCreateCommand = orderCreateRequestToCommandMapper.map(mockOrderRequest);
+
+        Mockito.doThrow(new InvalidItemQuantityException()).when(orderService)
+                .createOrder(mockOrderCreateCommand);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(mockOrderRequest)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        // Verify
+        Mockito.verify(orderService).createOrder(mockOrderCreateCommand);
+    }
+
 
 }
