@@ -58,7 +58,7 @@ create table if not exists rm_order
     id                    varchar(36)
         constraint pk__rm_order__id primary key,
     dining_table_merge_id varchar(36)    not null,
-    order_status          varchar(5)     not null
+    order_status          varchar(15)     not null
         constraint c__rm_order__order_status check (order_status in ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELED')),
     total_amount          numeric(50, 8) not null,
     created_at            timestamp(3)   not null,
