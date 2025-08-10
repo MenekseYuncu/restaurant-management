@@ -144,7 +144,7 @@ class ProductEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
         // Given
         Product product = Product.builder()
                 .categoryId(1L)
-                .name("Test")
+                .name("Test1")
                 .ingredient("ingredients")
                 .status(ProductStatus.ACTIVE)
                 .price(BigDecimal.valueOf(100))
