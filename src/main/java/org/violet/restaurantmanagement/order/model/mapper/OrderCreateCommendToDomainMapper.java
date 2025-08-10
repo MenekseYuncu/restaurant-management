@@ -6,7 +6,7 @@ import org.violet.restaurantmanagement.common.model.mapper.BaseMapper;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface OrderCreateCommendToDomainMapper extends BaseMapper<OrderCreateCommand, Order> {
 
     OrderCreateCommendToDomainMapper INSTANCE = Mappers.getMapper(OrderCreateCommendToDomainMapper.class);

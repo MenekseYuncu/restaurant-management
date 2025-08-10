@@ -1,16 +1,13 @@
 package org.violet.restaurantmanagement.order.controller.mapper;
 
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.violet.restaurantmanagement.common.model.mapper.BaseMapper;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class OrderItemToProductResponseMapper implements BaseMapper<OrderResponse.OrderProductResponse, OrderItem> {
 
     @Autowired
