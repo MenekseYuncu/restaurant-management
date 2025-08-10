@@ -41,4 +41,8 @@ public class OrderEntity extends BaseEntity {
 
     @Column(name = "total_amount")
     private BigDecimal totalAmount;
+
+    public void cancel() {
+        this.status = OrderStatus.CANCELED;
+    }
 }

@@ -6,6 +6,7 @@ import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFo
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
 import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
 import org.violet.restaurantmanagement.order.exceptions.MergeIdNotFoundException;
+import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.model.mapper.OrderDomainToEntityMapper;
@@ -19,6 +20,7 @@ import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
+import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
@@ -130,7 +132,18 @@ class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void cancelOrder(String id) {
+    public void cancelOrder(final String id) {
+        OrderEntity order = orderRepository.findById(id)
+                .orElseThrow(OrderNotFoundException::new);
 
+        this.checkExistingStatus(order.getStatus());
+        order.cancel();
+        orderRepository.save(order);
+    }
+
+    private void checkExistingStatus(OrderStatus currentStatus) {
+        if (currentStatus == OrderStatus.CANCELED) {
+            throw new ProductStatusAlreadyChanged();
+        }
     }
 }
