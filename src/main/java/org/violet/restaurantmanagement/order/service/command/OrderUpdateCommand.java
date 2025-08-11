@@ -1,11 +1,9 @@
 package org.violet.restaurantmanagement.order.service.command;
 
-
 import java.util.List;
 
-public record OrderCreateCommand(
+public record OrderUpdateCommand(
 
-        String mergeId,
         List<ProductItem> products
 
 ) {

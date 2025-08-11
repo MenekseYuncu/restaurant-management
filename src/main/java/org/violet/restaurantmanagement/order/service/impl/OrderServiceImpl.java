@@ -7,9 +7,11 @@ import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepos
 import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
 import org.violet.restaurantmanagement.order.exceptions.MergeIdNotFoundException;
 import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
+import org.violet.restaurantmanagement.order.exceptions.OrderUpdateNotAllowedException;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.model.mapper.OrderDomainToEntityMapper;
+import org.violet.restaurantmanagement.order.model.mapper.OrderEntityToDomainMapper;
 import org.violet.restaurantmanagement.order.model.mapper.OrderItemDomainToEntityMapper;
 import org.violet.restaurantmanagement.order.repository.OrderItemRepository;
 import org.violet.restaurantmanagement.order.repository.OrderRepository;
@@ -17,6 +19,8 @@ import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
 import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
 import org.violet.restaurantmanagement.order.service.OrderService;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
+import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
+import org.violet.restaurantmanagement.order.service.command.ProductLine;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
@@ -34,7 +38,7 @@ class OrderServiceImpl implements OrderService {
 
     private static final OrderDomainToEntityMapper orderDomainToEntityMapper = OrderDomainToEntityMapper.INSTANCE;
     private static final OrderItemDomainToEntityMapper orderItemDomainToEntityMapper = OrderItemDomainToEntityMapper.INSTANCE;
-
+    private static final OrderEntityToDomainMapper orderEntityToDomainMapper = OrderEntityToDomainMapper.INSTANCE;
     private final OrderRepository orderRepository;
     private final DiningTableRepository diningTableRepository;
     private final ProductRepository productRepository;
@@ -69,24 +73,59 @@ class OrderServiceImpl implements OrderService {
         return order;
     }
 
-    private List<OrderItem> createOrderItems(final List<OrderCreateCommand.ProductItem> productItems) {
-        return productItems.stream()
-                .map(item -> {
-                    ProductEntity product = productRepository.findById(item.productId())
-                            .orElseThrow(ProductNotFoundException::new);
+    @Override
+    public Order updateOrder(final String id, final OrderUpdateCommand updateCommand) {
+        OrderEntity existingOrder = orderRepository.findById(id)
+                .orElseThrow(OrderNotFoundException::new);
 
-                    if (item.quantity() < 1) {
-                        throw new InvalidItemQuantityException();
-                    }
+        if (existingOrder.getStatus() == OrderStatus.CANCELED ||
+                existingOrder.getStatus() == OrderStatus.COMPLETED) {
+            throw new OrderUpdateNotAllowedException();
+        }
 
-                    return OrderItem.builder()
-                            .productId(product.getId())
-                            .price(product.getPrice())
-                            .quantity(item.quantity())
-                            .status(OrderItemStatus.PREPARING)
-                            .build();
-                })
+        this.validateProducts(updateCommand.products());
+
+        if (updateCommand.products().isEmpty()) {
+            throw new ProductNotFoundException();
+        }
+
+        List<OrderItem> newItems = this.createOrderItems(updateCommand.products());
+
+        BigDecimal newItemsTotal = calculateTotalPrice(newItems);
+        BigDecimal currentTotal = existingOrder.getTotalAmount() != null
+                ? existingOrder.getTotalAmount()
+                : BigDecimal.ZERO;
+
+        existingOrder.setTotalAmount(currentTotal.add(newItemsTotal));
+
+        this.saveOrderItems(newItems, id);
+
+        OrderEntity saved = orderRepository.save(existingOrder);
+
+        OrderEntity orderWithItems = orderRepository.findByIdWithItems(saved.getId())
+                .orElseThrow(OrderNotFoundException::new);
+
+        return orderEntityToDomainMapper.map(orderWithItems);
+    }
+
+    private List<OrderItem> createOrderItems(final List<? extends ProductLine> items) {
+        return items.stream()
+                .map(this::toOrderItem)
                 .toList();
+    }
+
+    private OrderItem toOrderItem(ProductLine line) {
+        if (line.quantity() < 1) throw new InvalidItemQuantityException();
+
+        ProductEntity product = productRepository.findById(line.id())
+                .orElseThrow(ProductNotFoundException::new);
+
+        return OrderItem.builder()
+                .productId(product.getId())
+                .price(product.getPrice())
+                .quantity(line.quantity())
+                .status(OrderItemStatus.PREPARING)
+                .build();
     }
 
     private void saveOrderItems(final List<OrderItem> orderItems,
@@ -95,7 +134,7 @@ class OrderServiceImpl implements OrderService {
         List<OrderItemEntity> itemEntities = orderItems.stream()
                 .map(item -> {
                     OrderItemEntity entity = orderItemDomainToEntityMapper.map(item);
-                    entity.setOrderId(orderId);
+                    entity.setOrder(OrderEntity.builder().id(orderId).build());
                     return entity;
                 })
                 .toList();
@@ -113,13 +152,9 @@ class OrderServiceImpl implements OrderService {
         }
     }
 
-    private void validateProducts(final List<OrderCreateCommand.ProductItem> productItems) {
-        productItems.forEach(item -> {
-            boolean productExists = productRepository.existsByIdAndStatusNot(
-                    item.productId(),
-                    ProductStatus.DELETED
-            );
-            if (!productExists) {
+    private void validateProducts(final List<? extends ProductLine> items) {
+        items.forEach(line -> {
+            if (!productRepository.existsByIdAndStatusNot(line.id(), ProductStatus.DELETED)) {
                 throw new ProductNotFoundException();
             }
         });

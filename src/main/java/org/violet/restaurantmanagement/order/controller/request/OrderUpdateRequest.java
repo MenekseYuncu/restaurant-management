@@ -1,26 +1,22 @@
 package org.violet.restaurantmanagement.order.controller.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import org.violet.restaurantmanagement.order.service.command.ProductLine;
 
 import java.util.List;
 
-public record OrderCreateRequest(
+public record OrderUpdateRequest(
 
-        @NotNull
-        String mergeId,
-
-        List<ProductItem> products
+        List<@Valid ProductItem> products
 ) {
     public record ProductItem(
             @NotNull
             String id,
 
-            @NotNull
-            @Min(1)
+            @NotNull @Min(1)
             Integer quantity
-    ) implements ProductLine {
-
+    ) {
     }
 }
+
