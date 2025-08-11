@@ -65,13 +65,24 @@ class OrderServiceImpl implements OrderService {
                 .items(orderItems)
                 .build();
 
-        OrderEntity savedOrder = orderRepository.save(orderDomainToEntityMapper.map(order));
+        OrderEntity orderEntity = orderDomainToEntityMapper.map(order);
+
+        List<OrderItemEntity> itemEntities = orderItems.stream()
+                .map(orderItemDomainToEntityMapper::map)
+                .peek(e -> e.setOrder(orderEntity))
+                .toList();
+
+        orderEntity.getItems().clear();
+        orderEntity.getItems().addAll(itemEntities);
+
+        OrderEntity savedOrder = orderRepository.save(orderEntity);
+
         order.setId(savedOrder.getId());
         order.setCreatedAt(savedOrder.getCreatedAt());
-        this.saveOrderItems(orderItems, savedOrder.getId());
 
         return order;
     }
+
 
     @Override
     public Order updateOrder(final String id, final OrderUpdateCommand updateCommand) {
@@ -128,15 +139,12 @@ class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    private void saveOrderItems(final List<OrderItem> orderItems,
-                                final String orderId
-    ) {
+    private void saveOrderItems(final List<OrderItem> orderItems, final String orderId) {
+        OrderEntity orderRef = orderRepository.getReferenceById(orderId);
+
         List<OrderItemEntity> itemEntities = orderItems.stream()
-                .map(item -> {
-                    OrderItemEntity entity = orderItemDomainToEntityMapper.map(item);
-                    entity.setOrder(OrderEntity.builder().id(orderId).build());
-                    return entity;
-                })
+                .map(orderItemDomainToEntityMapper::map)
+                .peek(e -> e.setOrder(orderRef))
                 .toList();
 
         orderItemRepository.saveAll(itemEntities);
@@ -166,6 +174,7 @@ class OrderServiceImpl implements OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+
     @Override
     public void cancelOrder(final String id) {
         OrderEntity order = orderRepository.findById(id)
@@ -176,7 +185,7 @@ class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
     }
 
-    private void checkExistingStatus(OrderStatus currentStatus) {
+    private void checkExistingStatus(final OrderStatus currentStatus) {
         if (currentStatus == OrderStatus.CANCELED) {
             throw new ProductStatusAlreadyChanged();
         }

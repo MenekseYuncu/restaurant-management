@@ -22,13 +22,20 @@ public class OrderItemEntity extends BaseEntity {
     @Column(name = "id")
     private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
+    @Column(name = "order_id", insertable = false, updatable = false)
+    private String orderId;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", referencedColumnName = "id", insertable = false, updatable = false)
     private ProductEntity product;
+
+    @Column(name = "product_id")
+    private String productId;
 
     @Column(name = "price")
     private BigDecimal price;

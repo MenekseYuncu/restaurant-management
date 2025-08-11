@@ -1,6 +1,7 @@
 package org.violet.restaurantmanagement.order.controller.request;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.violet.restaurantmanagement.order.service.command.ProductLine;
 
@@ -14,7 +15,7 @@ public record OrderCreateRequest(
         List<ProductItem> products
 ) {
     public record ProductItem(
-            @NotNull
+            @NotBlank
             String id,
 
             @NotNull
