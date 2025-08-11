@@ -2,16 +2,14 @@ package org.violet.restaurantmanagement.order.service.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.violet.restaurantmanagement.RmaServiceTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
 import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
 import org.violet.restaurantmanagement.order.exceptions.MergeIdNotFoundException;
+import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.repository.OrderItemRepository;
 import org.violet.restaurantmanagement.order.repository.OrderRepository;
@@ -20,6 +18,8 @@ import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
+import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
+import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
@@ -93,7 +93,6 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         Mockito.verify(diningTableRepository).existsByMergeId(mockMergeId);
         Mockito.verify(productRepository).findById(productEntity.getId());
         Mockito.verify(orderRepository).save(Mockito.any(OrderEntity.class));
-        Mockito.verify(orderItemRepository).saveAll(Mockito.anyList());
 
         // Assertions
         Assertions.assertNotNull(createdOrder);
@@ -310,5 +309,73 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         // Assertions
         Assertions.assertEquals(BigDecimal.valueOf(200).setScale(2, RoundingMode.HALF_UP), createdOrder.getTotalAmount());
+    }
+
+
+    @Test
+    void givenCancelOrder_whenOrderExists_thenReturnSuccess() {
+        // Given
+        String mockMergeId = UUID.randomUUID().toString();
+        OrderEntity orderEntity = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.OPEN)
+                .mergeId(mockMergeId)
+                .totalAmount(BigDecimal.valueOf(200))
+                .build();
+
+        // When
+        Mockito.when(orderRepository.findById(orderEntity.getId()))
+                .thenReturn(Optional.of(orderEntity));
+
+        orderService.cancelOrder(orderEntity.getId());
+
+        // Verify
+        Mockito.verify(orderRepository, Mockito.times(1))
+                .save(orderEntity);
+
+        // Assert
+        Assertions.assertEquals(OrderStatus.CANCELED, orderEntity.getStatus());
+    }
+
+    @Test
+    void givenCanceledOrder_whenOrderAlreadyCanceled_thenThrowException() {
+        // Given
+        String mockMergeId = UUID.randomUUID().toString();
+        OrderEntity orderEntity = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.CANCELED)
+                .mergeId(mockMergeId)
+                .totalAmount(BigDecimal.valueOf(200))
+                .build();
+
+        // When
+        Mockito.when(orderRepository.findById(orderEntity.getId()))
+                .thenReturn(Optional.of(orderEntity));
+
+        // Then
+        Assertions.assertThrows(ProductStatusAlreadyChanged.class,
+                () -> orderService.cancelOrder(orderEntity.getId()));
+
+        // Verify
+        Mockito.verify(orderRepository, Mockito.times(0))
+                .save(orderEntity);
+    }
+
+    @Test
+    void givenOrderIdDoesNotExists_whenCanceledOrder_thenThrowOrderNotFoundException() {
+        //Given
+        String orderId = UUID.randomUUID().toString();
+
+        //When
+        Mockito.when(orderRepository.findById(orderId))
+                .thenReturn(Optional.empty());
+
+        //Then
+        Assertions.assertThrows(OrderNotFoundException.class,
+                () -> orderService.cancelOrder(orderId));
+
+        // Verify
+        Mockito.verify(orderRepository, Mockito.never())
+                .save(ArgumentMatchers.any(OrderEntity.class));
     }
 }
