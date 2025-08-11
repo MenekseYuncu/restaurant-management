@@ -23,21 +23,18 @@ public class OrderItemEntity extends BaseEntity {
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
-    @Column(name = "order_id")
-    private String orderId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private ProductEntity product;
-
-    @Column(name = "product_id")
-    private String productId;
 
     @Column(name = "price")
     private BigDecimal price;
+
+    @Column(name = "quantity")
+    private Integer quantity;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_item_status", length = 10)
