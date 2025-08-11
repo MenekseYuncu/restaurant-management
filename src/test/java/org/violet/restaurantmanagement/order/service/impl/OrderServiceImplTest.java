@@ -65,7 +65,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         OrderCreateCommand createCommand = new OrderCreateCommand(mockMergeId, List.of(productItem));
 
         OrderItemEntity orderItemEntity = new OrderItemEntity();
-        orderItemEntity.setProductId(productEntity.getId());
+        orderItemEntity.setProduct(ProductEntity.builder().id(productEntity.getId()).build());
 
         OrderEntity orderEntity = OrderEntity.builder()
                 .id(UUID.randomUUID().toString())
@@ -238,9 +238,6 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         Mockito.when(productRepository.existsByIdAndStatusNot(productEntity.getId(), ProductStatus.DELETED))
                 .thenReturn(true);
-
-        Mockito.when(productRepository.findById(productEntity.getId()))
-                .thenReturn(Optional.of(productEntity));
 
         // Then
         Assertions.assertThrows(InvalidItemQuantityException.class,
