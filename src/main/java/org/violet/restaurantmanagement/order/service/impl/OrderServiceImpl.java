@@ -119,7 +119,7 @@ class OrderServiceImpl implements OrderService {
         return orderEntityToDomainMapper.map(orderWithItems);
     }
 
-    private List<OrderItem> createOrderItems(final List<? extends ProductLine> items) {
+    public List<OrderItem> createOrderItems(final List<? extends ProductLine> items) {
         return items.stream()
                 .map(this::toOrderItem)
                 .toList();

@@ -2,7 +2,10 @@ package org.violet.restaurantmanagement.order.service.impl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.violet.restaurantmanagement.RmaServiceTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
@@ -10,22 +13,24 @@ import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepos
 import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
 import org.violet.restaurantmanagement.order.exceptions.MergeIdNotFoundException;
 import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
+import org.violet.restaurantmanagement.order.exceptions.OrderUpdateNotAllowedException;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.repository.OrderItemRepository;
 import org.violet.restaurantmanagement.order.repository.OrderRepository;
 import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
 import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
+import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
-import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -247,7 +252,6 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                 .save(Mockito.any(OrderEntity.class));
     }
 
-
     @Test
     void givenNonexistentDiningTable_whenCreateOrder_thenThrowDiningTableNotFoundException() {
         // Given
@@ -309,6 +313,168 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         // Assertions
         Assertions.assertEquals(BigDecimal.valueOf(200).setScale(2, RoundingMode.HALF_UP), createdOrder.getTotalAmount());
+    }
+
+
+    @Test
+    void givenValidUpdateCommand_whenUpdateOrder_thenSaveOrderWithNewItems() {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity productEntity = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .price(BigDecimal.valueOf(100))
+                .build();
+
+        OrderEntity existingOrder = OrderEntity.builder()
+                .id(orderId)
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(200))
+                .items(new ArrayList<>())
+                .build();
+
+        OrderUpdateCommand.ProductItem productItem = new OrderUpdateCommand.ProductItem(productEntity.getId(), 2);
+        OrderUpdateCommand updateCommand = new OrderUpdateCommand(List.of(productItem));
+
+        OrderEntity updatedOrder = OrderEntity.builder()
+                .id(orderId)
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(400.00))
+                .items(new ArrayList<>())
+                .build();
+
+        // When
+        Mockito.when(orderRepository.findById(orderId))
+                .thenReturn(Optional.of(existingOrder));
+
+        Mockito.when(productRepository.findById(productEntity.getId()))
+                .thenReturn(Optional.of(productEntity));
+
+        Mockito.when(productRepository.existsByIdAndStatusNot(productEntity.getId(), ProductStatus.DELETED))
+                .thenReturn(true);
+
+        Mockito.when(orderRepository.findByIdWithItems(orderId))
+                .thenReturn(Optional.of(updatedOrder));
+
+        Mockito.when(orderRepository.save(Mockito.any(OrderEntity.class)))
+                .thenReturn(updatedOrder);
+
+        Mockito.when(orderItemRepository.saveAll(Mockito.anyList()))
+                .thenReturn(new ArrayList<>());  // Return an empty list or whatever is appropriate
+
+        // Then
+        Order updated = orderService.updateOrder(updatedOrder.getId(), updateCommand);
+
+        // Assertion
+        Assertions.assertEquals(BigDecimal.valueOf(400.00).setScale(2, RoundingMode.HALF_UP),
+                updated.getTotalAmount().setScale(2, RoundingMode.HALF_UP));
+    }
+
+    @Test
+    void givenInvalidOrderId_whenUpdateOrder_thenThrowOrderNotFoundException() {
+        // Given
+        String invalidOrderId = UUID.randomUUID().toString();
+        OrderUpdateCommand updateCommand = new OrderUpdateCommand(List.of());
+
+        Mockito.when(orderRepository.findById(invalidOrderId))
+                .thenReturn(Optional.empty());
+
+        // Then
+        Assertions.assertThrows(OrderNotFoundException.class,
+                () -> orderService.updateOrder(invalidOrderId, updateCommand));
+    }
+
+    @Test
+    void givenCompletedOrder_whenUpdateOrder_thenThrowOrderUpdateNotAllowedException() {
+        // Given
+        OrderEntity completedOrder = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.COMPLETED)
+                .totalAmount(BigDecimal.valueOf(300))
+                .build();
+
+        OrderUpdateCommand.ProductItem productItem = new OrderUpdateCommand.ProductItem(UUID.randomUUID().toString(), 1);
+        OrderUpdateCommand updateCommand = new OrderUpdateCommand(List.of(productItem));
+
+        Mockito.when(orderRepository.findById(completedOrder.getId()))
+                .thenReturn(Optional.of(completedOrder));
+
+        // Then
+        Assertions.assertThrows(OrderUpdateNotAllowedException.class,
+                () -> orderService.updateOrder(completedOrder.getId(), updateCommand));
+    }
+
+    @Test
+    void givenEmptyProductList_whenUpdateOrder_thenThrowProductNotFoundException() {
+        // Given
+        OrderEntity existingOrder = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(300))
+                .build();
+
+        OrderUpdateCommand updateCommand = new OrderUpdateCommand(List.of());
+
+        Mockito.when(orderRepository.findById(existingOrder.getId()))
+                .thenReturn(Optional.of(existingOrder));
+
+        // Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> orderService.updateOrder(existingOrder.getId(), updateCommand));
+    }
+
+    @Test
+    void givenInvalidProductQuantity_whenUpdateOrder_thenThrowInvalidItemQuantityException() {
+        // Given
+        ProductEntity productEntity = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .price(BigDecimal.valueOf(100))
+                .build();
+
+        OrderEntity existingOrder = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(300))
+                .build();
+
+        OrderUpdateCommand.ProductItem productItem = new OrderUpdateCommand.ProductItem(productEntity.getId(), -1);
+        OrderUpdateCommand updateCommand = new OrderUpdateCommand(List.of(productItem));
+
+        // When
+        Mockito.when(productRepository.existsByIdAndStatusNot(productEntity.getId(), ProductStatus.DELETED))
+                .thenReturn(true);
+
+        Mockito.when(orderRepository.findById(existingOrder.getId()))
+                .thenReturn(Optional.of(existingOrder));
+
+        // Assertion
+        Assertions.assertThrows(InvalidItemQuantityException.class,
+                () -> orderService.updateOrder(existingOrder.getId(), updateCommand));
+    }
+
+    @Test
+    void givenDeletedProduct_whenUpdateOrder_thenThrowProductNotFoundException() {
+        // Given
+        OrderEntity existingOrder = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(300))
+                .build();
+
+        String deletedProductId = UUID.randomUUID().toString();
+
+        OrderUpdateCommand.ProductItem productItem = new OrderUpdateCommand.ProductItem(deletedProductId, 1);
+        OrderUpdateCommand updateCommand = new OrderUpdateCommand(List.of(productItem));
+
+        // When
+        Mockito.when(orderRepository.findById(existingOrder.getId()))
+                .thenReturn(Optional.of(existingOrder));
+
+        Mockito.when(productRepository.existsByIdAndStatusNot(deletedProductId, ProductStatus.DELETED))
+                .thenReturn(false);
+
+        // Assertion
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> orderService.updateOrder(existingOrder.getId(), updateCommand));
     }
 
 
