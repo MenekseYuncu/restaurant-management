@@ -8,12 +8,15 @@ import org.springframework.web.bind.annotation.*;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderDomainToOrderResponseMapper;
+import org.violet.restaurantmanagement.order.controller.mapper.OrderRemoveItemRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.request.OrderCreateRequest;
+import org.violet.restaurantmanagement.order.controller.request.OrderRemoveItemRequest;
 import org.violet.restaurantmanagement.order.controller.request.OrderUpdateRequest;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
 import org.violet.restaurantmanagement.order.service.OrderService;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
+import org.violet.restaurantmanagement.order.service.command.OrderRemoveItemCommand;
 import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 
@@ -25,6 +28,7 @@ class OrderController {
 
     private final OrderCreateRequestToCommandMapper orderCreateRequestToCommandMapper;
     private final OrderUpdateRequestToCommandMapper orderUpdateRequestToCommandMapper;
+    private final OrderRemoveItemRequestToCommandMapper orderRemoveItemRequestToCommandMapper;
     private final OrderDomainToOrderResponseMapper orderDomainToOrderResponseMapper;
     private final OrderService orderService;
 
@@ -45,6 +49,17 @@ class OrderController {
     ) {
         OrderUpdateCommand updateCommand = orderUpdateRequestToCommandMapper.map(requests);
         Order order = orderService.updateOrder(id, updateCommand);
+        OrderResponse response = orderDomainToOrderResponseMapper.map(order);
+        return BaseResponse.successOf(response);
+    }
+
+    @PutMapping("/{id}/remove")
+    public BaseResponse<OrderResponse> removeOrderItem(
+            @PathVariable String id,
+            @Valid @RequestBody OrderRemoveItemRequest requests
+    ) {
+        OrderRemoveItemCommand removeItemCommand = orderRemoveItemRequestToCommandMapper.map(requests);
+        Order order = orderService.removeItemProductsFromOrder(id, removeItemCommand);
         OrderResponse response = orderDomainToOrderResponseMapper.map(order);
         return BaseResponse.successOf(response);
     }

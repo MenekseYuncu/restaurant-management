@@ -19,6 +19,7 @@ import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
 import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
 import org.violet.restaurantmanagement.order.service.OrderService;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
+import org.violet.restaurantmanagement.order.service.command.OrderRemoveItemCommand;
 import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.command.ProductLine;
 import org.violet.restaurantmanagement.order.service.domain.Order;
@@ -118,6 +119,64 @@ class OrderServiceImpl implements OrderService {
                 .orElseThrow(OrderNotFoundException::new);
 
         return orderEntityToDomainMapper.map(orderWithItems);
+    }
+
+    @Override
+    public Order removeItemProductsFromOrder(final String id, final OrderRemoveItemCommand removeItemCommand) {
+        OrderEntity order = orderRepository.findById(id)
+                .orElseThrow(OrderNotFoundException::new);
+
+        if (order.getStatus() == OrderStatus.CANCELED || order.getStatus() == OrderStatus.COMPLETED) {
+            throw new OrderUpdateNotAllowedException();
+        }
+
+        List<OrderItemEntity> orderItems = orderItemRepository.findOrderItemEntitiesByOrderId(order.getId());
+        if (removeItemCommand.products().isEmpty()) {
+            throw new ProductNotFoundException();
+        }
+
+        for (OrderRemoveItemCommand.ProductItem productItem : removeItemCommand.products()) {
+            this.removeItemFromOrder(orderItems, productItem);
+        }
+
+        List<OrderItemEntity> updatedOrderItems = orderItemRepository.findOrderItemEntitiesByOrderId(order.getId());
+        BigDecimal newTotalAmount = updatedOrderItems.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setTotalAmount(newTotalAmount);
+
+        if (updatedOrderItems.isEmpty()) {
+            order.setStatus(OrderStatus.CANCELED);
+        }
+
+        orderRepository.save(order);
+
+        OrderEntity updatedOrder = orderRepository.findByIdWithItems(order.getId())
+                .orElseThrow(OrderNotFoundException::new);
+
+        return orderEntityToDomainMapper.map(updatedOrder);
+    }
+
+    private void removeItemFromOrder(final List<OrderItemEntity> orderItems, final OrderRemoveItemCommand.ProductItem productItem) {
+        boolean itemFound = false;
+        for (OrderItemEntity orderItem : orderItems) {
+            if (orderItem.getProductId().equals(productItem.id())) {
+                itemFound = true;
+
+                if (orderItem.getQuantity() <= productItem.quantity()) {
+                    orderItemRepository.delete(orderItem);
+                } else {
+                    orderItem.setQuantity(orderItem.getQuantity() - productItem.quantity());
+                    orderItemRepository.save(orderItem);
+                }
+                break;
+            }
+        }
+
+        if (!itemFound) {
+            throw new ProductNotFoundException();
+        }
     }
 
     public List<OrderItem> createOrderItems(final List<? extends ProductLine> items) {
