@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -18,8 +19,10 @@ import org.violet.restaurantmanagement.RmaControllerTest;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderCreateRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderDomainToOrderResponseMapper;
+import org.violet.restaurantmanagement.order.controller.mapper.OrderRemoveItemRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.mapper.OrderUpdateRequestToCommandMapper;
 import org.violet.restaurantmanagement.order.controller.request.OrderCreateRequest;
+import org.violet.restaurantmanagement.order.controller.request.OrderUpdateRequest;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
 import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
 import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
@@ -27,6 +30,7 @@ import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.service.OrderService;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
+import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
@@ -57,6 +61,9 @@ class OrderControllerTest extends RmaControllerTest {
     @MockBean
     private OrderUpdateRequestToCommandMapper orderUpdateRequestToCommandMapper;
 
+    @MockBean
+    private OrderRemoveItemRequestToCommandMapper orderRemoveItemRequestToCommandMapper;
+
 
     @Test
     void givenOrderCreateRequest_whenCreateOrder_thenReturnsSuccess() throws Exception {
@@ -80,10 +87,10 @@ class OrderControllerTest extends RmaControllerTest {
                 new OrderCreateRequest.ProductItem(productEntity1.getId(), 2),
                 new OrderCreateRequest.ProductItem(productEntity2.getId(), 1)
         );
+
         OrderCreateRequest mockOrderRequest = new OrderCreateRequest(mergeId, productItems);
-
-
         OrderCreateCommand command = new OrderCreateCommand(mergeId, null);
+
         Mockito.when(orderCreateRequestToCommandMapper.map(any(OrderCreateRequest.class)))
                 .thenReturn(command);
 
@@ -263,6 +270,193 @@ class OrderControllerTest extends RmaControllerTest {
         Assertions.assertEquals(mergeId, captured.mergeId());
         Assertions.assertEquals(productId, captured.products().getFirst().id());
         Assertions.assertEquals(quantity, captured.products().getFirst().quantity());
+    }
+
+
+    @Test
+    void givenValidUpdateRequest_whenUpdateOrder_thenReturnUpdatedOrder() throws Exception {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity productEntity1 = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .price(BigDecimal.valueOf(100))
+                .name("Product 1")
+                .build();
+        ProductEntity productEntity2 = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .price(BigDecimal.valueOf(150))
+                .name("Product 2")
+                .build();
+
+        // When
+        OrderUpdateRequest.ProductItem productItem = new OrderUpdateRequest.ProductItem(productEntity1.getId(), 1);
+        OrderUpdateRequest updateRequest = new OrderUpdateRequest(List.of(productItem));
+
+        OrderUpdateCommand.ProductItem productItems = new OrderUpdateCommand.ProductItem(productEntity1.getId(), 1);
+        OrderUpdateCommand command = new OrderUpdateCommand(List.of(productItems));
+
+        Mockito.when(orderUpdateRequestToCommandMapper.map(any(OrderUpdateRequest.class)))
+                .thenReturn(command);
+
+        List<OrderItem> orderItems = List.of(
+                OrderItem.builder()
+                        .productId(productEntity1.getId()).quantity(2)
+                        .price(BigDecimal.valueOf(100))
+                        .status(OrderItemStatus.PREPARING).build(),
+                OrderItem.builder()
+                        .productId(productEntity2.getId()).quantity(1)
+                        .price(BigDecimal.valueOf(150))
+                        .status(OrderItemStatus.PREPARING).build()
+        );
+
+        Order mockOrder = new Order(
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                OrderStatus.OPEN,
+                BigDecimal.valueOf(350),
+                orderItems,
+                LocalDateTime.now(),
+                null
+        );
+
+        Mockito.when(orderService.updateOrder(ArgumentMatchers.eq(orderId), any(OrderUpdateCommand.class)))
+                .thenReturn(mockOrder);
+
+        OrderResponse mockOrderResponse = new OrderResponse(
+                mockOrder.getId(),
+                mockOrder.getStatus(),
+                List.of(
+                        new OrderResponse.OrderProductResponse(productEntity1.getId(), productEntity1.getName(), 2, productEntity1.getPrice()),
+                        new OrderResponse.OrderProductResponse(productEntity2.getId(), productEntity2.getName(), 1, productEntity2.getPrice())
+                ),
+                mockOrder.getTotalAmount(),
+                mockOrder.getCreatedAt(),
+                mockOrder.getUpdatedAt()
+        );
+
+        Mockito.when(orderDomainToOrderResponseMapper.map(any(Order.class)))
+                .thenReturn(mockOrderResponse);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(updateRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.orderId").value(mockOrder.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.products.length()").value(2))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.products[0].productId").value(productEntity1.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.products[0].price").value(100.0))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalAmount").value(350.0))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.updatedAt").isEmpty());
+
+        // Verify
+        Mockito.verify(orderService, Mockito.times(1))
+                .updateOrder(ArgumentMatchers.eq(orderId), any(OrderUpdateCommand.class));
+    }
+
+    @Test
+    void givenInvalidOrderId_whenUpdateOrder_thenReturnNotFound() throws Exception {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity productEntity1 = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .price(BigDecimal.valueOf(100))
+                .name("Product 1")
+                .build();
+
+        OrderUpdateRequest.ProductItem productItem = new OrderUpdateRequest.ProductItem(productEntity1.getId(), 1);
+        OrderUpdateRequest updateRequest = new OrderUpdateRequest(List.of(productItem));
+
+        // When
+        OrderUpdateCommand.ProductItem productItems = new OrderUpdateCommand.ProductItem(productEntity1.getId(), 1);
+        OrderUpdateCommand command = new OrderUpdateCommand(List.of(productItems));
+
+        Mockito.when(orderUpdateRequestToCommandMapper.map(any(OrderUpdateRequest.class)))
+                .thenReturn(command);
+
+        Mockito.when(orderService.updateOrder(ArgumentMatchers.eq(orderId), any(OrderUpdateCommand.class)))
+                .thenThrow(new OrderNotFoundException());
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(updateRequest)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("NOT_FOUND"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").value("Order not found"));
+    }
+
+    @Test
+    void givenInvalidProductId_whenUpdateOrder_thenReturnBadRequest() throws Exception {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity invalidProductEntity = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .price(BigDecimal.valueOf(100))
+                .name("Invalid Product")
+                .build();
+
+        // When
+        OrderUpdateRequest.ProductItem invalidProductItem = new OrderUpdateRequest.ProductItem(invalidProductEntity.getId(), 1);
+        OrderUpdateRequest updateRequest = new OrderUpdateRequest(List.of(invalidProductItem));
+
+        Mockito.when(orderUpdateRequestToCommandMapper.map(any(OrderUpdateRequest.class)))
+                .thenThrow(new ProductNotFoundException());
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(updateRequest)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("NOT_FOUND"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").value("Product does not exist"));
+    }
+
+    @Test
+    void givenMissingProductInformation_whenUpdateOrder_thenReturnBadRequest() throws Exception {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+
+        // When
+        OrderUpdateRequest.ProductItem invalidProductItem = new OrderUpdateRequest.ProductItem(null, 1);
+        OrderUpdateRequest updateRequest = new OrderUpdateRequest(List.of(invalidProductItem));
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(updateRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").value("Validation failed"));
+    }
+
+    @Test
+    void givenInvalidProductQuantity_whenUpdateOrder_thenReturnBadRequest() throws Exception {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity productEntity1 = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .price(BigDecimal.valueOf(100))
+                .name("Product 1")
+                .build();
+
+        // When
+        OrderUpdateRequest.ProductItem invalidProductItem = new OrderUpdateRequest.ProductItem(productEntity1.getId(), 0);
+        OrderUpdateRequest updateRequest = new OrderUpdateRequest(List.of(invalidProductItem));
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}", orderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(updateRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").value("Validation failed"));
     }
 
 
