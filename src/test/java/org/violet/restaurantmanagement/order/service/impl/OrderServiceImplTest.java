@@ -327,7 +327,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
         OrderEntity existingOrder = OrderEntity.builder()
                 .id(orderId)
-                .status(OrderStatus.OPEN)
+                .status(OrderStatus.IN_PROGRESS)
                 .totalAmount(BigDecimal.valueOf(200))
                 .items(new ArrayList<>())
                 .build();
@@ -359,7 +359,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                 .thenReturn(updatedOrder);
 
         Mockito.when(orderItemRepository.saveAll(Mockito.anyList()))
-                .thenReturn(new ArrayList<>());  // Return an empty list or whatever is appropriate
+                .thenReturn(new ArrayList<>());
 
         // Then
         Order updated = orderService.updateOrder(updatedOrder.getId(), updateCommand);

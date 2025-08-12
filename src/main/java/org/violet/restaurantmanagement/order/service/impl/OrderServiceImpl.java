@@ -108,6 +108,7 @@ class OrderServiceImpl implements OrderService {
                 : BigDecimal.ZERO;
 
         existingOrder.setTotalAmount(currentTotal.add(newItemsTotal));
+        existingOrder.setStatus(OrderStatus.IN_PROGRESS);
 
         this.saveOrderItems(newItems, id);
 
