@@ -20,6 +20,7 @@ import org.violet.restaurantmanagement.order.repository.OrderRepository;
 import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
 import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
+import org.violet.restaurantmanagement.order.service.command.OrderRemoveItemCommand;
 import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
@@ -30,10 +31,8 @@ import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+
 
 class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
@@ -475,6 +474,208 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         // Assertion
         Assertions.assertThrows(ProductNotFoundException.class,
                 () -> orderService.updateOrder(existingOrder.getId(), updateCommand));
+    }
+
+
+    @Test
+    void givenQuantityGreaterThanRemoved_whenRemoveItemProductsFromOrder_thenUpdateQuantity() {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity productEntity = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .categoryId(1L)
+                .name("Product 1")
+                .price(BigDecimal.valueOf(100))
+                .status(ProductStatus.ACTIVE)
+                .build();
+
+        OrderEntity orderEntity = OrderEntity.builder()
+                .id(orderId)
+                .status(OrderStatus.IN_PROGRESS)
+                .totalAmount(BigDecimal.valueOf(100))
+                .items(new ArrayList<>())
+                .build();
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .productId(productEntity.getId())
+                .price(BigDecimal.TEN)
+                .quantity(2)
+                .order(orderEntity)
+                .build();
+
+        orderEntity.getItems().add(orderItem);
+
+        OrderRemoveItemCommand.ProductItem productItem =
+                new OrderRemoveItemCommand.ProductItem(productEntity.getId(), 1);
+        OrderRemoveItemCommand removeItemCommand = new OrderRemoveItemCommand(List.of(productItem));
+
+        // When
+        Mockito.when(orderRepository.findById(orderId))
+                .thenReturn(Optional.of(orderEntity));
+
+        Mockito.when(orderRepository.findByIdWithItems(orderId))
+                .thenReturn(Optional.of(orderEntity));
+
+        Mockito.when(orderRepository.save(orderEntity))
+                .thenReturn(orderEntity);
+
+        Mockito.when(orderItemRepository.findOrderItemEntitiesByOrderId(orderId))
+                .thenReturn(List.of(orderItem))
+                .thenReturn(List.of(orderItem));
+
+        // Then
+        orderService.removeItemProductsFromOrder(orderId, removeItemCommand);
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(1))
+                .save(Mockito.any(OrderItemEntity.class));
+        Mockito.verify(orderItemRepository, Mockito.never())
+                .delete(Mockito.any(OrderItemEntity.class));
+    }
+
+    @Test
+    void givenQuantityLessOrEqualRemoved_whenRemoveItemProductsFromOrder_thenDeleteItem() {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity productEntity = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .categoryId(1L)
+                .name("Product 1")
+                .price(BigDecimal.valueOf(100))
+                .status(ProductStatus.ACTIVE)
+                .build();
+
+        OrderEntity orderEntity = OrderEntity.builder()
+                .id(orderId)
+                .status(OrderStatus.IN_PROGRESS)
+                .totalAmount(BigDecimal.valueOf(100))
+                .items(new ArrayList<>())
+                .build();
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .productId(productEntity.getId())
+                .price(BigDecimal.TEN)
+                .quantity(1)
+                .order(orderEntity)
+                .build();
+
+        orderEntity.getItems().add(orderItem);
+
+        OrderRemoveItemCommand.ProductItem productItem =
+                new OrderRemoveItemCommand.ProductItem(productEntity.getId(), 1);
+        OrderRemoveItemCommand removeItemCommand = new OrderRemoveItemCommand(List.of(productItem));
+
+        // When
+        Mockito.when(orderRepository.findById(orderId))
+                .thenReturn(Optional.of(orderEntity));
+        Mockito.when(orderRepository.findByIdWithItems(orderId))
+                .thenReturn(Optional.of(orderEntity));
+        Mockito.when(orderRepository.save(orderEntity)).thenReturn(orderEntity);
+        Mockito.when(orderItemRepository.findOrderItemEntitiesByOrderId(orderId))
+                .thenReturn(List.of(orderItem))
+                .thenReturn(Collections.emptyList());
+
+        // Then
+        orderService.removeItemProductsFromOrder(orderId, removeItemCommand);
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(1))
+                .delete(Mockito.any(OrderItemEntity.class));
+        Mockito.verify(orderItemRepository, Mockito.never())
+                .save(Mockito.any(OrderItemEntity.class));
+    }
+
+    @Test
+    void givenInvalidOrderId_whenRemoveItemProductsFromOrder_thenThrowOrderNotFoundException() {
+        // Given
+        String invalidOrderId = UUID.randomUUID().toString();
+        OrderRemoveItemCommand removeItemCommand = new OrderRemoveItemCommand(List.of());
+
+        Mockito.when(orderRepository.findById(invalidOrderId))
+                .thenReturn(Optional.empty());
+
+        // Then
+        Assertions.assertThrows(OrderNotFoundException.class,
+                () -> orderService.removeItemProductsFromOrder(invalidOrderId, removeItemCommand));
+
+        Mockito.verifyNoInteractions(orderItemRepository);
+    }
+
+    @Test
+    void givenCompletedOrder_whenRemoveItemProductsFromOrder_thenThrowOrderUpdateNotAllowedException() {
+        // Given
+        OrderEntity completedOrder = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.COMPLETED)
+                .totalAmount(BigDecimal.valueOf(100))
+                .build();
+
+        OrderRemoveItemCommand removeItemCommand = new OrderRemoveItemCommand(List.of());
+
+        // When
+        Mockito.when(orderRepository.findById(completedOrder.getId())).thenReturn(Optional.of(completedOrder));
+
+        // Then
+        Assertions.assertThrows(OrderUpdateNotAllowedException.class,
+                () -> orderService.removeItemProductsFromOrder(completedOrder.getId(), removeItemCommand));
+    }
+
+    @Test
+    void givenEmptyProductList_whenRemoveItemProductsFromOrder_thenThrowProductNotFoundException() {
+        // Given
+        OrderEntity orderEntity = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(100))
+                .build();
+
+        OrderRemoveItemCommand removeItemCommand = new OrderRemoveItemCommand(List.of());
+
+        // When
+        Mockito.when(orderRepository.findById(orderEntity.getId()))
+                .thenReturn(Optional.of(orderEntity));
+
+        Mockito.when(orderItemRepository.findOrderItemEntitiesByOrderId(orderEntity.getId()))
+                .thenReturn(new ArrayList<>());
+
+        // Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> orderService.removeItemProductsFromOrder(orderEntity.getId(), removeItemCommand));
+
+        Mockito.verify(orderItemRepository, Mockito.times(1))
+                .findOrderItemEntitiesByOrderId(orderEntity.getId());
+    }
+
+    @Test
+    void givenNonexistentProductId_whenRemoveItemProductsFromOrder_thenThrowProductNotFoundException() {
+        // Given
+        String orderId = UUID.randomUUID().toString();
+        OrderEntity orderEntity = OrderEntity.builder()
+                .id(orderId)
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(100))
+                .items(new ArrayList<>())
+                .build();
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .productId(UUID.randomUUID().toString())
+                .price(BigDecimal.TEN)
+                .quantity(1)
+                .build();
+
+        orderEntity.getItems().add(orderItem);
+
+        OrderRemoveItemCommand.ProductItem productItem = new OrderRemoveItemCommand.ProductItem(UUID.randomUUID().toString(), 1);
+        OrderRemoveItemCommand removeItemCommand = new OrderRemoveItemCommand(List.of(productItem));
+
+        Mockito.when(orderRepository.findById(orderId)).thenReturn(Optional.of(orderEntity));
+        Mockito.when(orderItemRepository.findOrderItemEntitiesByOrderId(orderId)).thenReturn(orderEntity.getItems());
+
+        // Then
+        Assertions.assertThrows(ProductNotFoundException.class,
+                () -> orderService.removeItemProductsFromOrder(orderEntity.getId(), removeItemCommand));
     }
 
 

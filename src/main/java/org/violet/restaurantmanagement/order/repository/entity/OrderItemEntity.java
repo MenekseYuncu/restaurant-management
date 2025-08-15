@@ -29,7 +29,6 @@ public class OrderItemEntity extends BaseEntity {
     @Column(name = "order_id", insertable = false, updatable = false)
     private String orderId;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "id", insertable = false, updatable = false)
     private ProductEntity product;
