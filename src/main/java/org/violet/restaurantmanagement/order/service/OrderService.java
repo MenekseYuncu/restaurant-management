@@ -5,7 +5,11 @@ import org.violet.restaurantmanagement.order.service.command.OrderRemoveItemComm
 import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 
+import java.util.List;
+
 public interface OrderService {
+
+    List<Order> getOrdersByMergeId(String mergeId);
 
     Order createOrder(OrderCreateCommand createCommand);
 

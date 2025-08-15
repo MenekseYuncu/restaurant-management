@@ -6,19 +6,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.violet.restaurantmanagement.common.controller.response.BaseResponse;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderCreateRequestToCommandMapper;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderDomainToOrderResponseMapper;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderRemoveItemRequestToCommandMapper;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderUpdateRequestToCommandMapper;
+import org.violet.restaurantmanagement.order.controller.mapper.*;
 import org.violet.restaurantmanagement.order.controller.request.OrderCreateRequest;
 import org.violet.restaurantmanagement.order.controller.request.OrderRemoveItemRequest;
 import org.violet.restaurantmanagement.order.controller.request.OrderUpdateRequest;
+import org.violet.restaurantmanagement.order.controller.response.OrderListResponse;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
 import org.violet.restaurantmanagement.order.service.OrderService;
 import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
 import org.violet.restaurantmanagement.order.service.command.OrderRemoveItemCommand;
 import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
+
+import java.util.List;
 
 @Validated
 @RestController
@@ -30,7 +30,22 @@ class OrderController {
     private final OrderUpdateRequestToCommandMapper orderUpdateRequestToCommandMapper;
     private final OrderRemoveItemRequestToCommandMapper orderRemoveItemRequestToCommandMapper;
     private final OrderDomainToOrderResponseMapper orderDomainToOrderResponseMapper;
+    private final OrderDomainToOrderListResponseMapper orderListResponseMapper;
+
     private final OrderService orderService;
+
+    @GetMapping("/{mergeId}")
+    public BaseResponse<List<OrderListResponse>> getOrders(
+            @PathVariable String mergeId
+    ) {
+        List<Order> orders = orderService.getOrdersByMergeId(mergeId);
+
+        List<OrderListResponse> responseList = orders.stream()
+                .map(orderListResponseMapper::map)
+                .toList();
+
+        return BaseResponse.successOf(responseList);
+    }
 
     @PostMapping
     public BaseResponse<OrderResponse> createOrder(

@@ -29,7 +29,7 @@ public class Order {
         private OrderBuilder() {
         }
 
-        public OrderBuilder price(BigDecimal totalAmount) {
+        public OrderBuilder totalAmount(BigDecimal totalAmount) {
             this.totalAmount = totalAmount.setScale(2, RoundingMode.HALF_UP);
             return this;
         }

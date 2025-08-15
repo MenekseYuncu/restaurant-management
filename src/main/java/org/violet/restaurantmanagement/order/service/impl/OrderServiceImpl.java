@@ -31,6 +31,7 @@ import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -44,6 +45,17 @@ class OrderServiceImpl implements OrderService {
     private final DiningTableRepository diningTableRepository;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+
+    @Override
+    public List<Order> getOrdersByMergeId(String mergeId) {
+        this.checkExistingDiningTable(mergeId);
+
+        List<OrderEntity> orders = orderRepository.findAllByMergeIdOrderByCreatedAtDesc(mergeId);
+
+        return orders.stream()
+                .map(orderEntityToDomainMapper::map)
+               .toList();
+    }
 
     @Override
     public Order createOrder(final OrderCreateCommand createCommand) {
@@ -62,7 +74,7 @@ class OrderServiceImpl implements OrderService {
         Order order = Order.builder()
                 .mergeId(createCommand.mergeId())
                 .status(OrderStatus.OPEN)
-                .price(totalPrice)
+                .totalAmount(totalPrice)
                 .items(orderItems)
                 .build();
 
@@ -231,7 +243,8 @@ class OrderServiceImpl implements OrderService {
     private BigDecimal calculateTotalPrice(final List<OrderItem> items) {
         return items.stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
 
