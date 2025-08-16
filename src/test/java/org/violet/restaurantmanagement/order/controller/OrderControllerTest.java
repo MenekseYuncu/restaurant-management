@@ -18,13 +18,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.violet.restaurantmanagement.RmaControllerTest;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderCreateRequestToCommandMapper;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderDomainToOrderResponseMapper;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderRemoveItemRequestToCommandMapper;
-import org.violet.restaurantmanagement.order.controller.mapper.OrderUpdateRequestToCommandMapper;
+import org.violet.restaurantmanagement.order.controller.mapper.*;
 import org.violet.restaurantmanagement.order.controller.request.OrderCreateRequest;
 import org.violet.restaurantmanagement.order.controller.request.OrderRemoveItemRequest;
 import org.violet.restaurantmanagement.order.controller.request.OrderUpdateRequest;
+import org.violet.restaurantmanagement.order.controller.response.OrderListResponse;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
 import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
 import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
@@ -66,6 +64,117 @@ class OrderControllerTest extends RmaControllerTest {
 
     @MockBean
     private OrderRemoveItemRequestToCommandMapper orderRemoveItemRequestToCommandMapper;
+
+    @MockBean
+    private OrderDomainToOrderListResponseMapper orderListResponseMapper;
+
+    @Test
+    void givenValidMergeId_whenGetOrders_thenReturnOrderList() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        String orderId1 = UUID.randomUUID().toString();
+        String orderId2 = UUID.randomUUID().toString();
+
+        // Mock orders
+        Order mockOrder1 = Order.builder()
+                .id(orderId1)
+                .mergeId(mergeId)
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(350))
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        Order mockOrder2 = Order.builder()
+                .id(orderId2)
+                .mergeId(mergeId)
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(100))
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        List<Order> orders = List.of(mockOrder1, mockOrder2);
+
+        List<OrderListResponse> responseList = List.of(
+                new OrderListResponse(
+                        mockOrder1.getId(),
+                        mockOrder1.getStatus(),
+                        List.of(new OrderListResponse.OrderProductResponse(
+                                UUID.randomUUID().toString(),
+                                "Product 1",
+                                OrderItemStatus.PREPARING,
+                                2,
+                                BigDecimal.valueOf(100)
+                        )),
+                        mockOrder1.getTotalAmount(),
+                        mockOrder1.getCreatedAt(),
+                        mockOrder1.getUpdatedAt()
+                ),
+                new OrderListResponse(
+                        mockOrder2.getId(),
+                        mockOrder2.getStatus(),
+                        List.of(new OrderListResponse.OrderProductResponse(
+                                UUID.randomUUID().toString(),
+                                "Product 2",
+                                OrderItemStatus.PREPARING,
+                                1,
+                                BigDecimal.valueOf(100)
+                        )),
+                        mockOrder2.getTotalAmount(),
+                        mockOrder2.getCreatedAt(),
+                        mockOrder2.getUpdatedAt()
+                )
+        );
+
+        // When
+        Mockito.when(orderService.getOrdersByMergeId(mergeId)).thenReturn(orders);
+        Mockito.when(orderListResponseMapper.map(Mockito.any(Order.class))).thenAnswer(invocation -> {
+            Order order = invocation.getArgument(0);
+            return responseList.stream()
+                    .filter(response -> response.orderId().equals(order.getId()))
+                    .findFirst()
+                    .orElse(null);
+        });
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{mergeId}", mergeId))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.length()").value(2))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response[0].orderId").value(mockOrder1.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response[0].products.length()").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response[0].products[0].productName").value("Product 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response[1].orderId").value(mockOrder2.getId()));
+    }
+
+    @Test
+    void givenNonExistentMergeId_whenGetOrders_thenReturnEmptyList() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+
+        // Mock empty orders
+        Mockito.when(orderService.getOrdersByMergeId(mergeId)).thenReturn(List.of());
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{mergeId}", mergeId))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.length()").value(0));
+    }
+
+    @Test
+    void givenNullMergeId_whenGetOrders_thenReturnBadRequest() throws Exception {
+        // Given
+        String mergeId = "";
+
+        // When
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{mergeId}", mergeId))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
 
 
     @Test
