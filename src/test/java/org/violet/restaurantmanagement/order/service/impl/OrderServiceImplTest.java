@@ -10,11 +10,9 @@ import org.violet.restaurantmanagement.RmaServiceTest;
 import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
-import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
-import org.violet.restaurantmanagement.order.exceptions.MergeIdNotFoundException;
-import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
-import org.violet.restaurantmanagement.order.exceptions.OrderUpdateNotAllowedException;
+import org.violet.restaurantmanagement.order.exceptions.*;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
+import org.violet.restaurantmanagement.order.model.mapper.OrderDomainToEntityMapper;
 import org.violet.restaurantmanagement.order.repository.OrderItemRepository;
 import org.violet.restaurantmanagement.order.repository.OrderRepository;
 import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
@@ -31,6 +29,7 @@ import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -50,6 +49,9 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
     @Mock
     private OrderItemRepository orderItemRepository;
+
+    @Mock
+    private OrderDomainToEntityMapper orderDomainToEntityMapper;
 
 
     @Test
@@ -839,4 +841,66 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         Mockito.verify(orderRepository, Mockito.never())
                 .save(ArgumentMatchers.any(OrderEntity.class));
     }
+
+    @Test
+    void givenCanceledOrdersOlderThan7Days_whenDeleteCanceledOrders_thenOrdersAreDeleted() {
+        // Given
+        OrderEntity canceledOrder = new OrderEntity();
+
+        Order canceledOrders = Order.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.CANCELED)
+                .updatedAt(LocalDateTime.now().minusDays(8))
+                .build();
+
+        orderDomainToEntityMapper.map(canceledOrders);
+
+        Mockito.when(orderRepository.findAllCanceledOrdersOlderThan7Days(Mockito.any()))
+                .thenReturn(List.of(canceledOrder));
+
+        // When
+        Assertions.assertDoesNotThrow(() -> orderService.deleteCanceledOrders());
+
+        // Verify
+        Mockito.verify(orderRepository, Mockito.times(1))
+                .delete(canceledOrder);
+    }
+
+    @Test
+    void givenNoCanceledOrdersOlderThan7Days_whenDeleteCanceledOrders_thenDoNothing() {
+        // Given
+        Mockito.when(orderRepository.findAllCanceledOrdersOlderThan7Days(Mockito.any()))
+                .thenReturn(Collections.emptyList());
+
+        // When
+        Assertions.assertDoesNotThrow(() -> orderService.deleteCanceledOrders());
+
+        // Verify
+        Mockito.verify(orderRepository, Mockito.times(0))
+                .delete(Mockito.any(OrderEntity.class));
+    }
+
+    @Test
+    void givenExceptionDuringDeletion_whenDeleteCanceledOrders_thenThrowOrderDeletionException() {
+        // Given
+        OrderEntity canceledOrder = OrderEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .status(OrderStatus.CANCELED)
+                .build();
+
+        Mockito.when(orderRepository.findAllCanceledOrdersOlderThan7Days(Mockito.any()))
+                .thenReturn(List.of(canceledOrder));
+
+        Mockito.doThrow(RuntimeException.class)
+                .when(orderRepository).delete(Mockito.any(OrderEntity.class));
+
+        // Then
+        Assertions.assertThrows(OrderDeletionException.class,
+                () -> orderService.deleteCanceledOrders());
+
+        // Verify
+        Mockito.verify(orderRepository, Mockito.times(1))
+                .delete(canceledOrder);
+    }
+
 }
