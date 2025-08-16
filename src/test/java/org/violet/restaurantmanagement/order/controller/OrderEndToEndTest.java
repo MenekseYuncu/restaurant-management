@@ -14,6 +14,7 @@ import org.violet.restaurantmanagement.dining_tables.model.enums.DiningTableStat
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
 import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 import org.violet.restaurantmanagement.order.controller.request.OrderCreateRequest;
+import org.violet.restaurantmanagement.order.controller.request.OrderRemoveItemRequest;
 import org.violet.restaurantmanagement.order.controller.request.OrderUpdateRequest;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
@@ -21,6 +22,7 @@ import org.violet.restaurantmanagement.order.model.mapper.OrderItemDomainToEntit
 import org.violet.restaurantmanagement.order.repository.OrderItemRepository;
 import org.violet.restaurantmanagement.order.repository.OrderRepository;
 import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
+import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
 import org.violet.restaurantmanagement.product.model.enums.ExtentType;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
@@ -67,7 +69,7 @@ class OrderEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
         ProductEntity product = productRepository.save(
                 ProductEntity.builder()
                         .categoryId(1L)
-                        .name("Test")
+                        .name("Product Test")
                         .ingredient("ingredients")
                         .status(ProductStatus.ACTIVE)
                         .price(BigDecimal.valueOf(100))
@@ -176,6 +178,81 @@ class OrderEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
         OrderEntity updatedOrder = updatedOrderOpt.get();
         Assertions.assertNotNull(updatedOrder.getUpdatedAt());
         Assertions.assertEquals(OrderStatus.IN_PROGRESS, updatedOrder.getStatus());
+    }
+
+
+    @Test
+    void givenValidOrderRemoveItemRequest_whenRemoveItemProductFromOrder_thenUpdateQuantity() throws Exception {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+
+        DiningTableEntity table = diningTableRepository.save(
+                DiningTableEntity.builder()
+                        .mergeId(mergeId)
+                        .status(DiningTableStatus.VACANT)
+                        .size(2)
+                        .build()
+        );
+
+        ProductEntity product1 = productRepository.save(
+                ProductEntity.builder()
+                        .categoryId(1L)
+                        .name("Test")
+                        .ingredient("ingredients")
+                        .status(ProductStatus.ACTIVE)
+                        .price(BigDecimal.valueOf(100))
+                        .extent(100)
+                        .extentType(ExtentType.GR)
+                        .build()
+        );
+
+        // When
+        OrderRemoveItemRequest.ProductItem productItem = new OrderRemoveItemRequest.ProductItem(product1.getId(), 1);
+        OrderRemoveItemRequest removeItemRequest = new OrderRemoveItemRequest(List.of(productItem));
+
+        OrderEntity order = orderRepository.save(
+                OrderEntity.builder()
+                        .mergeId(table.getMergeId())
+                        .status(OrderStatus.OPEN)
+                        .totalAmount(BigDecimal.valueOf(200))
+                        .items(List.of())
+                        .build()
+        );
+
+        OrderItemEntity orderItemEntity = orderItemRepository.save(
+                OrderItemEntity.builder()
+                        .order(order)
+                        .productId(product1.getId())
+                        .quantity(2)
+                        .price(BigDecimal.valueOf(200))
+                        .status(OrderItemStatus.PREPARING)
+                        .build()
+        );
+
+        List<OrderItem> updatedOrderItems = List.of(
+                OrderItem.builder()
+                        .productId(orderItemEntity.getProductId())
+                        .quantity(1)
+                        .price(BigDecimal.valueOf(100))
+                        .status(OrderItemStatus.PREPARING).build()
+        );
+
+        order.setTotalAmount(BigDecimal.valueOf(100));
+        orderRepository.save(order);
+
+        final List<OrderItemEntity> mapped = orderItemDomainToEntityMapper.map(updatedOrderItems);
+        orderItemRepository.saveAll(mapped);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/remove", order.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(removeItemRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.orderId").value(order.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.products.length()").value(1))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.products[0].productId").value(product1.getId()));
     }
 
 
