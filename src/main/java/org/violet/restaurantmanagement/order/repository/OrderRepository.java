@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,4 +17,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, String>, Jpa
     Optional<OrderEntity> findByIdWithItems(String id);
 
     List<OrderEntity> findAllByMergeIdOrderByCreatedAtDesc(String mergeId);
+
+    @Query("SELECT o FROM OrderEntity o WHERE o.status = 'CANCELED' AND o.updatedAt <= :date")
+    List<OrderEntity> findAllCanceledOrdersOlderThan7Days(LocalDateTime date);
+
 }

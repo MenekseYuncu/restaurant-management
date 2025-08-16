@@ -1,13 +1,11 @@
 package org.violet.restaurantmanagement.order.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
-import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
-import org.violet.restaurantmanagement.order.exceptions.MergeIdNotFoundException;
-import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
-import org.violet.restaurantmanagement.order.exceptions.OrderUpdateNotAllowedException;
+import org.violet.restaurantmanagement.order.exceptions.*;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.model.mapper.OrderDomainToEntityMapper;
@@ -32,6 +30,7 @@ import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -256,6 +255,22 @@ class OrderServiceImpl implements OrderService {
         this.checkExistingStatus(order.getStatus());
         order.cancel();
         orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCanceledOrders() {
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+
+        List<OrderEntity> canceledOrders = orderRepository.findAllCanceledOrdersOlderThan7Days(sevenDaysAgo);
+
+        for (OrderEntity order : canceledOrders) {
+            try {
+                orderRepository.delete(order);
+            } catch (Exception e) {
+               throw new OrderDeletionException();
+            }
+        }
     }
 
     private void checkExistingStatus(final OrderStatus currentStatus) {

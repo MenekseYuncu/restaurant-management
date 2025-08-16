@@ -18,4 +18,6 @@ public interface OrderService {
     Order removeItemProductsFromOrder(String id, OrderRemoveItemCommand removeItemCommand);
 
     void cancelOrder(String id);
+
+    void deleteCanceledOrders();
 }
