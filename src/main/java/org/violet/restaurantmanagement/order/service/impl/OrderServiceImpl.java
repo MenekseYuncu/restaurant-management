@@ -2,6 +2,7 @@ package org.violet.restaurantmanagement.order.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
@@ -33,6 +34,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 class OrderServiceImpl implements OrderService {
@@ -268,7 +270,8 @@ class OrderServiceImpl implements OrderService {
             try {
                 orderRepository.delete(order);
             } catch (Exception e) {
-               throw new OrderDeletionException();
+                log.error("Error deleting order with ID {}: {}", order.getId(), e.getMessage());
+                throw new OrderDeletionException();
             }
         }
     }
