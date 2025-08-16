@@ -53,6 +53,100 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
 
     @Test
+    void givenValidMergeId_whenListOrder_thenReturnListResponse() {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+        String orderId = UUID.randomUUID().toString();
+        ProductEntity productEntity = ProductEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .categoryId(1L)
+                .name("Product 1")
+                .price(BigDecimal.valueOf(100))
+                .build();
+
+        OrderItemEntity orderItemEntity = OrderItemEntity.builder()
+                .id(UUID.randomUUID().toString())
+                .productId(productEntity.getId())
+                .price(BigDecimal.TEN)
+                .quantity(2)
+                .build();
+
+        OrderEntity orderEntity = OrderEntity.builder()
+                .id(orderId)
+                .mergeId(mergeId)
+                .status(OrderStatus.OPEN)
+                .totalAmount(BigDecimal.valueOf(200))
+                .items(List.of(orderItemEntity))
+                .build();
+
+        Mockito.when(diningTableRepository.existsByMergeId(mergeId))
+                .thenReturn(true);
+        Mockito.when(orderRepository.findAllByMergeIdOrderByCreatedAtDesc(mergeId))
+                .thenReturn(List.of(orderEntity));
+
+        // When
+        List<Order> result = orderService.getOrdersByMergeId(mergeId);
+
+        // Then
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals(orderEntity.getTotalAmount(), BigDecimal.valueOf(200));
+        Assertions.assertEquals(orderEntity.getStatus(), result.getFirst().getStatus());
+    }
+
+    @Test
+    void givenValidMergeId_whenNoOrdersFound_thenReturnEmptyList() {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+
+        Mockito.when(diningTableRepository.existsByMergeId(mergeId))
+                .thenReturn(true);
+
+        Mockito.when(orderRepository.findAllByMergeIdOrderByCreatedAtDesc(mergeId))
+                .thenReturn(Collections.emptyList());
+
+        // When
+        List<Order> result = orderService.getOrdersByMergeId(mergeId);
+
+        // Then
+        Assertions.assertNotNull(result);
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void givenNonExistentDiningTable_whenGetOrders_thenThrowException() {
+        // Given
+        String mergeId = UUID.randomUUID().toString();
+
+        Mockito.when(diningTableRepository.existsByMergeId(mergeId))
+                .thenReturn(false);
+
+        // Then
+        Assertions.assertThrows(DiningTableNotFoundException.class,
+                () -> orderService.getOrdersByMergeId(mergeId));
+
+        // Verify
+        Mockito.verify(diningTableRepository, Mockito.times(1)).existsByMergeId(mergeId);
+        Mockito.verifyNoInteractions(orderRepository);
+        Mockito.verifyNoInteractions(orderItemRepository);
+    }
+
+    @Test
+    void givenNullMergeId_whenGetOrders_thenThrowException() {
+        // Given
+        String mergeId = null;
+
+        // Then
+        Assertions.assertThrows(MergeIdNotFoundException.class,
+                () -> orderService.getOrdersByMergeId(mergeId));
+
+        // Verify
+        Mockito.verifyNoInteractions(orderRepository);
+        Mockito.verifyNoInteractions(orderItemRepository);
+    }
+
+
+    @Test
     void givenValidOrderCreateCommand_whenCreateOrder_thenSaveOrderAndItems() {
 
         // Given
