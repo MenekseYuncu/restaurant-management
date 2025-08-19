@@ -22,7 +22,6 @@ import org.violet.restaurantmanagement.order.service.command.OrderRemoveItemComm
 import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
-import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
@@ -816,7 +815,7 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                 .thenReturn(Optional.of(orderEntity));
 
         // Then
-        Assertions.assertThrows(ProductStatusAlreadyChanged.class,
+        Assertions.assertThrows(StatusAlreadyChangedException.class,
                 () -> orderService.cancelOrder(orderEntity.getId()));
 
         // Verify

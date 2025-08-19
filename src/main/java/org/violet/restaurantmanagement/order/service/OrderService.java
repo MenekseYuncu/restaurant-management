@@ -20,4 +20,7 @@ public interface OrderService {
     void cancelOrder(String id);
 
     void deleteCanceledOrders();
+
+    void changeOrderItemStatusToDelivered(String id);
+
 }

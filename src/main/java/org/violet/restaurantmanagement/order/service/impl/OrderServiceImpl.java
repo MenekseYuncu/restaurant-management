@@ -24,7 +24,6 @@ import org.violet.restaurantmanagement.order.service.command.ProductLine;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
-import org.violet.restaurantmanagement.product.exceptions.ProductStatusAlreadyChanged;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
@@ -55,7 +54,7 @@ class OrderServiceImpl implements OrderService {
 
         return orders.stream()
                 .map(orderEntityToDomainMapper::map)
-               .toList();
+                .toList();
     }
 
     @Override
@@ -278,7 +277,25 @@ class OrderServiceImpl implements OrderService {
 
     private void checkExistingStatus(final OrderStatus currentStatus) {
         if (currentStatus == OrderStatus.CANCELED) {
-            throw new ProductStatusAlreadyChanged();
+            throw new StatusAlreadyChangedException();
         }
     }
+
+    @Override
+    public void changeOrderItemStatusToDelivered(String id) {
+        OrderItemEntity orderItemEntity = orderItemRepository.findById(id)
+                .orElseThrow(OrderItemNotFoundException::new);
+
+        this.checkExistingOrderItemStatus(orderItemEntity.getStatus(), OrderItemStatus.DELIVERED);
+        orderItemEntity.setStatus(OrderItemStatus.DELIVERED);
+        orderItemRepository.save(orderItemEntity);
+    }
+
+
+    private void checkExistingOrderItemStatus(OrderItemStatus currentStatus, OrderItemStatus targetStatus) {
+        if (currentStatus == targetStatus) {
+            throw new StatusAlreadyChangedException();
+        }
+    }
+
 }

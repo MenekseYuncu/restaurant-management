@@ -86,4 +86,13 @@ class OrderController {
         orderService.cancelOrder(id);
         return BaseResponse.SUCCESS;
     }
+
+    @PatchMapping("/{id}/delivered")
+    public BaseResponse<Void> changeStatusToDelivered(
+            @PathVariable String id
+    ) {
+        orderService.changeOrderItemStatusToDelivered(id);
+        return BaseResponse.SUCCESS;
+    }
+
 }
