@@ -899,4 +899,112 @@ class OrderControllerTest extends RmaControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
+    @Test
+    void givenChangeStatusToReady_whenOrderItemFound_thenReturnSuccess() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doNothing().when(orderService).changeOrderItemStatusToReady(orderItem);
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/ready", orderItem)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(orderService).changeOrderItemStatusToReady(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToReady_whenOrderItemNotFound_thenReturnNotFound() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doThrow(OrderItemNotFoundException.class)
+                .when(orderService)
+                .changeOrderItemStatusToReady(orderItem);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/ready", orderItem))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(orderService).changeOrderItemStatusToReady(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToReady_whenStatusAlreadyChanged_thenReturnBadRequest() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doThrow(StatusAlreadyChangedException.class)
+                .when(orderService)
+                .changeOrderItemStatusToReady(orderItem);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/ready", orderItem)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+    @Test
+    void givenChangeStatusToCanceled_whenOrderItemFound_thenReturnSuccess() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doNothing().when(orderService).changeOrderItemStatusToCancelled(orderItem);
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/canceled", orderItem)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(orderService).changeOrderItemStatusToCancelled(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToCanceled_whenOrderItemNotFound_thenReturnNotFound() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doThrow(OrderItemNotFoundException.class)
+                .when(orderService)
+                .changeOrderItemStatusToCancelled(orderItem);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/canceled", orderItem))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(orderService).changeOrderItemStatusToCancelled(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToCanceled_whenStatusAlreadyChanged_thenReturnBadRequest() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doThrow(StatusAlreadyChangedException.class)
+                .when(orderService)
+                .changeOrderItemStatusToCancelled(orderItem);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/canceled", orderItem)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
+    }
+
+
+
 }

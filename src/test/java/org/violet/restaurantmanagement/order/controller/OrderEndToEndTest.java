@@ -363,7 +363,7 @@ class OrderEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
         ProductEntity product1 = productRepository.save(
                 ProductEntity.builder()
                         .categoryId(1L)
-                        .name("Test")
+                        .name("delivered Test")
                         .ingredient("ingredients")
                         .status(ProductStatus.ACTIVE)
                         .price(BigDecimal.valueOf(100))
@@ -392,6 +392,104 @@ class OrderEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
 
         // Assert
         mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/delivered", orderItemEntity.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+    }
+
+    @Test
+    void givenChangeStatusToReady_whenOrderItemFound_thenReturnSuccess() throws Exception {
+        // Given
+        DiningTableEntity table = diningTableRepository.save(
+                DiningTableEntity.builder()
+                        .mergeId(UUID.randomUUID().toString())
+                        .status(DiningTableStatus.VACANT)
+                        .size(2)
+                        .build()
+        );
+
+        ProductEntity product1 = productRepository.save(
+                ProductEntity.builder()
+                        .categoryId(1L)
+                        .name("ready test")
+                        .ingredient("ingredients")
+                        .status(ProductStatus.ACTIVE)
+                        .price(BigDecimal.valueOf(100))
+                        .extent(100)
+                        .extentType(ExtentType.GR)
+                        .build()
+        );
+        OrderEntity order = orderRepository.save(
+                OrderEntity.builder()
+                        .mergeId(table.getMergeId())
+                        .status(OrderStatus.OPEN)
+                        .totalAmount(BigDecimal.valueOf(200))
+                        .items(List.of())
+                        .build()
+        );
+
+        OrderItemEntity orderItemEntity = orderItemRepository.save(
+                OrderItemEntity.builder()
+                        .order(order)
+                        .productId(product1.getId())
+                        .quantity(2)
+                        .price(BigDecimal.valueOf(200))
+                        .status(OrderItemStatus.PREPARING)
+                        .build()
+        );
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/ready", orderItemEntity.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+    }
+
+    @Test
+    void givenChangeStatusToCanceled_whenOrderItemFound_thenReturnSuccess() throws Exception {
+        // Given
+        DiningTableEntity table = diningTableRepository.save(
+                DiningTableEntity.builder()
+                        .mergeId(UUID.randomUUID().toString())
+                        .status(DiningTableStatus.VACANT)
+                        .size(2)
+                        .build()
+        );
+
+        ProductEntity product1 = productRepository.save(
+                ProductEntity.builder()
+                        .categoryId(1L)
+                        .name("canceled test")
+                        .ingredient("ingredients")
+                        .status(ProductStatus.ACTIVE)
+                        .price(BigDecimal.valueOf(100))
+                        .extent(100)
+                        .extentType(ExtentType.GR)
+                        .build()
+        );
+        OrderEntity order = orderRepository.save(
+                OrderEntity.builder()
+                        .mergeId(table.getMergeId())
+                        .status(OrderStatus.OPEN)
+                        .totalAmount(BigDecimal.valueOf(200))
+                        .items(List.of())
+                        .build()
+        );
+
+        OrderItemEntity orderItemEntity = orderItemRepository.save(
+                OrderItemEntity.builder()
+                        .order(order)
+                        .productId(product1.getId())
+                        .quantity(2)
+                        .price(BigDecimal.valueOf(200))
+                        .status(OrderItemStatus.PREPARING)
+                        .build()
+        );
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/canceled", orderItemEntity.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())

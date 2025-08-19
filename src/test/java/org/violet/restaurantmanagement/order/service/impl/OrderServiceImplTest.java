@@ -947,4 +947,91 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         Mockito.verify(orderItemRepository, Mockito.times(1)).findById(orderItem);
     }
 
+    @Test
+    void givenChangeStatusReady_whenOrderItemFound_thenReturnSuccess() {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        OrderItemEntity orderItemEntity = OrderItemEntity.builder()
+                .id(orderItem)
+                .status(OrderItemStatus.PREPARING)
+                .build();
+
+        // When
+        Mockito.when(orderItemRepository.findById(orderItem))
+                .thenReturn(Optional.of(orderItemEntity));
+
+        orderService.changeOrderItemStatusToReady(orderItem);
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(1)).save(orderItemEntity);
+        Mockito.verify(orderItemRepository, Mockito.times(1)).findById(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToReady_whenItemIsAlreadyReady_thenThrowException() {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        OrderItemEntity orderItemEntity = OrderItemEntity.builder()
+                .id(orderItem)
+                .status(OrderItemStatus.READY)
+                .build();
+
+        // When
+        Mockito.when(orderItemRepository.findById(orderItem))
+                .thenReturn(Optional.of(orderItemEntity));
+
+        // Then
+        Assertions.assertThrows(StatusAlreadyChangedException.class,
+                () -> orderService.changeOrderItemStatusToReady(orderItem));
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(0)).save(orderItemEntity);
+        Mockito.verify(orderItemRepository, Mockito.times(1)).findById(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusCanceled_whenOrderItemFound_thenReturnSuccess() {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        OrderItemEntity orderItemEntity = OrderItemEntity.builder()
+                .id(orderItem)
+                .status(OrderItemStatus.PREPARING)
+                .build();
+
+        // When
+        Mockito.when(orderItemRepository.findById(orderItem))
+                .thenReturn(Optional.of(orderItemEntity));
+
+        orderService.changeOrderItemStatusToCancelled(orderItem);
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(1)).save(orderItemEntity);
+        Mockito.verify(orderItemRepository, Mockito.times(1)).findById(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToCanceled_whenItemIsAlreadyCanceled_thenThrowException() {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        OrderItemEntity orderItemEntity = OrderItemEntity.builder()
+                .id(orderItem)
+                .status(OrderItemStatus.CANCELED)
+                .build();
+
+        // When
+        Mockito.when(orderItemRepository.findById(orderItem))
+                .thenReturn(Optional.of(orderItemEntity));
+
+        // Then
+        Assertions.assertThrows(StatusAlreadyChangedException.class,
+                () -> orderService.changeOrderItemStatusToCancelled(orderItem));
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(0)).save(orderItemEntity);
+        Mockito.verify(orderItemRepository, Mockito.times(1)).findById(orderItem);
+    }
 }
