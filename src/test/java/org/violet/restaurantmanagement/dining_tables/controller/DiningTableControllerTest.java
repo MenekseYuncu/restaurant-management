@@ -915,7 +915,7 @@ class DiningTableControllerTest extends RmaControllerTest {
         Mockito.doNothing().when(diningTableService).changeStatusToVacant(tableId);
 
         // Assert
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", tableId)
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/vacant", tableId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
@@ -935,7 +935,7 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .changeStatusToVacant(diningTableId);
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", diningTableId))
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/vacant", diningTableId))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
@@ -952,7 +952,7 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .when(diningTableService)
                 .changeStatusToVacant(diningTableId);
 
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", diningTableId)
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/vacant", diningTableId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isConflict());
     }
@@ -966,7 +966,7 @@ class DiningTableControllerTest extends RmaControllerTest {
         Mockito.doNothing().when(diningTableService).changeStatusToOccupied(tableId);
 
         // Assert
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", tableId)
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/occupied", tableId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
@@ -986,7 +986,7 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .changeStatusToOccupied(diningTableId);
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", diningTableId))
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/occupied", diningTableId))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
@@ -1005,7 +1005,7 @@ class DiningTableControllerTest extends RmaControllerTest {
                 .changeStatusToOccupied(diningTableId);
 
         // Then
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", diningTableId)
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/occupied", diningTableId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isConflict());
     }
