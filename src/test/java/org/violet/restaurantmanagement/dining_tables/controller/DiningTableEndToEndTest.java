@@ -305,7 +305,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
         Long tableId = 1L;
 
         // Assert
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/vacant", tableId)
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/vacant", tableId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -318,7 +318,7 @@ class DiningTableEndToEndTest extends RmaEndToEndTest implements RmaTestContaine
         Long tableId = 1L;
 
         // Assert
-        mockMvc.perform(MockMvcRequestBuilders.put(BASE_URL + "/{id}/occupied", tableId)
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/occupied", tableId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
