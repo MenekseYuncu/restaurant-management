@@ -95,4 +95,20 @@ class OrderController {
         return BaseResponse.SUCCESS;
     }
 
+    @PatchMapping("/{id}/ready")
+    public BaseResponse<Void> changeStatusToReady(
+            @PathVariable String id
+    ) {
+        orderService.changeOrderItemStatusToReady(id);
+        return BaseResponse.SUCCESS;
+    }
+
+    @PatchMapping("/{id}/canceled")
+    public BaseResponse<Void> changeStatusToCancelled(
+            @PathVariable String id
+    ) {
+        orderService.changeOrderItemStatusToCancelled(id);
+        return BaseResponse.SUCCESS;
+    }
+
 }

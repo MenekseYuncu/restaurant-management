@@ -23,4 +23,8 @@ public interface OrderService {
 
     void changeOrderItemStatusToDelivered(String id);
 
+    void changeOrderItemStatusToReady(String id);
+
+    void changeOrderItemStatusToCancelled(String id);
+
 }

@@ -291,6 +291,26 @@ class OrderServiceImpl implements OrderService {
         orderItemRepository.save(orderItemEntity);
     }
 
+    @Override
+    public void changeOrderItemStatusToReady(String id) {
+        OrderItemEntity orderItemEntity = orderItemRepository.findById(id)
+                .orElseThrow(OrderItemNotFoundException::new);
+
+        this.checkExistingOrderItemStatus(orderItemEntity.getStatus(), OrderItemStatus.READY);
+        orderItemEntity.setStatus(OrderItemStatus.READY);
+        orderItemRepository.save(orderItemEntity);
+    }
+
+    @Override
+    public void changeOrderItemStatusToCancelled(String id) {
+        OrderItemEntity orderItemEntity = orderItemRepository.findById(id)
+                .orElseThrow(OrderItemNotFoundException::new);
+
+        this.checkExistingOrderItemStatus(orderItemEntity.getStatus(), OrderItemStatus.CANCELED);
+        orderItemEntity.setStatus(OrderItemStatus.CANCELED);
+        orderItemRepository.save(orderItemEntity);
+    }
+
 
     private void checkExistingOrderItemStatus(OrderItemStatus currentStatus, OrderItemStatus targetStatus) {
         if (currentStatus == targetStatus) {
