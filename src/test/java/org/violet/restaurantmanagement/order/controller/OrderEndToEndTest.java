@@ -53,6 +53,78 @@ class OrderEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
     @MockBean
     private OrderItemDomainToEntityMapperImpl orderItemDomainToEntityMapper;
 
+
+    @Test
+    void givenValidMergeId_whenGetOrders_thenReturnOrderList() throws Exception {
+        // Given
+        DiningTableEntity table = diningTableRepository.save(
+                DiningTableEntity.builder()
+                        .size(2)
+                        .status(DiningTableStatus.VACANT)
+                        .mergeId(UUID.randomUUID().toString())
+                        .build()
+        );
+        ProductEntity product1 = productRepository.save(
+                ProductEntity.builder()
+                        .status(ProductStatus.ACTIVE)
+                        .extentType(ExtentType.GR)
+                        .id(UUID.randomUUID().toString())
+                        .extent(2)
+                        .ingredient("deneme")
+                        .price(BigDecimal.valueOf(23))
+                        .categoryId(1L)
+                        .name("pro")
+                        .build()
+        );
+
+        // Mock orders
+        OrderEntity mockOrder1 = orderRepository.save(
+                OrderEntity.builder()
+                        .id(UUID.randomUUID().toString())
+                        .mergeId(table.getMergeId())
+                        .status(OrderStatus.OPEN)
+                        .totalAmount(BigDecimal.valueOf(46))
+                        .build()
+        );
+
+        OrderEntity mockOrder2 = orderRepository.save(
+                OrderEntity.builder()
+                        .id(UUID.randomUUID().toString())
+                        .mergeId(table.getMergeId())
+                        .status(OrderStatus.OPEN)
+                        .totalAmount(BigDecimal.valueOf(23))
+                        .build()
+        );
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .productId(product1.getId())
+                .quantity(1)
+                .price(BigDecimal.valueOf(23))
+                .status(OrderItemStatus.PREPARING)
+                .build();
+
+        OrderItemEntity orderItem2 = OrderItemEntity.builder()
+                .productId(product1.getId())
+                .quantity(2)
+                .price(BigDecimal.valueOf(46))
+                .status(OrderItemStatus.PREPARING)
+                .build();
+
+        orderItemRepository.saveAll(List.of(orderItem, orderItem2));
+
+        mockOrder1.setItems(List.of(orderItem));
+        orderRepository.save(mockOrder1);
+        mockOrder2.setItems(List.of(orderItem2));
+        orderRepository.save(mockOrder2);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL + "/{mergeId}", table.getMergeId()))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.length()").value(2));
+    }
+
     @Test
     void givenValidCreateOrderRequest_thenReturnsSuccess() throws Exception {
         // Given
@@ -69,7 +141,7 @@ class OrderEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
         ProductEntity product = productRepository.save(
                 ProductEntity.builder()
                         .categoryId(1L)
-                        .name("Product Test")
+                        .name("Products Test")
                         .ingredient("ingredients")
                         .status(ProductStatus.ACTIVE)
                         .price(BigDecimal.valueOf(100))
