@@ -25,7 +25,9 @@ import org.violet.restaurantmanagement.order.controller.request.OrderUpdateReque
 import org.violet.restaurantmanagement.order.controller.response.OrderListResponse;
 import org.violet.restaurantmanagement.order.controller.response.OrderResponse;
 import org.violet.restaurantmanagement.order.exceptions.InvalidItemQuantityException;
+import org.violet.restaurantmanagement.order.exceptions.OrderItemNotFoundException;
 import org.violet.restaurantmanagement.order.exceptions.OrderNotFoundException;
+import org.violet.restaurantmanagement.order.exceptions.StatusAlreadyChangedException;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.service.OrderService;
@@ -842,6 +844,59 @@ class OrderControllerTest extends RmaControllerTest {
 
         // Verify
         Mockito.verify(orderService, Mockito.times(1)).cancelOrder(orderId);
+    }
+
+    @Test
+    void givenChangeStatusToDelivered_whenOrderItemFound_thenReturnSuccess() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doNothing().when(orderService).changeOrderItemStatusToDelivered(orderItem);
+
+        // Assert
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/delivered", orderItem)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isSuccess").value(true));
+
+        // Verify
+        Mockito.verify(orderService).changeOrderItemStatusToDelivered(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToDelivered_whenOrderItemNotFound_thenReturnNotFound() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doThrow(OrderItemNotFoundException.class)
+                .when(orderService)
+                .changeOrderItemStatusToDelivered(orderItem);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/delivered", orderItem))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        // Verify
+        Mockito.verify(orderService).changeOrderItemStatusToDelivered(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToDelivered_whenStatusAlreadyChanged_thenReturnBadRequest() throws Exception {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        // When
+        Mockito.doThrow(StatusAlreadyChangedException.class)
+                .when(orderService)
+                .changeOrderItemStatusToDelivered(orderItem);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.patch(BASE_URL + "/{id}/delivered", orderItem)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
 }

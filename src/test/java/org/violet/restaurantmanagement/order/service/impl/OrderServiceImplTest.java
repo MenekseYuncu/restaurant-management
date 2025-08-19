@@ -11,6 +11,7 @@ import org.violet.restaurantmanagement.RmaTestContainer;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
 import org.violet.restaurantmanagement.order.exceptions.*;
+import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.order.model.mapper.OrderDomainToEntityMapper;
 import org.violet.restaurantmanagement.order.repository.OrderItemRepository;
@@ -900,6 +901,50 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
         // Verify
         Mockito.verify(orderRepository, Mockito.times(1))
                 .delete(canceledOrder);
+    }
+
+    @Test
+    void givenChangeStatusValidOrderItemId_whenOrderItemFound_thenReturnSuccess() {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        OrderItemEntity orderItemEntity = OrderItemEntity.builder()
+                .id(orderItem)
+                .status(OrderItemStatus.PREPARING)
+                .build();
+
+        // When
+        Mockito.when(orderItemRepository.findById(orderItem))
+                .thenReturn(Optional.of(orderItemEntity));
+
+        orderService.changeOrderItemStatusToDelivered(orderItem);
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(1)).save(orderItemEntity);
+        Mockito.verify(orderItemRepository, Mockito.times(1)).findById(orderItem);
+    }
+
+    @Test
+    void givenChangeStatusToDelivered_whenItemIsAlreadyDelivered_thenThrowException() {
+        // Given
+        String orderItem = UUID.randomUUID().toString();
+
+        OrderItemEntity orderItemEntity = OrderItemEntity.builder()
+                .id(orderItem)
+                .status(OrderItemStatus.DELIVERED)
+                .build();
+
+        // When
+        Mockito.when(orderItemRepository.findById(orderItem))
+                .thenReturn(Optional.of(orderItemEntity));
+
+        // Then
+        Assertions.assertThrows(StatusAlreadyChangedException.class,
+                () -> orderService.changeOrderItemStatusToDelivered(orderItem));
+
+        // Verify
+        Mockito.verify(orderItemRepository, Mockito.times(0)).save(orderItemEntity);
+        Mockito.verify(orderItemRepository, Mockito.times(1)).findById(orderItem);
     }
 
 }
