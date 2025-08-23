@@ -28,8 +28,6 @@ import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
 import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -60,7 +58,6 @@ class OrderServiceImpl implements OrderService {
     @Override
     public Order createOrder(final OrderCreateCommand createCommand) {
         this.checkExistingDiningTable(createCommand.mergeId());
-
         this.validateProducts(createCommand.products());
 
         if (createCommand.products().isEmpty()) {
@@ -69,126 +66,78 @@ class OrderServiceImpl implements OrderService {
 
         List<OrderItem> orderItems = this.createOrderItems(createCommand.products());
 
-        BigDecimal totalPrice = calculateTotalPrice(orderItems);
-
         Order order = Order.builder()
                 .mergeId(createCommand.mergeId())
                 .status(OrderStatus.OPEN)
-                .totalAmount(totalPrice)
-                .items(orderItems)
                 .build();
 
         OrderEntity orderEntity = orderDomainToEntityMapper.map(order);
 
         List<OrderItemEntity> itemEntities = orderItems.stream()
                 .map(orderItemDomainToEntityMapper::map)
-                .peek(e -> e.setOrder(orderEntity))
+                .peek(item -> item.setOrder(orderEntity))
                 .toList();
 
-        orderEntity.getItems().clear();
-        orderEntity.getItems().addAll(itemEntities);
+        orderEntity.addItems(itemEntities);
 
-        OrderEntity savedOrder = orderRepository.save(orderEntity);
-
-        order.setId(savedOrder.getId());
-        order.setCreatedAt(savedOrder.getCreatedAt());
-
-        return order;
+        return orderEntityToDomainMapper.map(orderRepository.save(orderEntity));
     }
 
-
     @Override
+    @Transactional
     public Order updateOrder(final String id, final OrderUpdateCommand updateCommand) {
-        OrderEntity existingOrder = orderRepository.findById(id)
-                .orElseThrow(OrderNotFoundException::new);
-
-        if (existingOrder.getStatus() == OrderStatus.CANCELED ||
-                existingOrder.getStatus() == OrderStatus.COMPLETED) {
-            throw new OrderUpdateNotAllowedException();
-        }
+        final OrderEntity order = findOrderById(id);
 
         this.validateProducts(updateCommand.products());
 
-        if (updateCommand.products().isEmpty()) {
-            throw new ProductNotFoundException();
-        }
-
         List<OrderItem> newItems = this.createOrderItems(updateCommand.products());
 
-        BigDecimal newItemsTotal = calculateTotalPrice(newItems);
-        BigDecimal currentTotal = existingOrder.getTotalAmount() != null
-                ? existingOrder.getTotalAmount()
-                : BigDecimal.ZERO;
+        List<OrderItemEntity> newOrderItems = newItems.stream()
+                .map(orderItemDomainToEntityMapper::map)
+                .peek(item -> item.setOrder(order))
+                .toList();
 
-        existingOrder.setTotalAmount(currentTotal.add(newItemsTotal));
-        existingOrder.setStatus(OrderStatus.IN_PROGRESS);
+        order.updateItems(newOrderItems);
 
-        this.saveOrderItems(newItems, id);
+        orderItemRepository.saveAll(newOrderItems);
+        OrderEntity saved = orderRepository.save(order);
 
-        OrderEntity saved = orderRepository.save(existingOrder);
-
-        OrderEntity orderWithItems = orderRepository.findByIdWithItems(saved.getId())
-                .orElseThrow(OrderNotFoundException::new);
+        final OrderEntity orderWithItems = fetchOrderWithItems(saved);
 
         return orderEntityToDomainMapper.map(orderWithItems);
     }
 
-    @Override
+    @Transactional
     public Order removeItemProductsFromOrder(final String id, final OrderRemoveItemCommand removeItemCommand) {
-        OrderEntity order = orderRepository.findById(id)
-                .orElseThrow(OrderNotFoundException::new);
+        final OrderEntity order = findOrderById(id);
 
-        if (order.getStatus() == OrderStatus.CANCELED || order.getStatus() == OrderStatus.COMPLETED) {
+        if (order.isNotUpdatable()) {
             throw new OrderUpdateNotAllowedException();
         }
 
-        List<OrderItemEntity> orderItems = orderItemRepository.findOrderItemEntitiesByOrderId(order.getId());
         if (removeItemCommand.products().isEmpty()) {
             throw new ProductNotFoundException();
         }
 
-        for (OrderRemoveItemCommand.ProductItem productItem : removeItemCommand.products()) {
-            this.removeItemFromOrder(orderItems, productItem);
-        }
+        removeItemCommand.products().forEach(productItem -> {
+            try {
+                order.removeItem(productItem.id(), productItem.quantity());
+            } catch (ProductNotFoundException e) {
+                throw new ProductNotFoundException();
+            }
+        });
 
-        List<OrderItemEntity> updatedOrderItems = orderItemRepository.findOrderItemEntitiesByOrderId(order.getId());
-        BigDecimal newTotalAmount = updatedOrderItems.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        OrderEntity savedOrder = orderRepository.save(order);
 
-        order.setTotalAmount(newTotalAmount);
+        final OrderEntity orderWithItems = fetchOrderWithItems(savedOrder);
 
-        if (updatedOrderItems.isEmpty()) {
-            order.setStatus(OrderStatus.CANCELED);
-        }
-
-        orderRepository.save(order);
-
-        OrderEntity updatedOrder = orderRepository.findByIdWithItems(order.getId())
-                .orElseThrow(OrderNotFoundException::new);
-
-        return orderEntityToDomainMapper.map(updatedOrder);
+        return orderEntityToDomainMapper.map(orderWithItems);
     }
 
-    private void removeItemFromOrder(final List<OrderItemEntity> orderItems, final OrderRemoveItemCommand.ProductItem productItem) {
-        boolean itemFound = false;
-        for (OrderItemEntity orderItem : orderItems) {
-            if (orderItem.getProductId().equals(productItem.id())) {
-                itemFound = true;
 
-                if (orderItem.getQuantity() <= productItem.quantity()) {
-                    orderItemRepository.delete(orderItem);
-                } else {
-                    orderItem.setQuantity(orderItem.getQuantity() - productItem.quantity());
-                    orderItemRepository.save(orderItem);
-                }
-                break;
-            }
-        }
-
-        if (!itemFound) {
-            throw new ProductNotFoundException();
-        }
+    private OrderEntity fetchOrderWithItems(OrderEntity order) {
+        return orderRepository.findByIdWithItems(order.getId())
+                .orElseThrow(OrderNotFoundException::new);
     }
 
     public List<OrderItem> createOrderItems(final List<? extends ProductLine> items) {
@@ -211,17 +160,6 @@ class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    private void saveOrderItems(final List<OrderItem> orderItems, final String orderId) {
-        OrderEntity orderRef = orderRepository.getReferenceById(orderId);
-
-        List<OrderItemEntity> itemEntities = orderItems.stream()
-                .map(orderItemDomainToEntityMapper::map)
-                .peek(e -> e.setOrder(orderRef))
-                .toList();
-
-        orderItemRepository.saveAll(itemEntities);
-    }
-
     private void checkExistingDiningTable(final String mergeId) {
         if (mergeId == null || mergeId.isBlank()) {
             throw new MergeIdNotFoundException();
@@ -240,22 +178,23 @@ class OrderServiceImpl implements OrderService {
         });
     }
 
-    private BigDecimal calculateTotalPrice(final List<OrderItem> items) {
-        return items.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
-    }
-
-
     @Override
     public void cancelOrder(final String id) {
-        OrderEntity order = orderRepository.findById(id)
-                .orElseThrow(OrderNotFoundException::new);
+        final OrderEntity order = findOrderById(id);
 
         this.checkExistingStatus(order.getStatus());
         order.cancel();
         orderRepository.save(order);
+    }
+
+    private OrderEntity findOrderById(String id) {
+        return orderRepository.findById(id)
+                .orElseThrow(OrderNotFoundException::new);
+    }
+
+    private OrderItemEntity findOrderItemById(String id) {
+        return orderItemRepository.findById(id)
+                .orElseThrow(OrderItemNotFoundException::new);
     }
 
     @Override
@@ -283,31 +222,28 @@ class OrderServiceImpl implements OrderService {
 
     @Override
     public void changeOrderItemStatusToDelivered(String id) {
-        OrderItemEntity orderItemEntity = orderItemRepository.findById(id)
-                .orElseThrow(OrderItemNotFoundException::new);
+        final OrderItemEntity orderItemEntity = findOrderItemById(id);
 
         this.checkExistingOrderItemStatus(orderItemEntity.getStatus(), OrderItemStatus.DELIVERED);
-        orderItemEntity.setStatus(OrderItemStatus.DELIVERED);
+        orderItemEntity.delivered();
         orderItemRepository.save(orderItemEntity);
     }
 
     @Override
     public void changeOrderItemStatusToReady(String id) {
-        OrderItemEntity orderItemEntity = orderItemRepository.findById(id)
-                .orElseThrow(OrderItemNotFoundException::new);
+        final OrderItemEntity orderItemEntity = findOrderItemById(id);
 
         this.checkExistingOrderItemStatus(orderItemEntity.getStatus(), OrderItemStatus.READY);
-        orderItemEntity.setStatus(OrderItemStatus.READY);
+        orderItemEntity.ready();
         orderItemRepository.save(orderItemEntity);
     }
 
     @Override
     public void changeOrderItemStatusToCancelled(String id) {
-        OrderItemEntity orderItemEntity = orderItemRepository.findById(id)
-                .orElseThrow(OrderItemNotFoundException::new);
+        final OrderItemEntity orderItemEntity = findOrderItemById(id);
 
         this.checkExistingOrderItemStatus(orderItemEntity.getStatus(), OrderItemStatus.CANCELED);
-        orderItemEntity.setStatus(OrderItemStatus.CANCELED);
+        orderItemEntity.cancel();
         orderItemRepository.save(orderItemEntity);
     }
 

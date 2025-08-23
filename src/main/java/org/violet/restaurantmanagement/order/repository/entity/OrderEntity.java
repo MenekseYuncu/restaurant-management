@@ -1,15 +1,14 @@
 package org.violet.restaurantmanagement.order.repository.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
+import org.violet.restaurantmanagement.order.exceptions.OrderUpdateNotAllowedException;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
+import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,4 +42,67 @@ public class OrderEntity extends BaseEntity {
     public void cancel() {
         this.status = OrderStatus.CANCELED;
     }
+
+    public void inProgress() {
+        this.status = OrderStatus.IN_PROGRESS;
+    }
+
+    public boolean isNotUpdatable() {
+        return this.status == OrderStatus.CANCELED || this.status == OrderStatus.COMPLETED;
+    }
+
+    public BigDecimal getTotalAmount() {
+        if (this.totalAmount == null) {
+            return BigDecimal.ZERO;
+        }
+        return this.totalAmount.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public void addItems(List<OrderItemEntity> newItems) {
+        if (this.items == null) {
+            this.items = new ArrayList<>();
+        }
+        this.items.addAll(newItems);
+        this.totalAmount = calculateTotalPrice(this.items);
+    }
+
+    public BigDecimal calculateTotalPrice(final List<OrderItemEntity> items) {
+        return items.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public void updateItems(List<OrderItemEntity> newItems) {
+        if (isNotUpdatable()) {
+            throw new OrderUpdateNotAllowedException();
+        }
+
+        if (newItems == null || newItems.isEmpty()) {
+            throw new ProductNotFoundException();
+        }
+        this.items.addAll(newItems);
+        this.inProgress();
+        this.totalAmount = calculateTotalPrice(this.items);
+    }
+
+    public void removeItem(String productId, int quantity) {
+        OrderItemEntity item = this.items.stream()
+                .filter(i -> i.getProductId().equals(productId))
+                .findFirst()
+                .orElseThrow(ProductNotFoundException::new);
+
+        if (item.getQuantity() <= quantity) {
+            this.items.remove(item);
+        } else {
+            item.setQuantity(item.getQuantity() - quantity);
+        }
+
+        this.totalAmount = calculateTotalPrice(this.items);
+
+        if (this.items.isEmpty()) {
+            this.cancel();
+        }
+    }
+
 }

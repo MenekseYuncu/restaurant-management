@@ -13,7 +13,6 @@ public interface OrderDomainToOrderResponseMapper extends BaseMapper<Order, Orde
     OrderDomainToOrderResponseMapper INSTANCE = Mappers.getMapper(OrderDomainToOrderResponseMapper.class);
 
     @Mapping(source = "id", target = "orderId")
-    @Mapping(source = "totalAmount", target = "totalAmount")
     @Mapping(source = "items", target = "products")
     OrderResponse map(Order order);
 

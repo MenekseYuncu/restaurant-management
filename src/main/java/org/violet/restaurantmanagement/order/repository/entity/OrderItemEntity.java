@@ -46,4 +46,15 @@ public class OrderItemEntity extends BaseEntity {
     @Column(name = "order_item_status", length = 10)
     private OrderItemStatus status;
 
+    public void cancel() {
+        this.status = OrderItemStatus.CANCELED;
+    }
+
+    public void ready() {
+        this.status = OrderItemStatus.READY;
+    }
+
+    public void delivered() {
+        this.status = OrderItemStatus.DELIVERED;
+    }
 }
