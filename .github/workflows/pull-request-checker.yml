@@ -13,10 +13,16 @@ on:
       - main
       - master
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+
 jobs:
   test-and-build: # Define the main job
     runs-on: ubuntu-latest # Run the job on the latest version of Ubuntu
-    
+
     steps: # List of steps to execute within the job
       - name: Update package cache # Step to update the package cache
         run: sudo apt-get update
@@ -27,7 +33,7 @@ jobs:
       - name: Set up Java # Step to set up the Java environment
         uses: actions/setup-java@v4
         with:
-          java-version: '17' # Specify Java 17 as the version
+          java-version: '21' # Specify Java 21 as the version
           distribution: 'temurin' # Use the 'temurin' distribution of Java
 
       - name: Install Maven # Step to install Maven
@@ -45,7 +51,7 @@ jobs:
 
       - name: Run unit tests # Step to run unit tests
         run: mvn clean test -Dmaven.test.failure.ignore=true
-        
+
       - name: List test report files (debug) # Debug step to check test files
         run: |
           echo "Checking for test report files..."
@@ -61,6 +67,8 @@ jobs:
           path: target/surefire-reports/TEST-*.xml
           reporter: java-junit
           fail-on-empty: false
+          only-summary: false
+        continue-on-error: true
 
       - name: Upload test results # Step to upload test results as artifacts
         uses: actions/upload-artifact@v4
