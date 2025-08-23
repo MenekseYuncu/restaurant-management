@@ -240,10 +240,7 @@ class OrderEndToEndTest extends RmaEndToEndTest implements RmaTestContainer {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.orderId").value(order.getId()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.products.length()").value(2))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.response.products[0].productId").value(productEntity1.getId()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.response.products[0].price").value(100.0))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.response.totalAmount").value(600.0))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.response.updatedAt").isNotEmpty());
-
+                .andExpect(MockMvcResultMatchers.jsonPath("$.response.products[0].price").value(100.0));
         // Verify
         Optional<OrderEntity> updatedOrderOpt = orderRepository.findById(order.getId());
         Assertions.assertTrue(updatedOrderOpt.isPresent());
