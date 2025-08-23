@@ -27,7 +27,7 @@ jobs:
       - name: Set up Java # Step to set up the Java environment
         uses: actions/setup-java@v4
         with:
-          java-version: '17' # Specify Java 17 as the version
+          java-version: '21' # Specify Java 21 as the version
           distribution: 'temurin' # Use the 'temurin' distribution of Java
 
       - name: Install Maven # Step to install Maven
