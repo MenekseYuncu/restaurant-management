@@ -28,9 +28,13 @@
 
     <dependencies>
 
-        <!--   ==================  -->
-        <!---  Common dependencies -->
-        <!--   ==================  -->
+        <!-- =================================== -->
+        <!-- Spring Boot Starter'ları (Core/Web) -->
+        <!-- =================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -39,17 +43,16 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- ============================== -->
+        <!-- Haritalama / Yardımcı Kütüphane -->
+        <!-- ============================== -->
         <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
         </dependency>
 
         <dependency>
@@ -58,21 +61,9 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
-        </dependency>
-
-        <!--   ==================  -->
-        <!---  Common dependencies -->
-        <!--   ==================  -->
-
-
-        <!--   ====================  -->
-        <!--  database dependencies  -->
-        <!--   ====================  -->
-
+        <!-- ====================== -->
+        <!-- Veritabanı / Migrasyon -->
+        <!-- ====================== -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -84,35 +75,18 @@
             <version>${postgresql.version}</version>
         </dependency>
 
-        <!--   ====================  -->
-        <!--  database dependencies  -->
-        <!--   ====================  -->
-
-
-        <!--   ===================  -->
-        <!--   Test dependencies    -->
-        <!--   ==================   -->
-
+        <!-- ================= -->
+        <!-- Test Bağımlılıkları -->
+        <!-- ================= -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!--   ===================  -->
-        <!--   Test dependencies    -->
-        <!--   ==================   -->
-
-        <!--   ===================  -->
-        <!--     Test Container     -->
-        <!--   ==================   -->
-
+        <!-- ================= -->
+        <!-- Testcontainers     -->
+        <!-- ================= -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
@@ -128,32 +102,30 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-compress</artifactId>
-                </exclusion>
-            </exclusions>
+            <scope>test</scope>
         </dependency>
-
-        <!--   ===================  -->
-        <!--     Test Container     -->
-        <!--   ==================   -->
 
     </dependencies>
 
     <build>
         <plugins>
+            <!-- ========================= -->
+            <!-- Spring Boot Paketleme     -->
+            <!-- ========================= -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <!-- ========================= -->
+            <!-- Derleyici / İşlemciler    -->
+            <!-- ========================= -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <release>${java.version}</release>  <!-- Changed from source/target to release -->
+                    <release>${java.version}</release>
                     <compilerArgs>
                         <arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
                         <arg>-Amapstruct.suppressGeneratorVersionInfoComment=true</arg>
@@ -177,20 +149,18 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*Test.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
+
+            <!-- ========================= -->
+            <!-- Test Çalıştırıcı          -->
+            <!-- ========================= -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                     </systemPropertyVariables>
