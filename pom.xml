@@ -29,7 +29,7 @@
     <dependencies>
 
         <!-- =================================== -->
-        <!-- Spring Boot Starter'ları (Core/Web) -->
+        <!-- Spring Boot (Core/Web) -->
         <!-- =================================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -47,7 +47,7 @@
         </dependency>
 
         <!-- ============================== -->
-        <!-- Haritalama / Yardımcı Kütüphane -->
+        <!-- Mapping / Utility Libraries    -->
         <!-- ============================== -->
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -61,9 +61,9 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- ====================== -->
-        <!-- Veritabanı / Migrasyon -->
-        <!-- ====================== -->
+        <!-- ============================== -->
+        <!-- Database / Migration           -->
+        <!-- ============================== -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -75,9 +75,9 @@
             <version>${postgresql.version}</version>
         </dependency>
 
-        <!-- ================= -->
-        <!-- Test Bağımlılıkları -->
-        <!-- ================= -->
+        <!-- ============================== -->
+        <!-- Test Dependencies              -->
+        <!-- ============================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -109,17 +109,17 @@
 
     <build>
         <plugins>
-            <!-- ========================= -->
-            <!-- Spring Boot Paketleme     -->
-            <!-- ========================= -->
+            <!-- ============================== -->
+            <!-- Spring Boot Packaging          -->
+            <!-- ============================== -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- ========================= -->
-            <!-- Derleyici / İşlemciler    -->
-            <!-- ========================= -->
+            <!-- ============================== -->
+            <!-- Compiler / Annotation Processors -->
+            <!-- ============================== -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -150,9 +150,9 @@
                 </configuration>
             </plugin>
 
-            <!-- ========================= -->
-            <!-- Test Çalıştırıcı          -->
-            <!-- ========================= -->
+            <!-- ============================== -->
+            <!-- Test Runner                    -->
+            <!-- ============================== -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
