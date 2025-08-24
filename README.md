@@ -119,7 +119,7 @@ There are unit tests in the project using JUnit and Mockito. You can use the fol
 
 You can use the Postman API collection to test the project. You can download the Postman collection by following the steps below:
 
-- [Postman API Collection](https://www.postman.com/altimetry-physicist-64740135/workspace/restaurant-management/overview)
+- [Postman API Collection](https://menekse-3683.postman.co/workspace/Restaurant-Management~10769483-447a-4c4d-97a0-85f4e98c4b97/collection/24190370-bb3a06e9-0747-42c4-a1b3-7f6d96d12b6d?action=share&creator=24190370&active-environment=24190370-30a83376-ca7c-4baa-9cb7-0d940ddbce7d)
 
 - Download the collection file by clicking the link.
 - Open the Postman application.
