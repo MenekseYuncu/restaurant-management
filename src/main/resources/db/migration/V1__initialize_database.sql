@@ -76,10 +76,38 @@ create table if not exists rm_order_item
     price             numeric(50, 8) not null,
     quantity          int            not null,
     order_item_status varchar(10)     not null
-        constraint c__rm_order_item__order_item_status check (order_item_status in ('PREPARING', 'READY', 'DELIVERED', 'CANCELED')),
+        constraint c__rm_order_item__order_item_status check (order_item_status in ('PREPARING', 'READY', 'DELIVERED', 'CANCELED', 'PAID')),
     created_at        timestamp(3)   not null,
     updated_at        timestamp(3)
 );
+
+create table if not exists rm_payment
+(
+    id            varchar(36)
+    constraint pk__rm_payment__id primary key,
+    order_id      varchar(36) not null
+    constraint fk__rm_payment__order_id references rm_order (id),
+    payment_type  varchar(20) not null
+    constraint c__rm_payment__payment_type check (payment_type in ('CASH', 'CREDIT_CARD', 'DEBIT_CARD', 'OTHER')),
+    amount        numeric(50, 8) not null,
+    status        varchar(20) not null
+    constraint c__rm_payment__status check (status in ('PENDING', 'COMPLETED', 'FAILED', 'CANCELED', 'PAID')),
+    created_at    timestamp(3) not null,
+    updated_at    timestamp(3)
+    );
+
+create table if not exists rm_payment_item
+(
+    id              varchar(36)
+    constraint pk__rm_payment_item__id primary key,
+    payment_id      varchar(36) not null
+    constraint fk__rm_payment_item__payment_id references rm_payment (id),
+    order_item_id   varchar(36) not null
+    constraint fk__rm_payment_item__order_item_id references rm_order_item (id),
+    amount          numeric(50, 8) not null,
+    created_at      timestamp(3) not null,
+    updated_at      timestamp(3)
+    );
 
 insert into rm_category (name, status, created_at)
 values ('category 1', 'ACTIVE', current_timestamp),

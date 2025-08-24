@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.violet.restaurantmanagement.dining_tables.exceptions.DiningTableNotFoundException;
 import org.violet.restaurantmanagement.dining_tables.repository.DiningTableRepository;
+import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 import org.violet.restaurantmanagement.order.exceptions.*;
 import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
@@ -23,6 +24,8 @@ import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.command.ProductLine;
 import org.violet.restaurantmanagement.order.service.domain.Order;
 import org.violet.restaurantmanagement.order.service.domain.OrderItem;
+import org.violet.restaurantmanagement.payment.repository.PaymentRepository;
+import org.violet.restaurantmanagement.payment.repository.entity.PaymentEntity;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
@@ -43,6 +46,7 @@ class OrderServiceImpl implements OrderService {
     private final DiningTableRepository diningTableRepository;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+    private final PaymentRepository paymentRepository;
 
     @Override
     public List<Order> getOrdersByMergeId(String mergeId) {
@@ -78,9 +82,15 @@ class OrderServiceImpl implements OrderService {
                 .peek(item -> item.setOrder(orderEntity))
                 .toList();
 
-        orderEntity.addItems(itemEntities);
+        final List<DiningTableEntity> tables = diningTableRepository.findByMergeId(order.getMergeId());
 
-        return orderEntityToDomainMapper.map(orderRepository.save(orderEntity));
+        orderEntity.addItems(itemEntities, tables);
+
+        final Order savedOrder = orderEntityToDomainMapper.map(orderRepository.save(orderEntity));
+        PaymentEntity payment = PaymentEntity.buildPayment(orderEntity);
+        paymentRepository.save(payment);
+
+        return savedOrder;
     }
 
     @Override

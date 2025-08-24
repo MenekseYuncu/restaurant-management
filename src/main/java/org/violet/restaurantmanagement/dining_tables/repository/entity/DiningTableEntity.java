@@ -43,4 +43,13 @@ public class DiningTableEntity extends BaseEntity {
     public void delete() {
         this.status = DiningTableStatus.DELETED;
     }
+
+    public void vacant() {
+        this.status = DiningTableStatus.VACANT;
+    }
+
+    public void takingOrders() {
+        this.status = DiningTableStatus.TAKING_ORDERS;
+    }
+
 }
