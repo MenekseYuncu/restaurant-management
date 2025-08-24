@@ -22,6 +22,7 @@ import org.violet.restaurantmanagement.order.service.command.OrderCreateCommand;
 import org.violet.restaurantmanagement.order.service.command.OrderRemoveItemCommand;
 import org.violet.restaurantmanagement.order.service.command.OrderUpdateCommand;
 import org.violet.restaurantmanagement.order.service.domain.Order;
+import org.violet.restaurantmanagement.payment.repository.PaymentRepository;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 import org.violet.restaurantmanagement.product.model.enums.ProductStatus;
 import org.violet.restaurantmanagement.product.repository.ProductRepository;
@@ -49,6 +50,9 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
 
     @Mock
     private OrderItemRepository orderItemRepository;
+
+    @Mock
+    private PaymentRepository paymentRepository;
 
     @Mock
     private OrderDomainToEntityMapper orderDomainToEntityMapper;
@@ -391,6 +395,9 @@ class OrderServiceImplTest extends RmaServiceTest implements RmaTestContainer {
                 .build();
 
         // When
+        Mockito.when(paymentRepository.save(Mockito.any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
         Mockito.when(diningTableRepository.existsByMergeId(mockMergeId))
                 .thenReturn(true);
 

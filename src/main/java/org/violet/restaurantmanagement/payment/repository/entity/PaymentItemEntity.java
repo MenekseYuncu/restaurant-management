@@ -3,7 +3,6 @@ package org.violet.restaurantmanagement.payment.repository.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
-import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
 
 import java.math.BigDecimal;

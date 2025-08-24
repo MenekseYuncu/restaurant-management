@@ -5,6 +5,8 @@ import lombok.*;
 import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
 import org.violet.restaurantmanagement.order.repository.entity.OrderEntity;
 import org.violet.restaurantmanagement.order.repository.entity.OrderItemEntity;
+import org.violet.restaurantmanagement.payment.exceptions.OrderItemAlreadyPaidException;
+import org.violet.restaurantmanagement.payment.exceptions.PaymentAlreadyCompletedException;
 import org.violet.restaurantmanagement.payment.model.PaymentStatus;
 import org.violet.restaurantmanagement.payment.model.PaymentType;
 
@@ -57,6 +59,10 @@ public class PaymentEntity extends BaseEntity {
                 .build();
     }
 
+    public void complete() {
+        this.status = PaymentStatus.COMPLETED;
+    }
+
     public boolean isCompleted() {
         return this.status == PaymentStatus.COMPLETED;
     }
@@ -67,7 +73,6 @@ public class PaymentEntity extends BaseEntity {
                 .anyMatch(pi -> Objects.equals(pi.getOrderItemId(), orderItemId));
     }
 
-    /** OrderItem için ödeme satırı oluşturur ve toplamı günceller. */
     public void addPaymentFor(OrderItemEntity orderItem) {
         if (this.paymentItems == null) this.paymentItems = new ArrayList<>();
         PaymentItemEntity item = PaymentItemEntity.of(this, orderItem);
@@ -75,8 +80,22 @@ public class PaymentEntity extends BaseEntity {
         this.totalAmount = this.totalAmount.add(item.getAmount());
     }
 
-    public void complete() {
-        this.status = PaymentStatus.COMPLETED;
+    public void pay(OrderItemEntity orderItem) {
+        if (isCompleted()) {
+            throw new PaymentAlreadyCompletedException(orderId);
+        }
+        if (hasPaidItemId(orderItem.getId())) {
+            throw new OrderItemAlreadyPaidException();
+        }
+        addPaymentFor(orderItem);
+        orderItem.markPaid();
+    }
+
+    public void completeIfFullyPaid(OrderEntity order) {
+        if (order.allItemsPaid()) {
+            this.complete();
+            order.complete();
+        }
     }
 
 }

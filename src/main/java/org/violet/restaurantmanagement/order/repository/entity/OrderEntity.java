@@ -3,7 +3,9 @@ package org.violet.restaurantmanagement.order.repository.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.violet.restaurantmanagement.common.repository.entity.BaseEntity;
+import org.violet.restaurantmanagement.dining_tables.repository.entity.DiningTableEntity;
 import org.violet.restaurantmanagement.order.exceptions.OrderUpdateNotAllowedException;
+import org.violet.restaurantmanagement.order.model.OrderItemStatus;
 import org.violet.restaurantmanagement.order.model.OrderStatus;
 import org.violet.restaurantmanagement.product.exceptions.ProductNotFoundException;
 
@@ -36,11 +38,21 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "total_amount")
     private BigDecimal totalAmount;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<OrderItemEntity> items = new ArrayList<>();
 
     public void cancel() {
         this.status = OrderStatus.CANCELED;
+    }
+
+    public void complete() {
+        this.status = OrderStatus.COMPLETED;
+    }
+
+    public boolean allItemsPaid() {
+        return getItems() != null && !getItems().isEmpty()
+                && getItems().stream().allMatch(i -> i.getStatus() == OrderItemStatus.PAID);
     }
 
     public void inProgress() {
@@ -58,10 +70,11 @@ public class OrderEntity extends BaseEntity {
         return this.totalAmount.setScale(2, RoundingMode.HALF_UP);
     }
 
-    public void addItems(List<OrderItemEntity> newItems) {
+    public void addItems(List<OrderItemEntity> newItems, List<DiningTableEntity> tables) {
         if (this.items == null) {
             this.items = new ArrayList<>();
         }
+        tables.forEach(DiningTableEntity::takingOrders);
         this.items.addAll(newItems);
         this.totalAmount = calculateTotalPrice(this.items);
     }

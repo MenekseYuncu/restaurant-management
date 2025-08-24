@@ -12,10 +12,14 @@ import java.math.RoundingMode;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderItem {
+
+    private String id;
     private String productId;
     private int quantity;
     private BigDecimal price;
     private OrderItemStatus status;
+    private String orderId;
+
 
     public static class OrderItemBuilder {
         private OrderItemBuilder() {

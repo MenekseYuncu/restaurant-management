@@ -43,8 +43,9 @@ public class OrderItemEntity extends BaseEntity {
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_item_status", length = 10)
-    private OrderItemStatus status;
+    @Column(name = "order_item_status", nullable = false)
+    @Builder.Default
+    private OrderItemStatus status = OrderItemStatus.PREPARING;
 
     public void cancel() {
         this.status = OrderItemStatus.CANCELED;
@@ -56,5 +57,9 @@ public class OrderItemEntity extends BaseEntity {
 
     public void delivered() {
         this.status = OrderItemStatus.DELIVERED;
+    }
+
+    public void markPaid() {
+        this.setStatus(OrderItemStatus.PAID);
     }
 }
