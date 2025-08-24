@@ -76,7 +76,7 @@ create table if not exists rm_order_item
     price             numeric(50, 8) not null,
     quantity          int            not null,
     order_item_status varchar(10)     not null
-        constraint c__rm_order_item__order_item_status check (order_item_status in ('PREPARING', 'READY', 'DELIVERED', 'CANCELED')),
+        constraint c__rm_order_item__order_item_status check (order_item_status in ('PREPARING', 'READY', 'DELIVERED', 'CANCELED', 'PAID')),
     created_at        timestamp(3)   not null,
     updated_at        timestamp(3)
 );
@@ -91,7 +91,7 @@ create table if not exists rm_payment
     constraint c__rm_payment__payment_type check (payment_type in ('CASH', 'CREDIT_CARD', 'DEBIT_CARD', 'OTHER')),
     amount        numeric(50, 8) not null,
     status        varchar(20) not null
-    constraint c__rm_payment__status check (status in ('PENDING', 'COMPLETED', 'FAILED', 'CANCELED')),
+    constraint c__rm_payment__status check (status in ('PENDING', 'COMPLETED', 'FAILED', 'CANCELED', 'PAID')),
     created_at    timestamp(3) not null,
     updated_at    timestamp(3)
     );
