@@ -33,6 +33,7 @@ import org.violet.restaurantmanagement.product.repository.entity.ProductEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -77,9 +78,14 @@ class OrderServiceImpl implements OrderService {
 
         OrderEntity orderEntity = orderDomainToEntityMapper.map(order);
 
-        List<OrderItemEntity> itemEntities = orderItems.stream()
-                .map(orderItemDomainToEntityMapper::map)
-                .peek(item -> item.setOrder(orderEntity))
+        List<OrderItemEntity> itemEntities = Optional.ofNullable(orderItems)
+                .orElseThrow(OrderItemsCanNotBeNullException::new)
+                .stream()
+                .map(item -> {
+                    OrderItemEntity entity = orderItemDomainToEntityMapper.map(item);
+                    entity.setOrder(orderEntity);
+                    return entity;
+                })
                 .toList();
 
         final List<DiningTableEntity> tables = diningTableRepository.findByMergeId(order.getMergeId());
@@ -102,10 +108,13 @@ class OrderServiceImpl implements OrderService {
 
         List<OrderItem> newItems = this.createOrderItems(updateCommand.products());
 
-        List<OrderItemEntity> newOrderItems = newItems.stream()
+        List<OrderItemEntity> newOrderItems = Optional.ofNullable(newItems)
+                .orElseThrow(OrderItemsCanNotBeNullException::new)
+                .stream()
                 .map(orderItemDomainToEntityMapper::map)
-                .peek(item -> item.setOrder(order))
                 .toList();
+
+        newOrderItems.forEach(item -> item.setOrder(order));
 
         order.updateItems(newOrderItems);
 
